@@ -52,4 +52,14 @@ class TestApplicationTest {
         assertEquals(john.getEmail(),loaded.get().getEmail());
         assertEquals(john.getId(),loaded.get().getId());
     }
+
+    @Test
+    public void should_be_able_to_load_saved_student_by_email() throws Exception{
+        Optional<Student> loaded = repository.findByEmail(john.getEmail());
+        assertTrue(loaded.isPresent());
+        assertEquals(john.getFirstName(),loaded.get().getFirstName());
+        assertEquals(john.getLastName(),loaded.get().getLastName());
+        assertEquals(john.getEmail(),loaded.get().getEmail());
+        assertEquals(john.getId(),loaded.get().getId());
+    }
 }
