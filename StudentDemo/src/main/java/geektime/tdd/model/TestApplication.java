@@ -13,7 +13,7 @@ public class TestApplication {
         entityManager.getTransaction().begin();
 
         StudentRepository studentRepository = new StudentRepository(entityManager);
-        Student john = studentRepository.save(new Student("john", "smith", "john.smith@gmail.com"));
+        Student john = studentRepository.save(new Student("john", "smith", "john.smith@email.com"));
 
         entityManager.getTransaction().commit();
 
@@ -22,5 +22,8 @@ public class TestApplication {
         Optional<Student> loaded = studentRepository.findById(john.getId());
 
         System.out.println(loaded);
+
+        System.out.println(studentRepository.findByEmail("john.smith@email.com"));
+        System.out.println(studentRepository.findByEmail("john.smith@email1.com"));
     }
 }
