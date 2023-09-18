@@ -2,6 +2,7 @@ package geektime.tdd.model;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+import java.util.List;
 import java.util.Optional;
 
 public class StudentRepository {
@@ -23,5 +24,9 @@ public class StudentRepository {
     public Optional<Student> findByEmail(String email){
         TypedQuery<Student> query = manager.createQuery("SELECT s from Student s where s.email = :email", Student.class);
         return query.setParameter("email",email).getResultList().stream().findFirst();
+    }
+
+    public List<Student> all() {
+        return manager.createQuery("select * from Student").getResultList().stream().toList();
     }
 }

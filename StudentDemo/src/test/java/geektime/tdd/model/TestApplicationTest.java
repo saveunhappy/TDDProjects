@@ -62,4 +62,8 @@ class TestApplicationTest {
         assertEquals(john.getEmail(),loaded.get().getEmail());
         assertEquals(john.getId(),loaded.get().getId());
     }
+
+    @Test
+    public void should_return_404_if_no_student_found() throws Exception{
+    }
 }
