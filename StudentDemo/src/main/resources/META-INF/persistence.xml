@@ -6,11 +6,13 @@
     <persistence-unit name="student">
         <class>geektime.tdd.model.Student</class>
         <properties>
-            <property name="jakarta.persistence.jdbc.driver" value="org.hsqldb.jdbc.JDBCDriver"/>
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:hsqldb:file:target/myDB;shutdown=true"/>
-            <property name="jakarta.persistence.jdbc.user" value="user"/>
-            <property name="jakarta.persistence.jdbc.password" value="password"/>
-            <property name="jakarta.persistence.schema-generation.database.action" value="create"/>
+            <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:h2:mem:test"/>
+            <!-- 删除用户名和密码属性 -->
+            <!-- <property name="javax.persistence.jdbc.user" value="your_username"/> -->
+            <!-- <property name="javax.persistence.jdbc.password" value="your_password"/> -->
+            <property name="hibernate.hbm2ddl.auto" value="create"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
         </properties>
     </persistence-unit>
 </persistence>
