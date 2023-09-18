@@ -8,6 +8,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class TestApplicationTest {
@@ -16,12 +18,16 @@ class TestApplicationTest {
     private EntityManager manager;
 
     private StudentRepository repository;
+    private Student john;
 
     @BeforeEach
     void before() {
         factory = Persistence.createEntityManagerFactory("student");
         manager = factory.createEntityManager();
         repository = new StudentRepository(manager);
+        manager.getTransaction().begin();
+        john = repository.save(new Student("john", "smith", "john.smith@email.com"));
+        manager.getTransaction().commit();
     }
 
     @AfterEach
@@ -33,9 +39,17 @@ class TestApplicationTest {
 
     @Test
     public void should_generate_id_for_saved_entity() throws Exception{
-        manager.getTransaction().begin();
-        Student john = repository.save(new Student("john", "smith", "john.smith@email.com"));
-        manager.getTransaction().commit();
+
         assertNotEquals(0,john.getId());
+    }
+
+    @Test
+    public void should_be_able_to_load_saved_student_by_id() throws Exception{
+        Optional<Student> loaded = repository.findById(john.getId());
+        assertTrue(loaded.isPresent());
+        assertEquals(john.getFirstName(),loaded.get().getFirstName());
+        assertEquals(john.getLastName(),loaded.get().getLastName());
+        assertEquals(john.getEmail(),loaded.get().getEmail());
+        assertEquals(john.getId(),loaded.get().getId());
     }
 }
