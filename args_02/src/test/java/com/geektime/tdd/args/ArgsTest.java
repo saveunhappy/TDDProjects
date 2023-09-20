@@ -12,6 +12,15 @@ class ArgsTest {
     //{-l:[],-p:[8080],-d:[/usr/logs]}
     //Single Option:
     //TODO  -Bool: -l
+    @Test
+    public void should_set_boolean_option_to_true_if_flag_present() throws Exception{
+        BooleanOption option = Args.parse(BooleanOption.class, "-l");
+        assertTrue(option.logging());
+    }
+
+    record BooleanOption(@Option("l")boolean logging){
+
+    }
     //TODO  -Integer: -p 8080
     //TODO  -String -d /usr/logs
     //TODO multi options: -l -p 8080 -d /usr/logs
