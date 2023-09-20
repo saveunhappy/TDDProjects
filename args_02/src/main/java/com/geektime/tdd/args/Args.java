@@ -17,6 +17,8 @@ public class Args {
             //如果是-l就返回boolean值，
             //如果是-p,那么也是通过index的方式去获取他后面的参数的，同理，-d也是获取他后面的
             //最后根据顺序，去通过反射去创建对象
+            /**为什么更改顺序也可以成功解析？因为constructor.getParameters()获取的顺序是定下来的，所以是按照参数的顺序
+             * 来进行访问的，所以你哪个在先哪个在后，是没有关系的，和你的自己定义的那个record是有关系的*/
             Object[] values = Arrays.stream(constructor.getParameters()).map(it -> parseOption(arguments, it)).toArray();
 
             return (T) constructor.newInstance(values);

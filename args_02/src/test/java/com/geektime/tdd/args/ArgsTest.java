@@ -43,7 +43,7 @@ class ArgsTest {
     //TODO multi options: -l -p 8080 -d /usr/logs
     @Test
     public void should_parse_multi_options() throws Exception {
-        MultiOptions options = Args.parse(MultiOptions.class, "-l", "-p", "8080", "-d", "/usr/logs");
+        MultiOptions options = Args.parse(MultiOptions.class,  "-d", "/usr/logs", "-p", "8080","-l");
         assertTrue(options.logging());
         assertEquals(8080, options.port());
         assertEquals("/usr/logs", options.directory());
