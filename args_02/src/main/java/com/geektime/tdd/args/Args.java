@@ -14,7 +14,11 @@ public class Args {
             Parameter parameter = constructor.getParameters()[0];
             Option option = parameter.getAnnotation(Option.class);//这个就是l,p,d,传的参数是-l,-p,-d,
             List<String> arguments = Arrays.asList(args);
-            return (T) constructor.newInstance(arguments.contains("-" +option.value()));//在这里进行拼接
+            Object value = null;
+            if(parameter.getType() == boolean.class){
+                value = arguments.contains("-" + option.value());
+            }
+            return (T) constructor.newInstance(value);//在这里进行拼接
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

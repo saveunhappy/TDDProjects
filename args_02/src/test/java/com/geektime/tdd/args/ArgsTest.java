@@ -25,7 +25,14 @@ class ArgsTest {
     record BooleanOption(@Option("l")boolean logging){
 
     }
+
     //TODO  -Integer: -p 8080
+    @Test
+    public void should_parse_int_as_option_value() throws Exception{
+        IntOption option = Args.parse(IntOption.class, "-p", "8080");
+        assertEquals(8080,option.port());
+    }
+    record IntOption(@Option("p") int port){}
     //TODO  -String -d /usr/logs
     //TODO multi options: -l -p 8080 -d /usr/logs
     //sad path:
