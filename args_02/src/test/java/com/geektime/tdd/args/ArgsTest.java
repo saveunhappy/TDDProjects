@@ -1,6 +1,5 @@
 package com.geektime.tdd.args;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -42,6 +41,13 @@ class ArgsTest {
     }
     record StringOption(@Option("d") String directory){}
     //TODO multi options: -l -p 8080 -d /usr/logs
+    @Test
+    public void should_parse_multi_options() throws Exception {
+        MultiOptions options = Args.parse(MultiOptions.class, "-l", "-p", "8080", "-d", "/usr/logs");
+        assertTrue(options.logging());
+        assertEquals(8080, options.port());
+        assertEquals("/usr/logs", options.directory());
+    }
     //sad path:
     // -bool -l t / -l t f/
     // -int  -p/ -p 8080 8081
@@ -50,14 +56,6 @@ class ArgsTest {
     // -bool : false
     // -int : 0
     // -string: ""
-    @Test
-    @Disabled
-    public void should_example1() throws Exception {
-        Options options = Args.parse(Options.class, "-l", "-p", "8080", "-d", "/usr/logs");
-        assertTrue(options.logging());
-        assertEquals(8080, options.port());
-        assertEquals("/usr/logs", options.directory());
-    }
 
     @Test
     @Disabled
@@ -68,7 +66,7 @@ class ArgsTest {
 
     }
 
-    record Options(@Option("l") boolean logging, @Option("p") int port, @Option("d") String directory) {
+    record MultiOptions(@Option("l") boolean logging, @Option("p") int port, @Option("d") String directory) {
 
     }
 

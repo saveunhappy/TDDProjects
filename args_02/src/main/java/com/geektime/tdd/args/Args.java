@@ -10,11 +10,11 @@ public class Args {
     @SuppressWarnings("unchecked")
     public static <T> T parse(Class<T> optionsClass, String... args) {
         try {
+            List<String> arguments = Arrays.asList(args);
             Constructor<?> constructor = optionsClass.getDeclaredConstructors()[0];
             Parameter parameter = constructor.getParameters()[0];
-            Option option = parameter.getAnnotation(Option.class);//这个就是l,p,d,传的参数是-l,-p,-d,
-            List<String> arguments = Arrays.asList(args);
             Object value = null;
+            Option option = parameter.getAnnotation(Option.class);//这个就是l,p,d,传的参数是-l,-p,-d,
             if(parameter.getType() == boolean.class){
                 value = arguments.contains("-" + option.value());
             }
