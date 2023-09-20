@@ -40,7 +40,6 @@ class ArgsTest {
         assertEquals("/usr/logs",option.directory());
     }
     record StringOption(@Option("d") String directory){}
-    //TODO multi options: -l -p 8080 -d /usr/logs
     @Test
     public void should_parse_multi_options() throws Exception {
         MultiOptions options = Args.parse(MultiOptions.class,  "-d", "/usr/logs", "-p", "8080","-l");
