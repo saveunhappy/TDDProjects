@@ -10,10 +10,10 @@ class ArgsTest {
     //[-l],[-p,8080],[-d,/usr/logs]
     //{-l:[],-p:[8080],-d:[/usr/logs]}
     //Single Option:
-    //  -Bool: -l
-    //  -Integer: -p 8080
-    //  -String -d /usr/logs
-    //multi options: -l -p 8080 -d /usr/logs
+    //TODO  -Bool: -l
+    //TODO  -Integer: -p 8080
+    //TODO  -String -d /usr/logs
+    //TODO multi options: -l -p 8080 -d /usr/logs
     //sad path:
     // -bool -l t / -l t f/
     // -int  -p/ -p 8080 8081
