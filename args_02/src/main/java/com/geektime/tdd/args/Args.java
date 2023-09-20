@@ -24,6 +24,10 @@ public class Args {
                 //那-p后面跟着的8080就是index的位置 + 1了，然后这个获取到是String类型的，需要转换为Int类型的
                 value = Integer.valueOf(arguments.get(index + 1));
             }
+            if(parameter.getType() == String.class){
+                int index = arguments.indexOf("-" + option.value());
+                value = arguments.get(index + 1);
+            }
             //value就是-l/p/d后面的
             return (T) constructor.newInstance(value);
         } catch (Exception e) {
