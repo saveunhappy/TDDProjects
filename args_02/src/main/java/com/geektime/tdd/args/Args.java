@@ -12,18 +12,22 @@ public class Args {
         try {
             List<String> arguments = Arrays.asList(args);
             Constructor<?> constructor = optionsClass.getDeclaredConstructors()[0];
-            Parameter parameter = constructor.getParameters()[0];
-            Object value = parseOption(arguments, parameter);
-            //value就是-l/p/d后面的
-            return (T) constructor.newInstance(value);
+            //为什么这样就可以了？抽取出了一个方法，那么arguments就是获取所有的参数了
+            //然后通过stream的方式，每个参数都去调用parseOption的方式得到从arguments中筛选出一个对应的值，
+            //如果是-l就返回boolean值，
+            //如果是-p,那么也是通过index的方式去获取他后面的参数的，同理，-d也是获取他后面的
+            //最后根据顺序，去通过反射去创建对象
+            Object[] values = Arrays.stream(constructor.getParameters()).map(it -> parseOption(arguments, it)).toArray();
+
+            return (T) constructor.newInstance(values);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     private static Object parseOption(List<String> arguments, Parameter parameter) {
-        Option option = parameter.getAnnotation(Option.class);//这个就是l,p,d,传的参数是-l,-p,-d,
         Object value = null;
+        Option option = parameter.getAnnotation(Option.class);//这个就是l,p,d,传的参数是-l,-p,-d,
         if(parameter.getType() == boolean.class){
             value = arguments.contains("-" + option.value());
         }
