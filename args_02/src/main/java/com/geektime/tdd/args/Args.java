@@ -18,7 +18,14 @@ public class Args {
             if(parameter.getType() == boolean.class){
                 value = arguments.contains("-" + option.value());
             }
-            return (T) constructor.newInstance(value);//在这里进行拼接
+            if(parameter.getType() == int.class){
+                //获取-p的索引
+                int index = arguments.indexOf("-" + option.value());
+                //那-p后面跟着的8080就是index的位置 + 1了，然后这个获取到是String类型的，需要转换为Int类型的
+                value = Integer.valueOf(arguments.get(index + 1));
+            }
+            //value就是-l/p/d后面的
+            return (T) constructor.newInstance(value);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
