@@ -30,16 +30,17 @@ public class Args {
     private static Object parseOption(List<String> arguments, Parameter parameter) {
         Object value = null;
         Option option = parameter.getAnnotation(Option.class);//这个就是l,p,d,传的参数是-l,-p,-d,
+        OptionParser parser;
         if (parameter.getType() == boolean.class) {
-            OptionParser parser = new BooleanParser();
+            parser = new BooleanParser();
             value = parser.parse(arguments, option);
         }
         if (parameter.getType() == int.class) {
-            OptionParser parser = new IntParser();
+            parser = new IntParser();
             value = parser.parse(arguments, option);
         }
         if (parameter.getType() == String.class) {
-            OptionParser parser = new StringParser();
+            parser = new StringParser();
             value = parser.parse(arguments, option);
         }
         return value;
