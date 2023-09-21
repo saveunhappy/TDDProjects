@@ -15,7 +15,7 @@ class IntOptionParser implements OptionParser {
     }
 
     public static OptionParser createIntOptionParser() {
-        return new IntOptionParser();
+        return new IntOptionParser(Integer::parseInt);
     }
 
     @Override
