@@ -34,8 +34,10 @@ public class Args {
         return PARSER.get(type).parse(arguments, parameter.getAnnotation(Option.class));
     }
 
-    private static Map<Class<?>,OptionParser> PARSER = Map.of(boolean.class,new BooleanParser(),int.class,
-            new IntParser(),String.class,new StringParser());
+    private static Map<Class<?>,OptionParser> PARSER = Map.of(
+            boolean.class,new BooleanParser(),
+            int.class, new IntParser(),
+            String.class,new StringParser());
 
     interface OptionParser {
         Object parse(List<String> arguments, Option option);
