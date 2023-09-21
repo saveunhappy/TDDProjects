@@ -1,11 +1,12 @@
 package com.geektime.tdd.args;
 
-import java.util.List;
-
 class StringOptionParser extends IntOptionParser {
 
-    public StringOptionParser() {
+    private StringOptionParser() {
         super(String::valueOf);
     }
 
+    public static StringOptionParser createStringOptionParser() {
+        return new StringOptionParser();
+    }
 }
