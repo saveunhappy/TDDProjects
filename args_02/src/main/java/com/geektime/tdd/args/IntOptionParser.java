@@ -6,12 +6,16 @@ import java.util.function.Function;
 class IntOptionParser implements OptionParser {
     Function<String, Object> valueParser = Integer::parseInt;
 
-    public IntOptionParser() {
+    private IntOptionParser() {
 
     }
 
     public IntOptionParser(Function<String, Object> valueParser) {
         this.valueParser = valueParser;
+    }
+
+    public static IntOptionParser createIntOptionParser() {
+        return new IntOptionParser();
     }
 
     @Override
