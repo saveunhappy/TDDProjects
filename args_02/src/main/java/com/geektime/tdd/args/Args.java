@@ -30,23 +30,23 @@ public class Args {
     private static Object parseOption(List<String> arguments, Parameter parameter) {
         Object value = null;
         Option option = parameter.getAnnotation(Option.class);//这个就是l,p,d,传的参数是-l,-p,-d,
-        if(parameter.getType() == boolean.class){
-            value = new BooleanParser().parse(arguments,option);
+        if (parameter.getType() == boolean.class) {
+            value = parseBoolean(arguments, option);
         }
-        if(parameter.getType() == int.class){
-            value = new IntParser().parse(arguments,option);
+        if (parameter.getType() == int.class) {
+            value = parseInt(arguments, option);
         }
-        if(parameter.getType() == String.class){
-            value = new StringParser().parse(arguments,option);
+        if (parameter.getType() == String.class) {
+            value = parseString(arguments, option);
         }
         return value;
     }
 
-    interface OptionParser{
+    interface OptionParser {
         Object parse(List<String> arguments, Option option);
     }
 
-    static class BooleanParser implements OptionParser{
+    static class BooleanParser implements OptionParser {
         @Override
         public Object parse(List<String> arguments, Option option) {
             return arguments.contains("-" + option.value());
@@ -54,15 +54,15 @@ public class Args {
     }
 
 
-
-    static class IntParser implements OptionParser{
+    static class IntParser implements OptionParser {
         @Override
         public Object parse(List<String> arguments, Option option) {
             int index = arguments.indexOf("-" + option.value());
             return Integer.valueOf(arguments.get(index + 1));
         }
     }
-    static class StringParser implements OptionParser{
+
+    static class StringParser implements OptionParser {
         @Override
         public Object parse(List<String> arguments, Option option) {
             int index = arguments.indexOf("-" + option.value());
@@ -71,18 +71,14 @@ public class Args {
     }
 
     private static Object parseString(List<String> arguments, Option option) {
-        int index = arguments.indexOf("-" + option.value());
-        return arguments.get(index + 1);
+        return new StringParser().parse(arguments,option);
     }
 
     private static Object parseInt(List<String> arguments, Option option) {
-        int index = arguments.indexOf("-" + option.value());
-        return Integer.valueOf(arguments.get(index + 1));
+       return new IntParser().parse(arguments,option);
     }
 
     private static Object parseBoolean(List<String> arguments, Option option) {
-        Object value;
-        value = arguments.contains("-" + option.value());
-        return value;
+       return new BooleanParser().parse(arguments,option);
     }
 }
