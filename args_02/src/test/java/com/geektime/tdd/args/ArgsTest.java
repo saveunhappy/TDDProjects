@@ -21,7 +21,7 @@ class ArgsTest {
         assertFalse(option.logging());
     }
 
-    record BooleanOption(@Option("l")boolean logging){
+    static record BooleanOption(@Option("l")boolean logging){
 
     }
 
