@@ -8,7 +8,4 @@ class StringOptionParser extends IntOptionParser {
         super(String::valueOf);
     }
 
-//    protected Object parseValue(String value) {
-//        return String.valueOf(value);
-//    }
 }
