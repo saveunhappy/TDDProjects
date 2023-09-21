@@ -31,13 +31,13 @@ public class Args {
         Object value = null;
         Option option = parameter.getAnnotation(Option.class);//这个就是l,p,d,传的参数是-l,-p,-d,
         if (parameter.getType() == boolean.class) {
-            value = parseBoolean(arguments, option);
+            value = new BooleanParser().parse(arguments, option);
         }
         if (parameter.getType() == int.class) {
-            value = parseInt(arguments, option);
+            value = new IntParser().parse(arguments, option);
         }
         if (parameter.getType() == String.class) {
-            value = parseString(arguments, option);
+            value = new StringParser().parse(arguments, option);
         }
         return value;
     }
@@ -70,15 +70,4 @@ public class Args {
         }
     }
 
-    private static Object parseString(List<String> arguments, Option option) {
-        return new StringParser().parse(arguments,option);
-    }
-
-    private static Object parseInt(List<String> arguments, Option option) {
-       return new IntParser().parse(arguments,option);
-    }
-
-    private static Object parseBoolean(List<String> arguments, Option option) {
-       return new BooleanParser().parse(arguments,option);
-    }
 }
