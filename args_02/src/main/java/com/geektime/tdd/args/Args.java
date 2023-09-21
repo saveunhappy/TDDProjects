@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class Args {
     @SuppressWarnings("unchecked")
@@ -32,6 +33,8 @@ public class Args {
         return getOptionParser(parameter.getType()).parse(arguments, parameter.getAnnotation(Option.class));
     }
 
+    private static Map<Class<?>,OptionParser> PARSER = Map.of(boolean.class,new BooleanParser(),int.class,
+            new IntParser(),String.class,new StringParser());
     private static OptionParser getOptionParser(Class<?> type) {
         OptionParser parser = null;
 
