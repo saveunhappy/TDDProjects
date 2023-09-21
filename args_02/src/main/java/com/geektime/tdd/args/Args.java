@@ -35,10 +35,12 @@ public class Args {
             value = parser.parse(arguments, option);
         }
         if (parameter.getType() == int.class) {
-            value = new IntParser().parse(arguments, option);
+            IntParser parser = new IntParser();
+            value = parser.parse(arguments, option);
         }
         if (parameter.getType() == String.class) {
-            value = new StringParser().parse(arguments, option);
+            StringParser parser = new StringParser();
+            value = parser.parse(arguments, option);
         }
         return value;
     }
