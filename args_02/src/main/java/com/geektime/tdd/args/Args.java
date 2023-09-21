@@ -36,18 +36,7 @@ public class Args {
     private static Map<Class<?>,OptionParser> PARSER = Map.of(boolean.class,new BooleanParser(),int.class,
             new IntParser(),String.class,new StringParser());
     private static OptionParser getOptionParser(Class<?> type) {
-        OptionParser parser = null;
-
-        if (type == boolean.class) {
-            parser = new BooleanParser();
-        }
-        if (type == int.class) {
-            parser = new IntParser();
-        }
-        if (type == String.class) {
-            parser = new StringParser();
-        }
-        return parser;
+        return PARSER.get(type);
     }
 
     interface OptionParser {
