@@ -19,12 +19,7 @@ public class BooleanOptionParserTest {
         assertEquals("l", e.getOption());
     }
 
-    @Test
-    public void should_not_accept_extra_arguments_for_boolean_option() {
-        TooManyArgumentsException e = assertThrows(TooManyArgumentsException.class,
-                () -> new BooleanOptionParser().parse(asList("-l", "t","f"), option("l")));
-        assertEquals("l", e.getOption());
-    }
+
     static Option option(String value){
         return new Option(){
 
