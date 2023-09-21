@@ -34,10 +34,10 @@ public class Args {
             value = new BooleanParser().parse(arguments,option);
         }
         if(parameter.getType() == int.class){
-            value = parseInt(arguments, option);
+            value = new IntParser().parse(arguments,option);
         }
         if(parameter.getType() == String.class){
-            value = parseString(arguments, option);
+            value = new StringParser().parse(arguments,option);
         }
         return value;
     }
@@ -49,26 +49,35 @@ public class Args {
     static class BooleanParser implements OptionParser{
         @Override
         public Object parse(List<String> arguments, Option option) {
-            Object value;
-            value = arguments.contains("-" + option.value());
-            return value;
+            return arguments.contains("-" + option.value());
+        }
+    }
+
+
+
+    static class IntParser implements OptionParser{
+        @Override
+        public Object parse(List<String> arguments, Option option) {
+            int index = arguments.indexOf("-" + option.value());
+            return Integer.valueOf(arguments.get(index + 1));
+        }
+    }
+    static class StringParser implements OptionParser{
+        @Override
+        public Object parse(List<String> arguments, Option option) {
+            int index = arguments.indexOf("-" + option.value());
+            return arguments.get(index + 1);
         }
     }
 
     private static Object parseString(List<String> arguments, Option option) {
-        Object value;
         int index = arguments.indexOf("-" + option.value());
-        value = arguments.get(index + 1);
-        return value;
+        return arguments.get(index + 1);
     }
 
     private static Object parseInt(List<String> arguments, Option option) {
-        Object value;
-        //获取-p的索引
         int index = arguments.indexOf("-" + option.value());
-        //那-p后面跟着的8080就是index的位置 + 1了，然后这个获取到是String类型的，需要转换为Int类型的
-        value = Integer.valueOf(arguments.get(index + 1));
-        return value;
+        return Integer.valueOf(arguments.get(index + 1));
     }
 
     private static Object parseBoolean(List<String> arguments, Option option) {
