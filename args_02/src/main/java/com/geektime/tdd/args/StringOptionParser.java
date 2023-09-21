@@ -2,7 +2,7 @@ package com.geektime.tdd.args;
 
 import java.util.List;
 
-class StringOptionParser implements OptionParser {
+class StringOptionParser extends IntOptionParser {
     @Override
     public Object parse(List<String> arguments, Option option) {
         int index = arguments.indexOf("-" + option.value());
