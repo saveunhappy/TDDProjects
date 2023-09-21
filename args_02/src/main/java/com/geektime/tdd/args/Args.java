@@ -31,7 +31,8 @@ public class Args {
         Object value = null;
         Option option = parameter.getAnnotation(Option.class);//这个就是l,p,d,传的参数是-l,-p,-d,
         if (parameter.getType() == boolean.class) {
-            value = new BooleanParser().parse(arguments, option);
+            BooleanParser parser = new BooleanParser();
+            value = parser.parse(arguments, option);
         }
         if (parameter.getType() == int.class) {
             value = new IntParser().parse(arguments, option);
