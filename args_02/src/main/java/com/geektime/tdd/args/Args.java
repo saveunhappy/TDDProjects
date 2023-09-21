@@ -30,14 +30,12 @@ public class Args {
 
     private static Object parseOption(List<String> arguments, Parameter parameter) {
         //这个就是l,p,d,传的参数是-l,-p,-d,
-        return getOptionParser(parameter.getType()).parse(arguments, parameter.getAnnotation(Option.class));
+        Class<?> type = parameter.getType();
+        return PARSER.get(type).parse(arguments, parameter.getAnnotation(Option.class));
     }
 
     private static Map<Class<?>,OptionParser> PARSER = Map.of(boolean.class,new BooleanParser(),int.class,
             new IntParser(),String.class,new StringParser());
-    private static OptionParser getOptionParser(Class<?> type) {
-        return PARSER.get(type);
-    }
 
     interface OptionParser {
         Object parse(List<String> arguments, Option option);
