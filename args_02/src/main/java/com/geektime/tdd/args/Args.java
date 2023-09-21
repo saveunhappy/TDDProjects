@@ -1,7 +1,6 @@
 package com.geektime.tdd.args;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.List;
@@ -32,10 +31,9 @@ public class Args {
         Object value = null;
         Option option = parameter.getAnnotation(Option.class);//这个就是l,p,d,传的参数是-l,-p,-d,
         if(parameter.getType() == boolean.class){
-            value = parseBoolean(arguments, option);
+            value = new BooleanParser().parse(arguments,option);
         }
         if(parameter.getType() == int.class){
-            //获取-p的索引
             value = parseInt(arguments, option);
         }
         if(parameter.getType() == String.class){
@@ -44,22 +42,38 @@ public class Args {
         return value;
     }
 
-    interface optionParser{
-        Object parse(List<String> arguments,Option option);
+    interface OptionParser{
+        Object parse(List<String> arguments, Option option);
+    }
+
+    static class BooleanParser implements OptionParser{
+        @Override
+        public Object parse(List<String> arguments, Option option) {
+            Object value;
+            value = arguments.contains("-" + option.value());
+            return value;
+        }
     }
 
     private static Object parseString(List<String> arguments, Option option) {
+        Object value;
         int index = arguments.indexOf("-" + option.value());
-        return arguments.get(index + 1);
-    }
-
-    private static Object parseBoolean(List<String> arguments, Option option) {
-        return arguments.contains("-" + option.value());
+        value = arguments.get(index + 1);
+        return value;
     }
 
     private static Object parseInt(List<String> arguments, Option option) {
+        Object value;
+        //获取-p的索引
         int index = arguments.indexOf("-" + option.value());
         //那-p后面跟着的8080就是index的位置 + 1了，然后这个获取到是String类型的，需要转换为Int类型的
-        return Integer.valueOf(arguments.get(index + 1));
+        value = Integer.valueOf(arguments.get(index + 1));
+        return value;
+    }
+
+    private static Object parseBoolean(List<String> arguments, Option option) {
+        Object value;
+        value = arguments.contains("-" + option.value());
+        return value;
     }
 }
