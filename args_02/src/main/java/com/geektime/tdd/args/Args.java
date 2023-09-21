@@ -28,10 +28,8 @@ public class Args {
     }
 
     private static Object parseOption(List<String> arguments, Parameter parameter) {
-        Option option = parameter.getAnnotation(Option.class);//这个就是l,p,d,传的参数是-l,-p,-d,
-        Class<?> type = parameter.getType();
-        OptionParser parser = getOptionParser(type);
-        return parser.parse(arguments, option);
+        //这个就是l,p,d,传的参数是-l,-p,-d,
+        return getOptionParser(parameter.getType()).parse(arguments, parameter.getAnnotation(Option.class));
     }
 
     private static OptionParser getOptionParser(Class<?> type) {
