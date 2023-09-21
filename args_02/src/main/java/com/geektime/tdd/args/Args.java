@@ -44,25 +44,22 @@ public class Args {
         return value;
     }
 
+    interface optionParser{
+        Object parse(List<String> arguments,Option option);
+    }
 
     private static Object parseString(List<String> arguments, Option option) {
-        Object value;
         int index = arguments.indexOf("-" + option.value());
-        value = arguments.get(index + 1);
-        return value;
+        return arguments.get(index + 1);
     }
 
     private static Object parseBoolean(List<String> arguments, Option option) {
-        Object value;
-        value = arguments.contains("-" + option.value());
-        return value;
+        return arguments.contains("-" + option.value());
     }
 
     private static Object parseInt(List<String> arguments, Option option) {
-        Object value;
         int index = arguments.indexOf("-" + option.value());
         //那-p后面跟着的8080就是index的位置 + 1了，然后这个获取到是String类型的，需要转换为Int类型的
-        value = Integer.valueOf(arguments.get(index + 1));
-        return value;
+        return Integer.valueOf(arguments.get(index + 1));
     }
 }
