@@ -14,7 +14,7 @@ class IntOptionParser implements OptionParser {
         this.valueParser = valueParser;
     }
 
-    public static IntOptionParser createIntOptionParser() {
+    public static OptionParser createIntOptionParser() {
         return new IntOptionParser();
     }
 
