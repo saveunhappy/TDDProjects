@@ -37,7 +37,13 @@ public class SingleValuedOptionParserTest {
 
     @Test//Happy path
     public void should_parse_value_if_flag_present() throws Exception {
-        assertEquals(8080, new SingleValueOptionParser<>(0, Integer::parseInt)
+        Object parsed = new Object();
+        //String转换为Object
+        Function<String,Object> parse = (it) -> parsed;
+        Object whatever = new Object();
+        //这个是测试正常情况，我们要测的是Function，所以默认值我们是不关心的，默认是就是whatever
+        //经过function的函数，我们默认返回parsed,所以用assertSame，证明是返回了我们想要的
+        assertSame(parsed, new SingleValueOptionParser<>(whatever, parse)
                 .parse(asList("-p","8080"), option("p")));
     }
 
