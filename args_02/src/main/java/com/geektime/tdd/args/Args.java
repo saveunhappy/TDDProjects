@@ -1,10 +1,12 @@
 package com.geektime.tdd.args;
 
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class Args {
     @SuppressWarnings("unchecked")
@@ -36,8 +38,8 @@ public class Args {
 
     private static Map<Class<?>,OptionParser> PARSER = Map.of(
             boolean.class,new BooleanOptionParser(),
-            int.class, SingleValueOptionParser.createSingleValueOptionParser(Integer::parseInt, 0),
-            String.class, SingleValueOptionParser.createSingleValueOptionParser(String::valueOf, 0));
+            int.class, new SingleValueOptionParser<Integer>(0, Integer::parseInt),
+            String.class, new SingleValueOptionParser<Serializable>((Serializable) 0, (Function<String, ? extends Serializable>) String::valueOf));
 
 
 }
