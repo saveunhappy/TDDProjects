@@ -31,6 +31,7 @@ public class Args {
     }
 
     private static Object parseOption(List<String> arguments, Parameter parameter) {
+        if(!parameter.isAnnotationPresent(Option.class)) throw new IllegalOptionException(parameter.getName());
         //这个就是l,p,d,传的参数是-l,-p,-d,
         Class<?> type = parameter.getType();
         return PARSER.get(type).parse(arguments, parameter.getAnnotation(Option.class));
