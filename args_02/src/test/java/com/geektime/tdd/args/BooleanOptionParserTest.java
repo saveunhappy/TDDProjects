@@ -26,6 +26,7 @@ public class BooleanOptionParserTest {
     @Test
     public void should_set_value_to_true_if_option_present() {
         assertTrue(new BooleanOptionParser().parse(asList("-l"), option("l")));
+
     }
     static Option option(String value){
         return new Option(){
