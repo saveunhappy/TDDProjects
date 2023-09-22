@@ -7,9 +7,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-
+@SuppressWarnings("unchecked")
 public class Args {
-    @SuppressWarnings("unchecked")
+
     public static <T> T parse(Class<T> optionsClass, String... args) {
         try {
             List<String> arguments = Arrays.asList(args);
