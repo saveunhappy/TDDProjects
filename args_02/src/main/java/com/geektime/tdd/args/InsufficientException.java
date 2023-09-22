@@ -1,10 +1,10 @@
 package com.geektime.tdd.args;
 
-public class TooManyArgumentsException extends RuntimeException {
+public class InsufficientException extends RuntimeException {
 
     String option;
 
-    public TooManyArgumentsException(String option) {
+    public InsufficientException(String option) {
         this.option = option;
     }
 
