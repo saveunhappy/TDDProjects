@@ -20,7 +20,7 @@ class ArgsTest {
 
     @Test
     public void should_throw_illegal_option_exception_if_annotation_not_present() throws Exception {
-        IllegalOptionException e = assertThrows(IllegalOptionException.class, () -> Args.parse(MultiOptions.class, "-d", "/usr/logs", "-p", "8080", "-l"));
+        IllegalOptionException e = assertThrows(IllegalOptionException.class, () -> Args.parse(OptionWithoutAnnotation.class, "-d", "/usr/logs", "-p", "8080", "-l"));
         assertEquals("port",e.getParameter());
     }
 

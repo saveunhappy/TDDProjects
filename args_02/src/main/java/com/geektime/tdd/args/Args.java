@@ -25,7 +25,10 @@ public class Args {
                     .map(it -> parseOption(arguments, it)).toArray();
 
             return (T) constructor.newInstance(values);
-        } catch (Exception e) {
+        }catch (IllegalOptionException e){
+            throw e;
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
