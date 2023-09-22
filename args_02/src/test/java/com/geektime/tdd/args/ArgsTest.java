@@ -11,20 +11,6 @@ class ArgsTest {
     //{-l:[],-p:[8080],-d:[/usr/logs]}
 
     @Test
-    public void should_parse_int_as_option_value() throws Exception{
-        IntOption option = Args.parse(IntOption.class, "-p", "8080");
-        assertEquals(8080,option.port());
-    }
-    record IntOption(@Option("p") int port){}
-    //TODO  -String -d /usr/logs
-
-    @Test
-    public void should_get_String_as_option_value() throws Exception{
-        StringOption option = Args.parse(StringOption.class, "-d", "/usr/logs");
-        assertEquals("/usr/logs",option.directory());
-    }
-    record StringOption(@Option("d") String directory){}
-    @Test
     public void should_parse_multi_options() throws Exception {
         MultiOptions options = Args.parse(MultiOptions.class,  "-d", "/usr/logs", "-p", "8080","-l");
         assertTrue(options.logging());
