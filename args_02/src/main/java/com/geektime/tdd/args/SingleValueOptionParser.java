@@ -25,7 +25,8 @@ class SingleValueOptionParser<T> implements OptionParser<T> {
 
         if (values.size() < 1) throw new InsufficientException(option.value());
         if (values.size() > 1) throw new TooManyArgumentsException(option.value());
-        return valueParser.apply(arguments.get(index + 1));
+        String value = values.get(0);
+        return valueParser.apply(value);
     }
 
     private static List<String> getValues(List<String> arguments, int index) {
@@ -39,8 +40,7 @@ class SingleValueOptionParser<T> implements OptionParser<T> {
         //这个就是从1到1的区间，那就是0，小于1，就是参数不够，如果是-p,那么找不到arguments.get(it).startsWith("-")，
         // 还是返回个数，1个，那还是一样的，所以，这个就是参数不够
         //如果是 -p 8080 8081 -d /usr/log,范围是从1-3,那么就是两个参数，那么就是多参数了
-        List<String> values = arguments.subList(index + 1, followingFlag);
-        return values;
+        return arguments.subList(index + 1, followingFlag);
     }
 
 }
