@@ -21,6 +21,14 @@ class SingleValueOptionParser<T> implements OptionParser<T> {
 
         if (index == -1) return defaultValue;
         //这个返回的是下一个-l/-p/-d的索引，因为IntStream返回的就是Int值
+        List<String> values = getValues(arguments, index);
+
+        if (values.size() < 1) throw new InsufficientException(option.value());
+        if (values.size() > 1) throw new TooManyArgumentsException(option.value());
+        return valueParser.apply(arguments.get(index + 1));
+    }
+
+    private static List<String> getValues(List<String> arguments, int index) {
         int followingFlag = IntStream.range(index + 1, arguments.size())
                 .filter(it -> arguments.get(it).startsWith("-"))
                 .findFirst().orElse(arguments.size());
@@ -32,10 +40,7 @@ class SingleValueOptionParser<T> implements OptionParser<T> {
         // 还是返回个数，1个，那还是一样的，所以，这个就是参数不够
         //如果是 -p 8080 8081 -d /usr/log,范围是从1-3,那么就是两个参数，那么就是多参数了
         List<String> values = arguments.subList(index + 1, followingFlag);
-
-        if (values.size() < 1) throw new InsufficientException(option.value());
-        if (values.size() > 1) throw new TooManyArgumentsException(option.value());
-        return valueParser.apply(arguments.get(index + 1));
+        return values;
     }
 
 }
