@@ -21,7 +21,7 @@ class SingleValueOptionParser<T> implements OptionParser<T> {
 
         if (index == -1) return defaultValue;
         //这个返回的是下一个-l/-p/-d的索引，因为IntStream返回的就是Int值
-        List<String> values = getValues(arguments, index);
+        List<String> values = values(arguments, index);
 
         if (values.size() < 1) throw new InsufficientException(option.value());
         if (values.size() > 1) throw new TooManyArgumentsException(option.value());
@@ -29,7 +29,7 @@ class SingleValueOptionParser<T> implements OptionParser<T> {
         return valueParser.apply(value);
     }
 
-    private static List<String> getValues(List<String> arguments, int index) {
+    static List<String> values(List<String> arguments, int index) {
         int followingFlag = IntStream.range(index + 1, arguments.size())
                 .filter(it -> arguments.get(it).startsWith("-"))
                 .findFirst().orElse(arguments.size());

@@ -6,9 +6,13 @@ class BooleanOptionParser implements OptionParser<Boolean> {
     @Override
     public Boolean parse(List<String> arguments, Option option) {
         int index = arguments.indexOf("-" + option.value());
-        //如果只有一个-l，不加(index + 1) < arguments.size()这个，-l后面没有东西，这个是正常的
-        //但是去取index+1的值，那就会越界。所以要确保index+1是在参数范围内的。不在参数范围那取值本来也是错误的
-        if ((index + 1) < arguments.size() && !arguments.get(index + 1).startsWith("-")) throw new TooManyArgumentsException(option.value());
-        return index != -1;
+        //如果没有找到这个flag,默认就是false
+        if(index == -1) return false;
+        //把SingleValue的方法变成默认的，就是包内可见的，这样就可以调用了，
+        List<String> values = SingleValueOptionParser.values(arguments, index);
+        //如果-l test,这样就是多参数了，就是错的
+        if (values.size() > 0) throw new TooManyArgumentsException(option.value());
+        //没有找到就是false,参数多了就是报错，走到这里，肯定就是true了。
+        return true;
     }
 }
