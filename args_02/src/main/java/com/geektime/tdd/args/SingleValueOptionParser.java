@@ -20,14 +20,26 @@ class SingleValueOptionParser<T> implements OptionParser<T> {
 
         if (index == -1) return defaultValue;
         //如果索引+1，按这里说就是1，size也是1，那么就说明只有一个参数，那么也报错
-        if (index + 1 == arguments.size() || arguments.get(index + 1).startsWith("-"))
+        if (isReachEndOfList(arguments, index) || isFollowedByOtherFlag(arguments, index))
             throw new InsufficientException(option.value());
         // -p 8080 8081 这个index就是-p的index,所以如果是索引加2，就是获取多的那个参数，没有超过传的参数的情况，size是个数
         //就是3，index +2就是2
         //那么就获取到了，如果获取到了，并且不是以为-p开头，那么就是参数多了
-        if ((index + 2) < arguments.size() && !arguments.get(index + 2).startsWith("-"))
+        if (secondArgumentIsNotAFlag(arguments, index))
             throw new TooManyArgumentsException(option.value());
         return valueParser.apply(arguments.get(index + 1));
+    }
+
+    private static boolean secondArgumentIsNotAFlag(List<String> arguments, int index) {
+        return (index + 2) < arguments.size() && !arguments.get(index + 2).startsWith("-");
+    }
+
+    private static boolean isFollowedByOtherFlag(List<String> arguments, int index) {
+        return arguments.get(index + 1).startsWith("-");
+    }
+
+    private static boolean isReachEndOfList(List<String> arguments, int index) {
+        return index + 1 == arguments.size();
     }
 
 }
