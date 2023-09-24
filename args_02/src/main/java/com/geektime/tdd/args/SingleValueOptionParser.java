@@ -24,7 +24,7 @@ class SingleValueOptionParser<T> implements OptionParser<T> {
         return values(arguments, option, expectedSize).map(it -> parseValue(it.get(0))).orElse(defaultValue);
     }
 
-    private static Optional<List<String>> values(List<String> arguments, Option option, int expectedSize) {
+    static Optional<List<String>> values(List<String> arguments, Option option, int expectedSize) {
         int index = arguments.indexOf("-" + option.value());
         //如果没有找到，就先赋值为空，到最后再处理
         if (index == -1) return Optional.empty();
