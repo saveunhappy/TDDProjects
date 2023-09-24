@@ -9,12 +9,7 @@ class BooleanOptionParser implements OptionParser<Boolean> {
     }
 
     public static OptionParser<Boolean> createBooleanOptionParser() {
-        return new OptionParser<Boolean>() {
-            @Override
-            public Boolean parse(List<String> arguments, Option option) {
-                return SingleValueOptionParser.values(arguments, option, 0).isPresent();
-            }
-        };
+        return (arguments, option) -> SingleValueOptionParser.values(arguments, option, 0).isPresent();
     }
 
     @Override
