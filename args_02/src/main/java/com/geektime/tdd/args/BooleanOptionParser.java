@@ -3,6 +3,15 @@ package com.geektime.tdd.args;
 import java.util.List;
 
 class BooleanOptionParser implements OptionParser<Boolean> {
+
+    private BooleanOptionParser() {
+
+    }
+
+    public static BooleanOptionParser createBooleanOptionParser() {
+        return new BooleanOptionParser();
+    }
+
     @Override
     public Boolean parse(List<String> arguments, Option option) {
 //        int index = arguments.indexOf("-" + option.value());
