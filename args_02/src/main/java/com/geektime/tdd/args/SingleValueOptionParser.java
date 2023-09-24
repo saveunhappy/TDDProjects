@@ -25,20 +25,14 @@ class SingleValueOptionParser<T> implements OptionParser<T> {
     }
 
     private static Optional<List<String>> values(List<String> arguments, Option option, int expectedSize) {
-        Optional<List<String>> argumentList;
         int index = arguments.indexOf("-" + option.value());
         //如果没有找到，就先赋值为空，到最后再处理
-        if (index == -1) argumentList = Optional.empty();
-        else {
-
-            //这个返回的是下一个-l/-p/-d的索引，因为IntStream返回的就是Int值
-            List<String> values = values(arguments, index);
-
-            if (values.size() < expectedSize) throw new InsufficientException(option.value());
-            if (values.size() > expectedSize) throw new TooManyArgumentsException(option.value());
-            argumentList = Optional.of(values);
-        }
-        return argumentList;
+        if (index == -1) return Optional.empty();
+        //这个返回的是下一个-l/-p/-d的索引，因为IntStream返回的就是Int值
+        List<String> values = values(arguments, index);
+        if (values.size() < expectedSize) throw new InsufficientException(option.value());
+        if (values.size() > expectedSize) throw new TooManyArgumentsException(option.value());
+        return Optional.of(values);
     }
 
     private T parseValue(String value) {
