@@ -19,7 +19,15 @@ class SingleValueOptionParser<T> implements OptionParser<T> {
     @Override
     public T parse(List<String> arguments, Option option) {
         Optional<List<String>> argumentList;
+        int expectedSize = 1;
+        //从arguments中取option，获取期待的长度
+        argumentList = values(arguments, option, expectedSize);
+        //在这里统一进行处理，是empty的，就返回defaultValue，有值的，就取第0个
+        return argumentList.map(it -> parseValue(it.get(0))).orElse(defaultValue);
+    }
 
+    private static Optional<List<String>> values(List<String> arguments, Option option, int expectedSize) {
+        Optional<List<String>> argumentList;
         int index = arguments.indexOf("-" + option.value());
         //如果没有找到，就先赋值为空，到最后再处理
         if (index == -1) argumentList = Optional.empty();
@@ -28,12 +36,11 @@ class SingleValueOptionParser<T> implements OptionParser<T> {
             //这个返回的是下一个-l/-p/-d的索引，因为IntStream返回的就是Int值
             List<String> values = values(arguments, index);
 
-            if (values.size() < 1) throw new InsufficientException(option.value());
-            if (values.size() > 1) throw new TooManyArgumentsException(option.value());
+            if (values.size() < expectedSize) throw new InsufficientException(option.value());
+            if (values.size() > expectedSize) throw new TooManyArgumentsException(option.value());
             argumentList = Optional.of(values);
         }
-        //在这里统一进行处理，是empty的，就返回defaultValue，有值的，就取第0个
-        return argumentList.map(it -> parseValue(it.get(0))).orElse(defaultValue);
+        return argumentList;
     }
 
     private T parseValue(String value) {
