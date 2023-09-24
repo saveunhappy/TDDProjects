@@ -1,6 +1,7 @@
 package com.geektime.tdd.args;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
@@ -17,15 +18,25 @@ class SingleValueOptionParser<T> implements OptionParser<T> {
 
     @Override
     public T parse(List<String> arguments, Option option) {
+        Optional<List<String>> argumentList;
+
         int index = arguments.indexOf("-" + option.value());
+        //如果没有找到，就先赋值为空，到最后再处理
+        if (index == -1) argumentList = Optional.empty();
+        else {
 
-        if (index == -1) return defaultValue;
-        //这个返回的是下一个-l/-p/-d的索引，因为IntStream返回的就是Int值
-        List<String> values = values(arguments, index);
+            //这个返回的是下一个-l/-p/-d的索引，因为IntStream返回的就是Int值
+            List<String> values = values(arguments, index);
 
-        if (values.size() < 1) throw new InsufficientException(option.value());
-        if (values.size() > 1) throw new TooManyArgumentsException(option.value());
-        String value = values.get(0);
+            if (values.size() < 1) throw new InsufficientException(option.value());
+            if (values.size() > 1) throw new TooManyArgumentsException(option.value());
+            argumentList = Optional.of(values);
+        }
+        //在这里统一进行处理，是empty的，就返回defaultValue，有值的，就取第0个
+        return argumentList.map(it -> parseValue(it.get(0))).orElse(defaultValue);
+    }
+
+    private T parseValue(String value) {
         return valueParser.apply(value);
     }
 
