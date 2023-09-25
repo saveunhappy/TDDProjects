@@ -36,7 +36,6 @@ class ArgsTest {
     // -string: ""
 
     @Test
-    @Disabled
     public void should_example2() throws Exception {
         ListOptions options = Args.parse(ListOptions.class, "-g", "this", "is", "a", "list", "-d", "1", "2", "-3", "5");
         assertArrayEquals(new String[]{"this", "is", "a", "list"}, options.group());
