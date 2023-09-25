@@ -35,9 +35,16 @@ class OptionParsers {
         if (index == -1) return Optional.empty();
         //这个返回的是下一个-l/-p/-d的索引，因为IntStream返回的就是Int值
         List<String> values = values(arguments, index);
+        return Optional.of(values)
+                .map(it->{
+                    checkSize(option,expectedSize,it);
+                    return it;
+                });
+    }
+
+    private static void checkSize(Option option, int expectedSize, List<String> values) {
         if (values.size() < expectedSize) throw new InsufficientException(option.value());
         if (values.size() > expectedSize) throw new TooManyArgumentsException(option.value());
-        return Optional.of(values);
     }
 
 
