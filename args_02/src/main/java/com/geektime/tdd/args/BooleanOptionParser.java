@@ -8,10 +8,6 @@ class BooleanOptionParser implements OptionParser<Boolean> {
 
     }
 
-    public static OptionParser<Boolean> bool() {
-        return (arguments, option) -> SingleValueOptionParser.values(arguments, option, 0).isPresent();
-    }
-
     @Override
     public Boolean parse(List<String> arguments, Option option) {
 //        int index = arguments.indexOf("-" + option.value());
