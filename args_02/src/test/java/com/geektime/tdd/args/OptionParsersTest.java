@@ -101,8 +101,9 @@ public class OptionParsersTest {
         public void should_parse_list_value() throws Exception {
             String[] value = OptionParsers.list(String[]::new, String::valueOf)
                     .parse(asList("-g", "this", "is"), option("g"));
-            assertArrayEquals(new String[]{"this","is"},value);
+            assertArrayEquals(new String[]{"this", "is"}, value);
         }
+
         //TODO -default value []
         @Test
         public void should_use_empty_array_as_default_value() throws Exception {
@@ -110,10 +111,25 @@ public class OptionParsersTest {
             //return Optional.ofNullable(index == -1 ? null : values(arguments, index));
             String[] value = OptionParsers.list(String[]::new, String::valueOf)
                     .parse(asList(), option("g"));
-            assertEquals(0,value.length);
+            assertEquals(0, value.length);
 
         }
+
         //TODO -d a throw exception  a不是数字，应该是数字的
+        @Test
+        public void should_throw_exception_if_value_parser_cent_parse_value() throws Exception {
+            Function<String, String> parser = (it) -> {
+                throw new RuntimeException();
+            };
+            //这个是直接把parser抛出异常，就没有去解析，就是看是否能抛出异常
+            IllegalValueException e = assertThrows(IllegalValueException.class, () -> {
+                OptionParsers.list(String[]::new, parser)
+                        .parse(asList("-g", "this", "is"), option("g"));
+            });
+            assertEquals("g", e.getOption());
+            assertEquals("this", e.getValue());
+        }
+
     }
 
     static Option option(String value) {
