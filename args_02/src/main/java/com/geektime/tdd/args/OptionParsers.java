@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
-class SingleValueOptionParser<T> {
+class OptionParsers {
 
     public static OptionParser<Boolean> bool() {
         return (arguments, option) -> values(arguments, option, 0).isPresent();
