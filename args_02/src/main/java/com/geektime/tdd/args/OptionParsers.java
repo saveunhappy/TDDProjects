@@ -14,12 +14,12 @@ class OptionParsers {
 
     public static <T> OptionParser<T> unary(T defaultValue, Function<String, T> valueParser) {
         return (arguments, option) -> values(arguments, option, 1)
-                .map(it -> parseValue(option,it.get(0), valueParser)).orElse(defaultValue);
+                .map(it -> parseValue(option, it.get(0), valueParser)).orElse(defaultValue);
     }
 
     public static <T> OptionParser<T[]> list(IntFunction<T[]> generator, Function<String, T> valueParser) {
         return (arguments, option) -> values(arguments, option)
-                .map(it -> it.stream().map(value -> parseValue(option,value,valueParser)).toArray(generator))
+                .map(it -> it.stream().map(value -> parseValue(option, value, valueParser)).toArray(generator))
                 .orElse(generator.apply(0));
     }
 
@@ -30,14 +30,9 @@ class OptionParsers {
     }
 
     private static Optional<List<String>> values(List<String> arguments, Option option, int expectedSize) {
-        int index = arguments.indexOf("-" + option.value());
-        //如果没有找到，就先赋值为空，到最后再处理
-        if (index == -1) return Optional.empty();
-        //这个返回的是下一个-l/-p/-d的索引，因为IntStream返回的就是Int值
-        List<String> values = values(arguments, index);
-        return Optional.of(values)
-                .map(it->{
-                    checkSize(option,expectedSize,it);
+        return values(arguments, option)
+                .map(it -> {
+                    checkSize(option, expectedSize, it);
                     return it;
                 });
     }
@@ -55,6 +50,7 @@ class OptionParsers {
             throw new IllegalValueException(option.value(), value);
         }
     }
+
     private static List<String> values(List<String> arguments, int index) {
         int followingFlag = IntStream.range(index + 1, arguments.size())
                 .filter(it -> arguments.get(it).matches("^-[a-zA-Z-]+$"))
