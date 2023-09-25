@@ -20,7 +20,7 @@ class SingleValueOptionParser<T> implements OptionParser<T> {
         return (arguments, option) -> values(arguments, option, 0).isPresent();
     }
 
-    public static <T> OptionParser<T> createSingleValueOptionParser(T defaultValue, Function<String, T> valueParser) {
+    public static <T> OptionParser<T> unary(T defaultValue, Function<String, T> valueParser) {
         return (arguments, option) -> values(arguments, option, 1).map(it -> parseValue(it.get(0), valueParser)).orElse(defaultValue);
     }
 
