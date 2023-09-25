@@ -1,16 +1,21 @@
 package com.geektime.tdd.args;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.lang.annotation.Annotation;
 import java.util.function.Function;
 
-import static com.geektime.tdd.args.BooleanOptionParserTest.option;
+import static com.geektime.tdd.args.OptionParsersTest.BooleanOptionParserTest.option;
 import static java.util.Arrays.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class SingleValuedOptionParserTest {
+public class OptionParsersTest {
+    @Nested
+    class UnaryOptionParser{
+
     @Test//Sad path
     public void should_not_accept_extra_argument_for_single_valued_option() throws Exception {
         TooManyArgumentsException e = assertThrows(TooManyArgumentsException.class, () ->
@@ -46,5 +51,43 @@ public class SingleValuedOptionParserTest {
         assertSame(parsed, OptionParsers.unary(whatever, parse)
                 .parse(asList("-p","8080"), option("p")));
     }
+    }
+    @Nested
+    class BooleanOptionParserTest {
 
+
+        @Test//Sad path
+        public void should_not_accept_extra_argument_for_boolean_option() {
+            TooManyArgumentsException e = assertThrows(TooManyArgumentsException.class,
+                () -> OptionParsers.bool().parse(asList("-l", "t"), option("l")));
+            assertEquals("l", e.getOption());
+        }
+
+        @Test//Default value
+        public void should_set_default_value_to_false_if_option_not_present() {
+            assertFalse(OptionParsers.bool().parse(asList(), option("l")));
+        }
+
+        @Test//Happy path
+        public void should_set_value_to_true_if_option_present() {
+            assertTrue(OptionParsers.bool().parse(asList("-l"), option("l")));
+
+        }
+        static Option option(String value){
+            return new Option(){
+
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return Option.class;
+                }
+
+                @Override
+                public String value() {
+                    return value;
+                }
+            };
+        }
+
+
+    }
 }
