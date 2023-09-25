@@ -26,10 +26,11 @@ class SingleValueOptionParser<T> implements OptionParser<T> {
 
     @Override
     public T parse(List<String> arguments, Option option) {
-        int expectedSize = 1;
-        //从arguments中取option，获取期待的长度
-        //在这里统一进行处理，是empty的，就返回defaultValue，有值的，就取第0个
-        return values(arguments, option, expectedSize).map(it -> parseValue(it.get(0), valueParser)).orElse(defaultValue);
+        return getT(arguments, option);
+    }
+
+    private T getT(List<String> arguments, Option option) {
+        return values(arguments, option, 1).map(it -> parseValue(it.get(0), valueParser)).orElse(defaultValue);
     }
 
     private static Optional<List<String>> values(List<String> arguments, Option option, int expectedSize) {
