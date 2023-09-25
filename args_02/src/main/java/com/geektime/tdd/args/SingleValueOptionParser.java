@@ -29,7 +29,7 @@ class SingleValueOptionParser<T> implements OptionParser<T> {
         int expectedSize = 1;
         //从arguments中取option，获取期待的长度
         //在这里统一进行处理，是empty的，就返回defaultValue，有值的，就取第0个
-        return values(arguments, option, expectedSize).map(it -> parseValue(it.get(0))).orElse(defaultValue);
+        return values(arguments, option, expectedSize).map(it -> parseValue(it.get(0), valueParser)).orElse(defaultValue);
     }
 
     private static Optional<List<String>> values(List<String> arguments, Option option, int expectedSize) {
@@ -43,7 +43,7 @@ class SingleValueOptionParser<T> implements OptionParser<T> {
         return Optional.of(values);
     }
 
-    private T parseValue(String value) {
+    private static <T> T parseValue(String value, Function<String, T> valueParser) {
         return valueParser.apply(value);
     }
 
