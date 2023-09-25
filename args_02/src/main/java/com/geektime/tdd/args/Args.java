@@ -38,7 +38,7 @@ public class Args {
         Option option = parameter.getAnnotation(Option.class);
         //这个就是l,p,d,传的参数是-l,-p,-d,
         Class<?> type = parameter.getType();
-        if (!parsers.containsKey(parameter.getType())) {
+        if (!PARSER.containsKey(parameter.getType())) {
             throw new UnsupportedOptionTypeException(option.value(), parameter.getType());
         }
         return parsers.get(type).parse(arguments, parameter.getAnnotation(Option.class));
@@ -47,7 +47,10 @@ public class Args {
     private static Map<Class<?>, OptionParser> PARSER = Map.of(
             boolean.class, OptionParsers.bool(),
             int.class, OptionParsers.unary(0, Integer::parseInt),
-            String.class, OptionParsers.unary("", String::valueOf));
+            String.class, OptionParsers.unary("", String::valueOf),
+            String[].class,OptionParsers.list(String[]::new,String::valueOf),
+            Integer[].class,OptionParsers.list(Integer[]::new,Integer::parseInt)
+            );
 
 
 }
