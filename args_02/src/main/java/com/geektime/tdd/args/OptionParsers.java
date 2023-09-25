@@ -50,7 +50,7 @@ class OptionParsers {
     }
     private static List<String> values(List<String> arguments, int index) {
         int followingFlag = IntStream.range(index + 1, arguments.size())
-                .filter(it -> arguments.get(it).startsWith("-"))
+                .filter(it -> arguments.get(it).matches("^-[a-zA-Z-]+$"))
                 .findFirst().orElse(arguments.size());
         //如果找到了刚开始的那个flag，然后找到接下来的那个flag，如果存在，比如size等于1，那么就是一个参数，是正常的
         //如果第一个标志后面紧跟着一个标志，那么就是返回的参数的个数，第一个flag的位置是0，index + 1就是1，如果中间没有参数，
