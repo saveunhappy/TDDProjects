@@ -11,13 +11,17 @@ class SingleValueOptionParser<T> implements OptionParser<T> {
     T defaultValue;
 
 
-    public SingleValueOptionParser(T defaultValue, Function<String, T> valueParser) {
+    private SingleValueOptionParser(T defaultValue, Function<String, T> valueParser) {
         this.defaultValue = defaultValue;
         this.valueParser = valueParser;
     }
 
     public static OptionParser<Boolean> bool() {
         return (arguments, option) -> values(arguments, option, 0).isPresent();
+    }
+
+    public static <T> OptionParser<T> createSingleValueOptionParser(T defaultValue, Function<String, T> valueParser) {
+        return new SingleValueOptionParser<T>(defaultValue, valueParser);
     }
 
     @Override
@@ -28,7 +32,7 @@ class SingleValueOptionParser<T> implements OptionParser<T> {
         return values(arguments, option, expectedSize).map(it -> parseValue(it.get(0))).orElse(defaultValue);
     }
 
-    static Optional<List<String>> values(List<String> arguments, Option option, int expectedSize) {
+    private static Optional<List<String>> values(List<String> arguments, Option option, int expectedSize) {
         int index = arguments.indexOf("-" + option.value());
         //如果没有找到，就先赋值为空，到最后再处理
         if (index == -1) return Optional.empty();
@@ -43,7 +47,7 @@ class SingleValueOptionParser<T> implements OptionParser<T> {
         return valueParser.apply(value);
     }
 
-    static List<String> values(List<String> arguments, int index) {
+    private static List<String> values(List<String> arguments, int index) {
         int followingFlag = IntStream.range(index + 1, arguments.size())
                 .filter(it -> arguments.get(it).startsWith("-"))
                 .findFirst().orElse(arguments.size());
