@@ -6,6 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.lang.annotation.Annotation;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static com.geektime.tdd.args.OptionParsersTest.BooleanOptionParserTest.option;
@@ -103,6 +104,15 @@ public class OptionParsersTest {
             assertArrayEquals(new String[]{"this","is"},value);
         }
         //TODO -default value []
+        @Test
+        public void should_use_empty_array_as_default_value() throws Exception {
+            //没有-g，那么index就是-1，那么就返回null，那么就进入orElse,就是数组的长度是0
+            //return Optional.ofNullable(index == -1 ? null : values(arguments, index));
+            String[] value = OptionParsers.list(String[]::new, String::valueOf)
+                    .parse(asList(), option("g"));
+            assertEquals(0,value.length);
+
+        }
         //TODO -d a throw exception  a不是数字，应该是数字的
     }
 
