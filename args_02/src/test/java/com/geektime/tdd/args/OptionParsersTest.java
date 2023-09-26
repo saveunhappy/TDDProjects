@@ -117,6 +117,15 @@ public class OptionParsersTest {
             assertArrayEquals(new String[]{"this", "is"}, value);
         }
         @Test
+        public void should_parse_list_value_behave() throws Exception {
+            Function parser = mock(Function.class);
+
+            OptionParsers.list(Object[]::new, parser)
+                    .parse(asList("-g", "this", "is"), option("g"));
+            verify(parser).apply("this");
+            verify(parser).apply("is");
+        }
+        @Test
         public void should_not_treat_negative_int_as_flag() throws Exception {
             assertArrayEquals(new Integer[]{-1,-2},OptionParsers.list(Integer[]::new, Integer::valueOf)
                     .parse(asList("-g", "-1", "-2"), option("g")));
