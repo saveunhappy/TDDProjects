@@ -122,8 +122,8 @@ public class OptionParsersTest {
 
             OptionParsers.list(Object[]::new, parser)
                     .parse(asList("-g", "this", "is"), option("g"));
-            verify(parser).apply("this");
             verify(parser).apply("is");
+            verify(parser).apply("this");
         }
         @Test
         public void should_not_treat_negative_int_as_flag() throws Exception {
