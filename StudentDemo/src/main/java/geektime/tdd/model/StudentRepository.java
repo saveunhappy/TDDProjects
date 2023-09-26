@@ -25,15 +25,15 @@ public class StudentRepository {
     }
 
     public Optional<Student> findByEmail(String email){
-        CriteriaBuilder builder = manager.getCriteriaBuilder();
-        CriteriaQuery<Student> query = builder.createQuery(Student.class);
-        Root<Student> student = query.from(Student.class);
-        return manager.createQuery(query.where(builder.equal(student.get("email"),email))
-                        .select(student)).getResultList()
-                .stream().findFirst();
+//        CriteriaBuilder builder = manager.getCriteriaBuilder();
+//        CriteriaQuery<Student> query = builder.createQuery(Student.class);
+//        Root<Student> student = query.from(Student.class);
+//        return manager.createQuery(query.where(builder.equal(student.get("email"),email))
+//                        .select(student)).getResultList()
+//                .stream().findFirst();
 
-//        TypedQuery<Student> query = manager.createQuery("SELECT s from Student s where s.email = :email", Student.class);
-//        return query.setParameter("email",email).getResultList().stream().findFirst();
+        TypedQuery<Student> query = manager.createQuery("SELECT s from Student s where s.email = :email", Student.class);
+        return query.setParameter("email",email).getResultList().stream().findFirst();
     }
 
     public List<Student> all() {
