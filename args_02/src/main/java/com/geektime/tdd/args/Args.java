@@ -7,11 +7,18 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unchecked")
-public class Args {
+public class Args<T> {
 
     public static <T> T parse(Class<T> optionsClass, String... args) {
 
         return parse(optionsClass, PARSER, args);
+    }
+    private Class<T> optionsClass;
+    private Map<Class<?>, OptionParser> parser;
+
+    public Args(Class<T> optionsClass, Map<Class<?>, OptionParser> parser) {
+        this.optionsClass = optionsClass;
+        this.parser = parser;
     }
 
     private static <T> T parse(Class<T> optionsClass, Map<Class<?>, OptionParser> parser, String[] args) {
@@ -47,7 +54,7 @@ public class Args {
         return parsers.get(type).parse(arguments, parameter.getAnnotation(Option.class));
     }
 
-    private static Map<Class<?>, OptionParser> PARSER = Map.of(
+    private static Map<Class<?>, OptionParser> PARSER = java.util.Map.of(
             boolean.class, OptionParsers.bool(),
             int.class, OptionParsers.unary(0, Integer::parseInt),
             String.class, OptionParsers.unary("", String::valueOf),
