@@ -15,9 +15,8 @@ public class Args<T> {
             String[].class,OptionParsers.list(String[]::new,String::valueOf),
             Integer[].class,OptionParsers.list(Integer[]::new,Integer::parseInt)
     );
-
+    //这是外部的原来的api，所以这个是直接创建Args的时候就是传的PARSER，如果外部调用就是new，那就是自己传进来了。
     public static <T> T parse(Class<T> optionsClass, String... args) {
-
 //        return parse(optionsClass, PARSER, args);
         return new Args<T>(optionsClass,PARSER).parse(args);
     }
