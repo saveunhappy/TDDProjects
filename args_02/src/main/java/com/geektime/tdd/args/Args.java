@@ -11,6 +11,8 @@ public class Args {
 
     public static <T> T parse(Class<T> optionsClass, String... args) {
         try {
+            Map<Class<?>, OptionParser> parser = PARSER;
+
             List<String> arguments = Arrays.asList(args);
             Constructor<?> constructor = optionsClass.getDeclaredConstructors()[0];
             //为什么这样就可以了？抽取出了一个方法，那么arguments就是获取所有的参数了
@@ -21,11 +23,7 @@ public class Args {
             /**为什么更改顺序也可以成功解析？因为constructor.getParameters()获取的顺序是定下来的，所以是按照参数的顺序
              * 来进行访问的，所以你哪个在先哪个在后，是没有关系的，和你的自己定义的那个record是有关系的*/
             Object[] values = Arrays.stream(constructor.getParameters())
-                    .map(it -> {
-                        Map<Class<?>, OptionParser> parser = PARSER;
-                        return parseOption(arguments, it, parser);
-                    }).toArray();
-
+                    .map(it -> parseOption(arguments, it, parser)).toArray();
             return (T) constructor.newInstance(values);
         }catch (IllegalOptionException e){
             throw e;
