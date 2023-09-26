@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 
 import java.lang.annotation.Annotation;
 import java.util.Optional;
@@ -12,6 +13,9 @@ import java.util.function.Function;
 import static com.geektime.tdd.args.OptionParsersTest.BooleanOptionParserTest.option;
 import static java.util.Arrays.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class OptionParsersTest {
     @Nested
@@ -51,6 +55,13 @@ public class OptionParsersTest {
             //经过function的函数，我们默认返回parsed,所以用assertSame，证明是返回了我们想要的
             assertSame(parsed, OptionParsers.unary(whatever, parse)
                     .parse(asList("-p", "8080"), option("p")));
+        }
+
+        @Test//Happy path
+        public void should_parse_value_if_flag_present_behave() throws Exception {
+            Function parser = mock(Function.class);
+            OptionParsers.unary(any(), parser).parse(asList("-p", "8080"), option("p"));
+            verify(parser).apply("8080");
         }
     }
 
