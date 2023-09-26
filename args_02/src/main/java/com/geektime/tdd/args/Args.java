@@ -10,9 +10,8 @@ import java.util.Map;
 public class Args {
 
     public static <T> T parse(Class<T> optionsClass, String... args) {
-        Map<Class<?>, OptionParser> parser = PARSER;
 
-        return parse(optionsClass, parser, args);
+        return parse(optionsClass, PARSER, args);
     }
 
     private static <T> T parse(Class<T> optionsClass, Map<Class<?>, OptionParser> parser, String[] args) {
