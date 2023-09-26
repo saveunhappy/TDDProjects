@@ -9,6 +9,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -19,12 +20,13 @@ import static org.mockito.Mockito.*;
 class TestApplicationMockTest {
     private EntityManager manager;
     private StudentRepository repository;
+    CriteriaBuilder builder;
     private Student john = new Student("john", "smith", "john.smith@email.com");
 
     @BeforeEach
     void before() {
-
         manager = Mockito.mock(EntityManager.class);
+        builder = manager.getCriteriaBuilder();
         repository = new StudentRepository(manager);
 
     }
@@ -51,9 +53,9 @@ class TestApplicationMockTest {
 
     @Test
     public void should_be_able_to_load_saved_student_by_email() throws Exception{
-
         TypedQuery query = mock(TypedQuery.class);
         when(manager.createQuery(any(),any())).thenReturn(query);
+        when(manager.getCriteriaBuilder()).thenReturn(builder);
         when(query.setParameter(any(String.class),any())).thenReturn(query);
         when(query.getResultList()).thenReturn(Arrays.asList(john));
         assertEquals(john,repository.findByEmail("john.smith@email.com").get());
