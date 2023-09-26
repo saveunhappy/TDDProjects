@@ -22,10 +22,6 @@ public class Args<T> {
         this.parser = parser;
     }
     public T parse(String... args){
-        return parse(optionsClass,parser,args);
-    }
-
-    private static <T> T parse(Class<T> optionsClass, Map<Class<?>, OptionParser> parser, String[] args) {
         try {
             List<String> arguments = Arrays.asList(args);
             Constructor<?> constructor = optionsClass.getDeclaredConstructors()[0];
@@ -37,7 +33,7 @@ public class Args<T> {
             /**为什么更改顺序也可以成功解析？因为constructor.getParameters()获取的顺序是定下来的，所以是按照参数的顺序
              * 来进行访问的，所以你哪个在先哪个在后，是没有关系的，和你的自己定义的那个record是有关系的*/
             Object[] values = Arrays.stream(constructor.getParameters())
-                    .map(it -> parseOption(arguments, it, parser)).toArray();
+                    .map(it -> parseOption(arguments, it)).toArray();
             return (T) constructor.newInstance(values);
         }catch (IllegalOptionException e){
             throw e;
@@ -47,15 +43,15 @@ public class Args<T> {
         }
     }
 
-    private static Object parseOption(List<String> arguments, Parameter parameter, Map<Class<?>, OptionParser> parsers) {
+    private Object parseOption(List<String> arguments, Parameter parameter) {
         if(!parameter.isAnnotationPresent(Option.class)) throw new IllegalOptionException(parameter.getName());
         Option option = parameter.getAnnotation(Option.class);
         //这个就是l,p,d,传的参数是-l,-p,-d,
         Class<?> type = parameter.getType();
-        if (!PARSER.containsKey(type)) {
+        if (!parser.containsKey(type)) {
             throw new UnsupportedOptionTypeException(option.value(), parameter.getType());
         }
-        return parsers.get(type).parse(arguments, parameter.getAnnotation(Option.class));
+        return parser.get(type).parse(arguments, option);
     }
 
     private static Map<Class<?>, OptionParser> PARSER = java.util.Map.of(
