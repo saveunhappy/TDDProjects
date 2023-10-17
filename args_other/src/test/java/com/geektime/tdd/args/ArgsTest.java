@@ -23,6 +23,12 @@ public class ArgsTest {
         assertArrayEquals(new String[]{"8080"}, args.get("p"));
     }
     //option with values -g this is a list
+    @Test
+    public void should_split_option_with_values() throws Exception{
+        Map<String, String[]> args = Args.toMap("-g", "this", "is", "a", "list");
+        assertEquals(1, args.size());
+        assertArrayEquals(new String[]{"this", "is", "a", "list"}, args.get("g"));
+    }
     //multi options
 
 
