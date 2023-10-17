@@ -42,7 +42,6 @@ public class ArgsTest {
     }
 
     @Test
-    @Disabled
     public void should_split_args_list_to_map() throws Exception {
         Map<String, String[]> args = Args.toMap("-g", "this", "is", "a", "list",
                 "-d", "1", "2", "-3", "5");
