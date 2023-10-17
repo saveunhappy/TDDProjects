@@ -16,6 +16,12 @@ public class ArgsTest {
         assertArrayEquals(new String[]{}, args.get("b"));
     }
     //option with value,-p 8080
+    @Test
+    public void should_split_option_with_value() throws Exception{
+        Map<String, String[]> args = Args.toMap("-p","8080");
+        assertEquals(1, args.size());
+        assertArrayEquals(new String[]{"8080"}, args.get("p"));
+    }
     //option with values -g this is a list
     //multi options
 
