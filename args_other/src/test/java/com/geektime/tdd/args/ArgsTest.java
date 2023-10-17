@@ -9,6 +9,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ArgsTest {
     //option without value, -b
+    @Test
+    public void should_split_option_without_value() throws Exception{
+        Map<String, String[]> args = Args.toMap("-b");
+        assertEquals(1, args.size());
+        assertArrayEquals(new String[]{}, args.get("b"));
+    }
     //option with value,-p 8080
     //option with values -g this is a list
     //multi options
