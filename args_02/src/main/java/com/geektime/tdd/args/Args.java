@@ -7,9 +7,27 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unchecked")
-public class Args {
-
+public class Args<T> {
+    private static Map<Class<?>, OptionParser> PARSER = Map.of(
+            boolean.class, OptionParsers.bool(),
+            int.class, OptionParsers.unary(0, Integer::parseInt),
+            String.class, OptionParsers.unary("", String::valueOf),
+            String[].class,OptionParsers.list(String[]::new,String::valueOf),
+            Integer[].class,OptionParsers.list(Integer[]::new,Integer::parseInt)
+    );
+    //这是外部的原来的api，所以这个是直接创建Args的时候就是传的PARSER，如果外部调用就是new，那就是自己传进来了。
     public static <T> T parse(Class<T> optionsClass, String... args) {
+//        return parse(optionsClass, PARSER, args);
+        return new Args<T>(optionsClass,PARSER).parse(args);
+    }
+    private Class<T> optionsClass;
+    private Map<Class<?>, OptionParser> parser;
+
+    public Args(Class<T> optionsClass, Map<Class<?>, OptionParser> parser) {
+        this.optionsClass = optionsClass;
+        this.parser = parser;
+    }
+    public T parse(String... args){
         try {
             List<String> arguments = Arrays.asList(args);
             Constructor<?> constructor = optionsClass.getDeclaredConstructors()[0];
@@ -22,7 +40,6 @@ public class Args {
              * 来进行访问的，所以你哪个在先哪个在后，是没有关系的，和你的自己定义的那个record是有关系的*/
             Object[] values = Arrays.stream(constructor.getParameters())
                     .map(it -> parseOption(arguments, it)).toArray();
-
             return (T) constructor.newInstance(values);
         }catch (IllegalOptionException e){
             throw e;
@@ -32,25 +49,18 @@ public class Args {
         }
     }
 
-    private static Object parseOption(List<String> arguments, Parameter parameter) {
-        Map<Class<?>, OptionParser> parsers = PARSER;
+    private Object parseOption(List<String> arguments, Parameter parameter) {
         if(!parameter.isAnnotationPresent(Option.class)) throw new IllegalOptionException(parameter.getName());
         Option option = parameter.getAnnotation(Option.class);
         //这个就是l,p,d,传的参数是-l,-p,-d,
         Class<?> type = parameter.getType();
-        if (!PARSER.containsKey(parameter.getType())) {
+        if (!parser.containsKey(type)) {
             throw new UnsupportedOptionTypeException(option.value(), parameter.getType());
         }
-        return parsers.get(type).parse(arguments, parameter.getAnnotation(Option.class));
+        return parser.get(type).parse(arguments, option);
     }
 
-    private static Map<Class<?>, OptionParser> PARSER = Map.of(
-            boolean.class, OptionParsers.bool(),
-            int.class, OptionParsers.unary(0, Integer::parseInt),
-            String.class, OptionParsers.unary("", String::valueOf),
-            String[].class,OptionParsers.list(String[]::new,String::valueOf),
-            Integer[].class,OptionParsers.list(Integer[]::new,Integer::parseInt)
-            );
+
 
 
 }

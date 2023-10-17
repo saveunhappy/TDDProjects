@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
 
 import java.lang.annotation.Annotation;
 import java.util.Optional;
@@ -12,6 +14,8 @@ import java.util.function.Function;
 import static com.geektime.tdd.args.OptionParsersTest.BooleanOptionParserTest.option;
 import static java.util.Arrays.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 public class OptionParsersTest {
     @Nested
@@ -47,10 +51,19 @@ public class OptionParsersTest {
             //String转换为Object
             Function<String, Object> parse = (it) -> parsed;
             Object whatever = new Object();
+            //whatever是default，我们这里测试的是经过了parse的function是否和预期的function转换的值一样
             //这个是测试正常情况，我们要测的是Function，所以默认值我们是不关心的，默认是就是whatever
             //经过function的函数，我们默认返回parsed,所以用assertSame，证明是返回了我们想要的
             assertSame(parsed, OptionParsers.unary(whatever, parse)
                     .parse(asList("-p", "8080"), option("p")));
+        }
+
+        @Test//Happy path
+        public void should_parse_value_if_flag_present_behave() throws Exception {
+            Function parser = mock(Function.class);
+            //第一个参数是defaultValue
+            OptionParsers.unary(any(), parser).parse(asList("-p", "8080"), option("p"));
+            verify(parser).apply("8080");
         }
     }
 
@@ -102,6 +115,17 @@ public class OptionParsersTest {
             String[] value = OptionParsers.list(String[]::new, String::valueOf)
                     .parse(asList("-g", "this", "is"), option("g"));
             assertArrayEquals(new String[]{"this", "is"}, value);
+        }
+        @Test
+        public void should_parse_list_value_behave() throws Exception {
+            Function parser = mock(Function.class);
+
+            OptionParsers.list(Object[]::new, parser)
+                    .parse(asList("-g", "this", "is"), option("g"));
+            InOrder order = inOrder(parser, parser);
+
+            order.verify(parser).apply("this");
+            order.verify(parser).apply("is");
         }
         @Test
         public void should_not_treat_negative_int_as_flag() throws Exception {
