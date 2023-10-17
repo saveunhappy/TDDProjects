@@ -33,7 +33,6 @@ public class ArgsTest {
 
 
     @Test
-    @Disabled
     public void should_split_args_to_map() throws Exception {
         Map<String, String[]> args = Args.toMap("-b", "-p", "8080", "-d", "/usr/logs");
         assertEquals(3, args.size());
