@@ -8,6 +8,11 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ArgsTest {
+    //option without value, -b
+    //option with value,-p 8080
+    //option with values -g this is a list
+    //multi options
+
 
     @Test
     @Disabled
