@@ -8,7 +8,9 @@ public class Args {
 
         Map<String,String[]> result = new HashMap<>();
         for (String arg : args) {
+            //-b
             if(arg.matches("^-[a-zA-z]+$")){
+                //key:b,value:new String[]{}
                 result.put(arg.substring(1),new String[]{});
             }
         }
