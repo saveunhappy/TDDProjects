@@ -13,7 +13,7 @@ public class Args {
         return new OptionClass<T>(optionsClass).getT(args);
     }
 
-    static class OptionClass<T>{
+    static class OptionClass<T> {
         private Class<T> optionsClass;
 
         public OptionClass(Class<T> optionsClass) {
@@ -28,33 +28,33 @@ public class Args {
                         .map(it -> parseOption(arguments, it)).toArray();
 
                 return (T) constructor.newInstance(values);
-            }catch (IllegalOptionException e){
+            } catch (IllegalOptionException e) {
                 throw e;
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
-    }
-    private static Object parseOption(List<String> arguments, Parameter parameter) {
-        Map<Class<?>, OptionParser> parsers = PARSER;
-        if(!parameter.isAnnotationPresent(Option.class)) throw new IllegalOptionException(parameter.getName());
-        Option option = parameter.getAnnotation(Option.class);
-        //这个就是l,p,d,传的参数是-l,-p,-d,
-        Class<?> type = parameter.getType();
-        if (!PARSER.containsKey(parameter.getType())) {
-            throw new UnsupportedOptionTypeException(option.value(), parameter.getType());
-        }
-        return parsers.get(type).parse(arguments, parameter.getAnnotation(Option.class));
-    }
 
-    private static Map<Class<?>, OptionParser> PARSER = Map.of(
-            boolean.class, OptionParsers.bool(),
-            int.class, OptionParsers.unary(0, Integer::parseInt),
-            String.class, OptionParsers.unary("", String::valueOf),
-            String[].class, OptionParsers.list(String::valueOf, String[]::new),
-            Integer[].class, OptionParsers.list(Integer::parseInt, Integer[]::new)
-            );
+        private Object parseOption(List<String> arguments, Parameter parameter) {
+            Map<Class<?>, OptionParser> parsers = PARSER;
+            if (!parameter.isAnnotationPresent(Option.class)) throw new IllegalOptionException(parameter.getName());
+            Option option = parameter.getAnnotation(Option.class);
+            //这个就是l,p,d,传的参数是-l,-p,-d,
+            Class<?> type = parameter.getType();
+            if (!PARSER.containsKey(parameter.getType())) {
+                throw new UnsupportedOptionTypeException(option.value(), parameter.getType());
+            }
+            return parsers.get(type).parse(arguments, parameter.getAnnotation(Option.class));
+        }
+
+        private static Map<Class<?>, OptionParser> PARSER = Map.of(
+                boolean.class, OptionParsers.bool(),
+                int.class, OptionParsers.unary(0, Integer::parseInt),
+                String.class, OptionParsers.unary("", String::valueOf),
+                String[].class, OptionParsers.list(String::valueOf, String[]::new),
+                Integer[].class, OptionParsers.list(Integer::parseInt, Integer[]::new)
+        );
+    }
 
 
 }
