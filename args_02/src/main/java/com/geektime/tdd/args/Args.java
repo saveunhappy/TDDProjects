@@ -10,7 +10,7 @@ import java.util.Map;
 public class Args {
 
     public static <T> T parse(Class<T> optionsClass, String... args) {
-        return getT(PARSER, optionsClass, args);
+        return parse(PARSER, optionsClass, args);
     }
 
     private static Map<Class<?>, OptionParser> PARSER = Map.of(
@@ -21,7 +21,7 @@ public class Args {
             Integer[].class, OptionParsers.list(Integer::parseInt, Integer[]::new)
     );
 
-    public static <T> T getT(Map<Class<?>, OptionParser> parsers, Class<T> optionsClass, String[] args) {
+    public static <T> T parse(Map<Class<?>, OptionParser> parsers, Class<T> optionsClass, String[] args) {
         try {
             List<String> arguments = Arrays.asList(args);
             Constructor<?> constructor = optionsClass.getDeclaredConstructors()[0];
