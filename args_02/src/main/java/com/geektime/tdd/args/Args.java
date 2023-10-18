@@ -14,8 +14,7 @@ public class Args {
     }
 
     private static <T> T getT(Class<T> optionsClass, String[] args) {
-        OptionClass<T> optionClass = new OptionClass<>(optionsClass);
-        return getT(optionClass,args);
+        return getT(new OptionClass<T>(optionsClass),args);
     }
 
     private static <T> T getT(OptionClass<T> optionClass,String[] args) {
