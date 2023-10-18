@@ -10,16 +10,16 @@ import java.util.Map;
 public class Args {
 
     public static <T> T parse(Class<T> optionsClass, String... args) {
-        return new OptionClass<T>(optionsClass).getT(args);
+        return new OptionClass<T>(optionsClass, parsers).getT(args);
     }
 
     static class OptionClass<T> {
         private Class<T> optionsClass;
         private Map<Class<?>, OptionParser> parsers;
 
-        public OptionClass(Class<T> optionsClass) {
+        public OptionClass(Class<T> optionsClass, Map<Class<?>, OptionParser> parsers) {
             this.optionsClass = optionsClass;
-            parsers = PARSER;
+            this.parsers = PARSER;
         }
 
         private T getT(String[] args) {
