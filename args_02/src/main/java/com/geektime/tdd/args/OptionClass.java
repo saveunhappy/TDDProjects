@@ -7,13 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 class OptionClass<T> {
-    private Class<T> optionsClass;
-    private Map<Class<?>, OptionParser> parsers;
-
-    public OptionClass(Class<T> optionsClass, Map<Class<?>, OptionParser> parsers) {
-        this.optionsClass = optionsClass;
-        this.parsers = parsers;
-    }
 
     public static <T> T getT(Map<Class<?>, OptionParser> parsers, Class<T> optionsClass, String[] args) {
         try {
