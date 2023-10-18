@@ -16,13 +16,13 @@ class OptionClass<T> {
     }
 
     public T parse(String[] args) {
-        return getT(args);
+        return getT(parsers, optionsClass, args);
     }
 
-    private T getT(String[] args) {
+    private T getT(Map<Class<?>, OptionParser> parsers, Class<T> optionsClass, String[] args) {
         try {
             List<String> arguments = Arrays.asList(args);
-            Constructor<?> constructor = this.optionsClass.getDeclaredConstructors()[0];
+            Constructor<?> constructor = optionsClass.getDeclaredConstructors()[0];
             Object[] values = Arrays.stream(constructor.getParameters())
                     .map(it -> parseOption(arguments, it, parsers)).toArray();
 
