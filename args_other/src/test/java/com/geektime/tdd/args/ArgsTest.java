@@ -49,4 +49,6 @@ public class ArgsTest {
         assertArrayEquals(new String[]{"this", "is", "a", "list"}, args.get("g"));
         assertArrayEquals(new String[]{"1", "2", "-3", "5"}, args.get("d"));
     }
+
+
 }
