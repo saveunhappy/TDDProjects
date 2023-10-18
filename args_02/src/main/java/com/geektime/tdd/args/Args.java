@@ -16,6 +16,10 @@ public class Args {
     private static <T> T getT(Class<T> optionsClass, String[] args) {
         OptionClass<T> optionClass = new OptionClass<>(optionsClass);
 
+        return getT(args, optionClass);
+    }
+
+    private static <T> T getT(String[] args, OptionClass<T> optionClass) {
         try {
             List<String> arguments = Arrays.asList(args);
             Constructor<?> constructor = optionClass.optionsClass.getDeclaredConstructors()[0];
