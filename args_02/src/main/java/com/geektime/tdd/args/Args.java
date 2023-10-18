@@ -10,23 +10,7 @@ import java.util.Map;
 public class Args {
 
     public static <T> T parse(Class<T> optionsClass, String... args) {
-        return getT(new OptionClass<T>(optionsClass), args);
-    }
-
-    private static <T> T getT(OptionClass<T> optionClass,String[] args) {
-        try {
-            List<String> arguments = Arrays.asList(args);
-            Constructor<?> constructor = optionClass.optionsClass.getDeclaredConstructors()[0];
-            Object[] values = Arrays.stream(constructor.getParameters())
-                    .map(it -> parseOption(arguments, it)).toArray();
-
-            return (T) constructor.newInstance(values);
-        }catch (IllegalOptionException e){
-            throw e;
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return new OptionClass<T>(optionsClass).getT(args);
     }
 
     static class OptionClass<T>{
@@ -34,6 +18,22 @@ public class Args {
 
         public OptionClass(Class<T> optionsClass) {
             this.optionsClass = optionsClass;
+        }
+
+        private T getT(String[] args) {
+            try {
+                List<String> arguments = Arrays.asList(args);
+                Constructor<?> constructor = this.optionsClass.getDeclaredConstructors()[0];
+                Object[] values = Arrays.stream(constructor.getParameters())
+                        .map(it -> parseOption(arguments, it)).toArray();
+
+                return (T) constructor.newInstance(values);
+            }catch (IllegalOptionException e){
+                throw e;
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
     private static Object parseOption(List<String> arguments, Parameter parameter) {
