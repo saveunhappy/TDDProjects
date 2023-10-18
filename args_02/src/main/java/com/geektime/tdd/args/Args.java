@@ -19,6 +19,7 @@ public class Args {
 
         public OptionClass(Class<T> optionsClass) {
             this.optionsClass = optionsClass;
+            parsers = PARSER;
         }
 
         private T getT(String[] args) {
@@ -37,7 +38,6 @@ public class Args {
         }
 
         private Object parseOption(List<String> arguments, Parameter parameter) {
-            parsers = PARSER;
             if (!parameter.isAnnotationPresent(Option.class)) throw new IllegalOptionException(parameter.getName());
             Option option = parameter.getAnnotation(Option.class);
             //这个就是l,p,d,传的参数是-l,-p,-d,
