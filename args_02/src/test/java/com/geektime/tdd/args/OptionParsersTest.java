@@ -6,10 +6,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.lang.annotation.Annotation;
-import java.util.Optional;
 import java.util.function.Function;
 
-import static com.geektime.tdd.args.OptionParsersTest.BooleanOptionParserTest.option;
 import static java.util.Arrays.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -99,13 +97,13 @@ public class OptionParsersTest {
         //TODO -g "this" "is" {"this","is"}
         @Test
         public void should_parse_list_value() throws Exception {
-            String[] value = OptionParsers.list(String[]::new, String::valueOf)
+            String[] value = OptionParsers.list(String::valueOf, String[]::new)
                     .parse(asList("-g", "this", "is"), option("g"));
             assertArrayEquals(new String[]{"this", "is"}, value);
         }
         @Test
         public void should_not_treat_negative_int_as_flag() throws Exception {
-            assertArrayEquals(new Integer[]{-1,-2},OptionParsers.list(Integer[]::new, Integer::valueOf)
+            assertArrayEquals(new Integer[]{-1,-2}, OptionParsers.list(Integer::valueOf, Integer[]::new)
                     .parse(asList("-g", "-1", "-2"), option("g")));
 
 
@@ -115,7 +113,7 @@ public class OptionParsersTest {
         public void should_use_empty_array_as_default_value() throws Exception {
             //没有-g，那么index就是-1，那么就返回null，那么就进入orElse,就是数组的长度是0
             //return Optional.ofNullable(index == -1 ? null : values(arguments, index));
-            String[] value = OptionParsers.list(String[]::new, String::valueOf)
+            String[] value = OptionParsers.list(String::valueOf, String[]::new)
                     .parse(asList(), option("g"));
             assertEquals(0, value.length);
 
@@ -129,7 +127,7 @@ public class OptionParsersTest {
             };
             //这个是直接把parser抛出异常，就没有去解析，就是看是否能抛出异常
             IllegalValueException e = assertThrows(IllegalValueException.class, () -> {
-                OptionParsers.list(String[]::new, parser)
+                OptionParsers.list(parser, String[]::new)
                         .parse(asList("-g", "this", "is"), option("g"));
             });
             assertEquals("g", e.getOption());
