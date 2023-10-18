@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 class OptionClass<T> {
-    private Class<T> optionsClass;
-    private Map<Class<?>, OptionParser> parsers;
+    Class<T> optionsClass;
+    Map<Class<?>, OptionParser> parsers;
 
     public OptionClass(Class<T> optionsClass, Map<Class<?>, OptionParser> parsers) {
         this.optionsClass = optionsClass;
@@ -19,7 +19,7 @@ class OptionClass<T> {
         return getT(parsers, optionsClass, args);
     }
 
-    private static <T> T getT(Map<Class<?>, OptionParser> parsers, Class<T> optionsClass, String[] args) {
+    public static <T> T getT(Map<Class<?>, OptionParser> parsers, Class<T> optionsClass, String[] args) {
         try {
             List<String> arguments = Arrays.asList(args);
             Constructor<?> constructor = optionsClass.getDeclaredConstructors()[0];
