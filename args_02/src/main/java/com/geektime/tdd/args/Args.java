@@ -6,7 +6,7 @@ import java.util.Map;
 public class Args {
 
     public static <T> T parse(Class<T> optionsClass, String... args) {
-        return new OptionClass<T>(optionsClass, PARSER).getT(args);
+        return new OptionClass<T>(optionsClass, PARSER).parse(args);
     }
 
     private static Map<Class<?>, OptionParser> PARSER = Map.of(
