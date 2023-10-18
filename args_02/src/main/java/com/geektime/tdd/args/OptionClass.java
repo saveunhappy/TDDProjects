@@ -19,7 +19,7 @@ class OptionClass<T> {
         return getT(parsers, optionsClass, args);
     }
 
-    private T getT(Map<Class<?>, OptionParser> parsers, Class<T> optionsClass, String[] args) {
+    private static <T> T getT(Map<Class<?>, OptionParser> parsers, Class<T> optionsClass, String[] args) {
         try {
             List<String> arguments = Arrays.asList(args);
             Constructor<?> constructor = optionsClass.getDeclaredConstructors()[0];
