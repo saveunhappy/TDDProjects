@@ -15,10 +15,6 @@ class OptionClass<T> {
         this.parsers = parsers;
     }
 
-    public T parse(String[] args) {
-        return getT(parsers, optionsClass, args);
-    }
-
     public static <T> T getT(Map<Class<?>, OptionParser> parsers, Class<T> optionsClass, String[] args) {
         try {
             List<String> arguments = Arrays.asList(args);
