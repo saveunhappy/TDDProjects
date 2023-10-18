@@ -14,7 +14,7 @@ public class Args {
     }
 
     static class OptionClass<T>{
-        Class<T> optionsClass;
+        private Class<T> optionsClass;
 
         public OptionClass(Class<T> optionsClass) {
             this.optionsClass = optionsClass;
