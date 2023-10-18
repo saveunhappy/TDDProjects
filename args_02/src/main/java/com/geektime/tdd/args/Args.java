@@ -14,9 +14,11 @@ public class Args {
     }
 
     private static <T> T getT(Class<T> optionsClass, String[] args) {
+        OptionClass<T> optionClass = new OptionClass<>(optionsClass);
+
         try {
             List<String> arguments = Arrays.asList(args);
-            Constructor<?> constructor = new OptionClass<>(optionsClass).optionsClass.getDeclaredConstructors()[0];
+            Constructor<?> constructor = optionClass.optionsClass.getDeclaredConstructors()[0];
             Object[] values = Arrays.stream(constructor.getParameters())
                     .map(it -> parseOption(arguments, it)).toArray();
 
