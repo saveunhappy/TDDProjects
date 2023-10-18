@@ -20,7 +20,7 @@ class OptionClass<T> {
             List<String> arguments = Arrays.asList(args);
             Constructor<?> constructor = this.optionsClass.getDeclaredConstructors()[0];
             Object[] values = Arrays.stream(constructor.getParameters())
-                    .map(it -> parseOption(arguments, it)).toArray();
+                    .map(it -> parseOption(arguments, it, parsers)).toArray();
 
             return (T) constructor.newInstance(values);
         } catch (IllegalOptionException e) {
@@ -30,7 +30,7 @@ class OptionClass<T> {
         }
     }
 
-    private Object parseOption(List<String> arguments, Parameter parameter) {
+    private static Object parseOption(List<String> arguments, Parameter parameter, Map<Class<?>, OptionParser> parsers) {
         if (!parameter.isAnnotationPresent(Option.class)) throw new IllegalOptionException(parameter.getName());
         Option option = parameter.getAnnotation(Option.class);
         //这个就是l,p,d,传的参数是-l,-p,-d,
