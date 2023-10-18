@@ -18,10 +18,10 @@ class OptionParsers {
     }
 
     public static <T> OptionParser<T[]> list(IntFunction<T[]> generator, Function<String, T> valueParser) {
-        return list2(valueParser,generator);
+        return list(valueParser,generator);
     }
 
-    private static <T> OptionParser<T[]> list2(Function<String, T> valueParser,IntFunction<T[]> generator) {
+    public static <T> OptionParser<T[]> list(Function<String, T> valueParser, IntFunction<T[]> generator) {
         return (arguments, option) -> values(arguments, option)
                 .map(it -> it.stream().map(value -> parseValue(option, value, valueParser)).toArray(generator))
                 .orElse(generator.apply(0));
