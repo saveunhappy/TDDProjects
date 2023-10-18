@@ -10,11 +10,7 @@ import java.util.Map;
 public class Args {
 
     public static <T> T parse(Class<T> optionsClass, String... args) {
-        return getT(optionsClass, args);
-    }
-
-    private static <T> T getT(Class<T> optionsClass, String[] args) {
-        return getT(new OptionClass<T>(optionsClass),args);
+        return getT(new OptionClass<T>(optionsClass), args);
     }
 
     private static <T> T getT(OptionClass<T> optionClass,String[] args) {
