@@ -16,6 +16,10 @@ class OptionClass<T> {
     }
 
     public T parse(String[] args) {
+        return getT(args);
+    }
+
+    private T getT(String[] args) {
         try {
             List<String> arguments = Arrays.asList(args);
             Constructor<?> constructor = this.optionsClass.getDeclaredConstructors()[0];
