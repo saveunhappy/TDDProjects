@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 class OptionClass<T> {
-    Class<T> optionsClass;
-    Map<Class<?>, OptionParser> parsers;
+    private Class<T> optionsClass;
+    private Map<Class<?>, OptionParser> parsers;
 
     public OptionClass(Class<T> optionsClass, Map<Class<?>, OptionParser> parsers) {
         this.optionsClass = optionsClass;
