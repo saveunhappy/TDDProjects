@@ -40,7 +40,7 @@ public class ArgsMap<T> {
 
     public T parse(String... args) {
         try {
-            Map<String, String[]> options = toMap(args);
+            Map<String, String[]> options = optionParser.apply(args);
             Constructor<?> constructor = optionsClass.getDeclaredConstructors()[0];
             Object[] values = Arrays.stream(constructor.getParameters()).map(it -> parseOption(options, it)).toArray();
             return (T) constructor.newInstance(values);
