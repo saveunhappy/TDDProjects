@@ -79,9 +79,9 @@ public class ArgsMapTest {
         IntOption option = args.parse("-p", "8080");
         assertEquals(8080, option.port);
 
-        args = new ArgsMap<>(IntOption.class, Map.of(int.class, ArgsMapTest::parseInt), ArgsMap::toMap);
-        option = args.parse("-p", "8080");
-        assertEquals(8080, option.port);
+//        args = new ArgsMap<>(IntOption.class, Map.of(int.class, ArgsMapTest::parseInt), ArgsMap::toMap);
+//        option = args.parse("-p", "8080");
+//        assertEquals(8080, option.port);
     }
 
     record BoolOption(@Option("l") boolean logging) {

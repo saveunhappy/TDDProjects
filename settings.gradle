@@ -2,4 +2,5 @@ rootProject.name = 'TDDProject'
 include 'StudentDemo'
 include 'args_02'
 include 'args_other'
+include 'args_mockist'
 
