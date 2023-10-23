@@ -14,6 +14,12 @@ public class ArgsLondonTest {
         OptionClassLondon<IntOption> optionClass = mock(OptionClassLondon.class);
         OptionParserLondon parser = mock(OptionParserLondon.class);
 
+        when(optionClass.getOptionNames()).thenReturn(new String[]{"p"});
+        when(optionClass.getOptionType(eq("p"))).thenReturn(int.class);
+        when(retriever.getValue(eq("p"), eq(new String[]{"-p", "8080"})))
+                .thenReturn(new String[]{"8080"});
+        when(parser.parse(eq(int.class), eq(new String[]{"8080"}))).thenReturn(8080);
+        when(optionClass.create(eq(new Object[]{8080}))).thenReturn(new IntOption(8080));
 
         ArgsLondon<IntOption> args = new ArgsLondon<>(retriever, parser, optionClass);
         IntOption option = args.parse("-p", "8080");
