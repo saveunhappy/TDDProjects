@@ -7,12 +7,11 @@ version = '1.0-SNAPSHOT'
 
 
 repositories {
-    // 依赖使用阿里云 maven 源
     maven {
-        setUrl("https://maven.aliyun.com/repository/public/")
+        url 'https://maven.aliyun.com/repository/public/'
     }
     maven {
-        setUrl("https://maven.aliyun.com/repository/spring/")
+        url 'https://maven.aliyun.com/repository/spring/'
     }
     mavenLocal()
     mavenCentral()
