@@ -2,10 +2,8 @@ package com.geektime.tdd;
 
 import jakarta.inject.Provider;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class Context {
     private Map<Class<?>, Class<?>> componentImplementations = new HashMap<>();
@@ -22,13 +20,22 @@ public class Context {
 
     public <ComponentType,ComponentImplementation extends ComponentType>
     void bind(Class<ComponentType> type, Class<ComponentImplementation> implementation) {
-        componentImplementations.put(type,implementation);
+        providers.put(type, (Provider<ComponentType>) () -> {
+            try {
+                return (ComponentType) ((Class<?>) implementation).getConstructor().newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public <ComponentType> ComponentType get(Class<ComponentType> type) {
-        if(providers.containsKey(type)) return (ComponentType) providers.get(type).get();
+        return (ComponentType) providers.get(type).get();
+    }
+
+    private static <ComponentType> ComponentType getComponentType(Class<?> implementation) {
         try {
-            return (ComponentType) componentImplementations.get(type).getConstructor().newInstance();
+            return (ComponentType) implementation.getConstructor().newInstance();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
