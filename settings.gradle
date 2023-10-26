@@ -3,5 +3,5 @@ include 'StudentDemo'
 include 'args_02'
 include 'args_other'
 include 'args_mockist'
-include '_01.di.container'
+include 'diContainer'
 
