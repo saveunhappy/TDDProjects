@@ -21,6 +21,7 @@ class ContainerTest {
             Component instance = new Component() {
             };
             context.bind(Component.class,instance);
+            //现在是失败的案例
             assertSame(instance,context.get(Component.class));
 
         }
