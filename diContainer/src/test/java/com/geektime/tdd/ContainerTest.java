@@ -6,6 +6,27 @@ class ContainerTest {
 
     @Nested
     public class ComponentConstruction{
+        //TODO: instance
+        //TODO: abstract class
+        //TODO: interface
+        @Nested
+        public class ConstructorInjection{
+
+        }
+
+        @Nested
+        public class FieldInjection{
+
+        }
+
+        @Nested
+        public class MethodInjection{
+
+        }
+
+
+
+
 
     }
 
