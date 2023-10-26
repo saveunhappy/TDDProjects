@@ -1,18 +1,20 @@
 package com.geektime.tdd;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import java.awt.*;
 
 import static org.junit.Assert.*;
 
 class ContainerTest {
-    interface Component{
 
-    }
+    Context context;
 
-    static class ComponentWithDefaultConstructor implements Component{
-        public ComponentWithDefaultConstructor() {
-        }
+    @BeforeEach
+    public void setup(){
+        context = new Context();
     }
 
     @Nested
@@ -20,8 +22,6 @@ class ContainerTest {
         //TODO: instance
         @Test
         public void should_bind_type_to_a_specific_instance() throws Exception{
-            Context context = new Context();
-
             Component instance = new Component() {
             };
             context.bind(Component.class,instance);
@@ -37,7 +37,6 @@ class ContainerTest {
             //TODO: no args constructor 无依赖的组件应该通过默认构造函数生成组件实例
             @Test
             public void should_bind_type_to_a_class_with_default_constructor() throws Exception{
-                Context context = new Context();
                 context.bind(Component.class,ComponentWithDefaultConstructor.class);
                 //所以这个get的时候获取的就是ComponentWithDefaultConstructor的实例，传的是class,所以就是去newInstance
                 Component instance = context.get(Component.class);
@@ -75,5 +74,12 @@ class ContainerTest {
     @Nested
     public class LifecycleManagement{
 
+    }
+}
+interface Component{
+
+}
+class ComponentWithDefaultConstructor implements Component{
+    public ComponentWithDefaultConstructor() {
     }
 }
