@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Context {
-    private Map<Class<?>, Class<?>> componentImplementations = new HashMap<>();
     private Map<Class<?>, Provider<?>> providers = new HashMap<>();
 
     //这个是泛型方法，如果再类上加上了<T> 方法public T sayHay(){}这个是普通方法，下卖弄这个才是泛型方法
@@ -33,11 +32,4 @@ public class Context {
         return (ComponentType) providers.get(type).get();
     }
 
-    private static <ComponentType> ComponentType getComponentType(Class<?> implementation) {
-        try {
-            return (ComponentType) implementation.getConstructor().newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 }
