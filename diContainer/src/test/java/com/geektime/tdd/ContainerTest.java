@@ -39,8 +39,10 @@ class ContainerTest {
             public void should_bind_type_to_a_class_with_default_constructor() throws Exception{
                 Context context = new Context();
                 context.bind(Component.class,ComponentWithDefaultConstructor.class);
+                //所以这个get的时候获取的就是ComponentWithDefaultConstructor的实例，传的是class,所以就是去newInstance
                 Component instance = context.get(Component.class);
                 assertNotNull(instance);
+                //确保确实是根据ComponentWithDefaultConstructor这个Class通过newInstance构造的
                 assertTrue(instance instanceof ComponentWithDefaultConstructor);
 
             }
