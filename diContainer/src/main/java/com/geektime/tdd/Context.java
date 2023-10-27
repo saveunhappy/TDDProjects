@@ -2,6 +2,7 @@ package com.geektime.tdd;
 
 import jakarta.inject.Provider;
 
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,7 +22,9 @@ public class Context {
     void bind(Class<Type> type, Class<Implementation> implementation) {
         providers.put(type, (Provider<Type>) () -> {
             try {
-                return (Type) ((Class<?>) implementation).getConstructor().newInstance();
+                Constructor<Implementation> injectConstructor = implementation.getConstructor();
+
+                return (Type) injectConstructor.newInstance();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
