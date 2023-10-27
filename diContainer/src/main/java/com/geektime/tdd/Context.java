@@ -1,11 +1,13 @@
 package com.geektime.tdd;
 
+import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.stream;
 
@@ -21,7 +23,7 @@ public class Context {
     //这个和    public static <T> T parse(Class<T> optionsClass, String... args) 一样的，只是泛型的名字变了。
 
 
-    public <Type,Implementation extends Type>
+    public <Type, Implementation extends Type>
     void bind(Class<Type> type, Class<Implementation> implementation) {
         providers.put(type, (Provider<Type>) () -> {
             try {
@@ -36,7 +38,15 @@ public class Context {
     }
 
     private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) throws NoSuchMethodException {
-        return implementation.getConstructor();
+        Stream<Constructor<?>> injectConstructor = stream(implementation.getConstructors())
+                .filter(c -> c.isAnnotationPresent(Inject.class));
+        return (Constructor<Type>) injectConstructor.findFirst().orElseGet(() -> {
+            try {
+                return implementation.getConstructor();
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public <Type> Type get(Class<Type> type) {
