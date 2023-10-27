@@ -47,6 +47,16 @@ public class Context {
                 throw new RuntimeException(e);
             }
         });
+        //为什么这段代码会报错？因为这个OrElse不管你是不是空，它是一定会执行的，就是当你为空的时候，
+        //他就返回implementation.getConstructor()这个没问题，
+        //但是他需要提前把这个值给计算出，到时候直接给你返回，相当于饿汉式，
+        //但是，我们这个方法是只有一个带参数的构造器，根本就没有无参的构造函数
+        //他直接执行了可不就报错了么，但是OrElseGet不是，他是懒汉式，只有你为空的时候，他才去调用
+        //implementation.getConstructor();这个方法，所以这里要使用OrElseGet
+//        return (Constructor<Type>) injectConstructor.findFirst()
+//                .orElse(
+//                        implementation.getConstructor()
+//                );
     }
 
     public <Type> Type get(Class<Type> type) {
