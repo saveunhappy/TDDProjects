@@ -25,7 +25,7 @@ public class Context {
     void bind(Class<Type> type, Class<Implementation> implementation) {
         providers.put(type, (Provider<Type>) () -> {
             try {
-                Constructor<Implementation> injectConstructor = implementation.getConstructor();
+                Constructor<Implementation> injectConstructor = getInjectConstructor(implementation);
                 Object[] dependencies = stream(injectConstructor.getParameters()).map(p -> get(p.getType()))
                         .toArray(Object[]::new);
                 return (Type) injectConstructor.newInstance(dependencies);
@@ -33,6 +33,10 @@ public class Context {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    private static <Type, Implementation extends Type> Constructor<Implementation> getInjectConstructor(Class<Implementation> implementation) throws NoSuchMethodException {
+        return implementation.getConstructor();
     }
 
     public <Type> Type get(Class<Type> type) {
