@@ -3,8 +3,11 @@ package com.geektime.tdd;
 import jakarta.inject.Provider;
 
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import static java.util.Arrays.stream;
 
 public class Context {
     private Map<Class<?>, Provider<?>> providers = new HashMap<>();
@@ -23,8 +26,9 @@ public class Context {
         providers.put(type, (Provider<Type>) () -> {
             try {
                 Constructor<Implementation> injectConstructor = implementation.getConstructor();
-
-                return (Type) injectConstructor.newInstance();
+                Object[] dependencies = stream(injectConstructor.getParameters()).map(p -> get(p.getType()))
+                        .toArray(Object[]::new);
+                return (Type) injectConstructor.newInstance(dependencies);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
