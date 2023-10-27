@@ -35,7 +35,7 @@ public class Context {
         });
     }
 
-    private static <Type, Implementation extends Type> Constructor<Implementation> getInjectConstructor(Class<Implementation> implementation) throws NoSuchMethodException {
+    private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) throws NoSuchMethodException {
         return implementation.getConstructor();
     }
 
