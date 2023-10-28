@@ -32,13 +32,13 @@ public class Context {
         return () -> getImplementation(injectConstructor);
     }
 
-    private <Type, Implementation extends Type> Type getImplementation(Constructor<Implementation> injectConstructor) {
+    private <Type> Type getImplementation(Constructor<Type> injectConstructor) {
         try {
 
             Object[] dependencies = stream(injectConstructor.getParameters())
                     .map(p -> Context.this.get(p.getType()).orElseThrow(DependencyNotFoundException::new))
                     .toArray(Object[]::new);
-            return (Type) injectConstructor.newInstance(dependencies);
+            return injectConstructor.newInstance(dependencies);
         } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
