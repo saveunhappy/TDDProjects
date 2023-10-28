@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.awt.*;
 
 import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ContainerTest {
 
@@ -77,6 +78,14 @@ class ContainerTest {
                 assertEquals("dependency String",((DependencyWithInjectionConstructor)dependency).getDependency());
 
             }
+            //TODO multi inject constructors
+
+            @Test
+            public void should_throw_exception_if_multi_inject_constructor_provided() throws Exception{
+                assertThrows(IllegalComponentException.class,()->{
+                    context.bind(Component.class,ComponentWithMultiInjectionConstructor.class);
+                });
+            }
 
         }
 
@@ -127,6 +136,17 @@ class ComponentWithInjectionConstructor implements Component{
 
     public Dependency getDependency() {
         return dependency;
+    }
+}
+
+class ComponentWithMultiInjectionConstructor implements Component{
+    @Inject
+    public ComponentWithMultiInjectionConstructor(String name,Double value) {
+
+    }
+    @Inject
+    public ComponentWithMultiInjectionConstructor(String name) {
+
     }
 }
 
