@@ -29,10 +29,6 @@ public class Context {
                 .filter(c -> c.isAnnotationPresent(Inject.class))
                 .toArray(Constructor<?>[]::new);
         if(injectConstructors.length > 1) throw new IllegalComponentException();
-        //找不到被@Inject标注的，并且找不到默认的构造函数
-        if(injectConstructors.length == 0 && stream(implementation.getConstructors())
-                .filter(c->c.getParameters().length == 0).findFirst().map(c->false).orElse(true))
-            throw new IllegalComponentException();
         Constructor<Implementation> injectConstructor = getInjectConstructor(implementation);
 
         providers.put(type, (Provider<Type>) () -> {
@@ -54,6 +50,7 @@ public class Context {
             try {
                 return implementation.getConstructor();
             } catch (NoSuchMethodException e) {
+                //这里之前是RuntimeException，改成我们的自定义异常了
                 throw new IllegalComponentException();
             }
         });
