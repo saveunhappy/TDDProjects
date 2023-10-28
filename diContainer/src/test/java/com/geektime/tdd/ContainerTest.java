@@ -38,10 +38,11 @@ class ContainerTest {
         //TODO: interface
 
         @Test
-        public void should_return_empty_if_component_not_defined() throws Exception{
+        public void should_return_empty_if_component_not_defined() throws Exception {
             Optional<Component> component = context.get(Component.class);
             assertTrue(component.isEmpty());
         }
+
         @Nested
         public class ConstructorInjection {
             //TODO: no args constructor 无依赖的组件应该通过默认构造函数生成组件实例
@@ -115,7 +116,14 @@ class ContainerTest {
                 context.bind(Component.class, ComponentWithInjectionConstructor.class);
                 assertThrows(DependencyNotFoundException.class, () ->
                         context.get(Component.class).get());
+            }
 
+            @Test
+            public void should_throw_exception_if_cyclic_dependencies_found() throws Exception {
+                context.bind(Component.class, ComponentWithInjectionConstructor.class);
+                context.bind(Dependency.class, DependencyDependedOnComponent.class);
+
+                assertThrows(CyclicDependenciesFoundException.class,()->context.get(Component.class));
             }
         }
 
@@ -199,5 +207,14 @@ class DependencyWithInjectionConstructor implements Dependency {
 
     public String getDependency() {
         return dependency;
+    }
+}
+
+class DependencyDependedOnComponent implements Dependency {
+    private Component component;
+
+    @Inject
+    public DependencyDependedOnComponent(Component component) {
+        this.component = component;
     }
 }
