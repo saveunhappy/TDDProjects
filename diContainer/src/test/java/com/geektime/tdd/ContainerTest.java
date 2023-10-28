@@ -123,7 +123,7 @@ class ContainerTest {
                 context.bind(Component.class, ComponentWithInjectionConstructor.class);
                 context.bind(Dependency.class, DependencyDependedOnComponent.class);
 
-                assertThrows(CyclicDependenciesFoundException.class,()->context.get(Component.class));
+                assertThrows(CyclicDependenciesFoundException.class, () -> context.get(Component.class));
             }
         }
 
