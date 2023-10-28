@@ -82,8 +82,12 @@ class ContainerTest {
 
             @Test
             public void should_throw_exception_if_multi_inject_constructors_provided() throws Exception{
+//                assertThrows(IllegalComponentException.class,()->{
+//                    context.bind(Component.class,ComponentWithMultiInjectionConstructor.class);
+//                });
+                context.bind(Component.class,ComponentWithMultiInjectionConstructor.class);
                 assertThrows(IllegalComponentException.class,()->{
-                    context.bind(Component.class,ComponentWithMultiInjectionConstructor.class);
+                    context.get(Component.class);
                 });
             }
             //TODO no default constructor and inject constructor

@@ -4,6 +4,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -27,13 +28,14 @@ public class Context {
 
     public <Type, Implementation extends Type>
     void bind(Class<Type> type, Class<Implementation> implementation) {
-        Constructor<Implementation> injectConstructor = getInjectConstructor(implementation);
         providers.put(type, (Provider<Type>) () -> {
             try {
+                Constructor<Implementation> injectConstructor = getInjectConstructor(implementation);
+
                 Object[] dependencies = stream(injectConstructor.getParameters()).map(p -> get(p.getType()))
                         .toArray(Object[]::new);
                 return (Type) injectConstructor.newInstance(dependencies);
-            } catch (Exception e) {
+            } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
         });
