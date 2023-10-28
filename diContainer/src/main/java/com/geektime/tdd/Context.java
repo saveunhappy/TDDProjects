@@ -31,7 +31,7 @@ public class Context {
         if(injectConstructors.length > 1) throw new IllegalComponentException();
         //找不到被@Inject标注的，并且找不到默认的构造函数
         if(injectConstructors.length == 0 && stream(implementation.getConstructors())
-                .noneMatch(c -> c.getParameters().length == 0))
+                .filter(c->c.getParameters().length == 0).findFirst().map(c->false).orElse(true))
             throw new IllegalComponentException();
         providers.put(type, (Provider<Type>) () -> {
             try {
