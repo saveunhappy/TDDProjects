@@ -29,6 +29,10 @@ public class Context {
                 .filter(c -> c.isAnnotationPresent(Inject.class))
                 .toArray(Constructor<?>[]::new);
         if(injectConstructors.length > 1) throw new IllegalComponentException();
+        //找不到被@Inject标注的，并且找不到默认的构造函数
+        if(injectConstructors.length == 0 && stream(implementation.getConstructors())
+                .filter(c->c.getParameters().length == 0).findFirst().map(c->false).orElse(true))
+            throw new IllegalComponentException();
         providers.put(type, (Provider<Type>) () -> {
             try {
                 Constructor<Implementation> injectConstructor = getInjectConstructor(implementation);
