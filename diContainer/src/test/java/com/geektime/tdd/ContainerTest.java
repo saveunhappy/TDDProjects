@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.awt.*;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
@@ -29,7 +28,9 @@ class ContainerTest {
             };
             context.bind(Component.class, instance);
             //现在是失败的案例
-            assertSame(instance, context.get(Component.class));
+            //        if(!providers.containsKey(type)) throw new DependencyNotFoundException();
+//        return (Type) providers.get(type).get();
+            assertSame(instance, context.get_(Component.class).orElseThrow(DependencyNotFoundException::new));
 
         }
 
@@ -48,7 +49,9 @@ class ContainerTest {
             public void should_bind_type_to_a_class_with_default_constructor() throws Exception {
                 context.bind(Component.class, ComponentWithDefaultConstructor.class);
                 //所以这个get的时候获取的就是ComponentWithDefaultConstructor的实例，传的是class,所以就是去newInstance
-                Component instance = context.get(Component.class);
+                //        if(!providers.containsKey(type)) throw new DependencyNotFoundException();
+//        return (Type) providers.get(type).get();
+                Component instance = context.get_(Component.class).orElseThrow(DependencyNotFoundException::new);
                 assertNotNull(instance);
                 //确保确实是根据ComponentWithDefaultConstructor这个Class通过newInstance构造的
                 assertTrue(instance instanceof ComponentWithDefaultConstructor);
@@ -62,7 +65,9 @@ class ContainerTest {
                 };
                 context.bind(Component.class, ComponentWithInjectionConstructor.class);
                 context.bind(Dependency.class, dependency);
-                Component instance = context.get(Component.class);
+                //        if(!providers.containsKey(type)) throw new DependencyNotFoundException();
+//        return (Type) providers.get(type).get();
+                Component instance = context.get_(Component.class).orElseThrow(DependencyNotFoundException::new);
                 assertNotNull(instance);
                 assertSame(dependency, ((ComponentWithInjectionConstructor) instance).getDependency());
             }
@@ -79,7 +84,9 @@ class ContainerTest {
                 context.bind(Component.class, ComponentWithInjectionConstructor.class);
                 context.bind(Dependency.class, DependencyWithInjectionConstructor.class);
                 context.bind(String.class, "dependency String");
-                Component instance = context.get(Component.class);
+                //        if(!providers.containsKey(type)) throw new DependencyNotFoundException();
+//        return (Type) providers.get(type).get();
+                Component instance = context.get_(Component.class).orElseThrow(DependencyNotFoundException::new);
                 assertNotNull(instance);
                 Dependency dependency = ((ComponentWithInjectionConstructor) instance).getDependency();
                 assertNotNull(dependency);
@@ -107,7 +114,11 @@ class ContainerTest {
             public void should_throw_exception_if_dependency_not_found() throws Exception {
                 context.bind(Component.class, ComponentWithInjectionConstructor.class);
                 assertThrows(DependencyNotFoundException.class, () ->
-                        context.get(Component.class));
+                {
+                    context.get_(Component.class).orElseThrow(DependencyNotFoundException::new);
+//        if(!providers.containsKey(type)) throw new DependencyNotFoundException();
+//        return (Type) providers.get(type).get();
+                });
 
             }
         }

@@ -7,7 +7,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.Arrays.stream;
 
@@ -29,7 +28,11 @@ public class Context {
         providers.put(type, (Provider<Type>) () -> {
             try {
 
-                Object[] dependencies = stream(injectConstructor.getParameters()).map(p -> get(p.getType()))
+                Object[] dependencies = stream(injectConstructor.getParameters()).map(p -> {
+                            return get_(p.getType()).orElseThrow(DependencyNotFoundException::new);
+//        if(!providers.containsKey(type)) throw new DependencyNotFoundException();
+//        return (Type) providers.get(type).get();
+                        })
                         .toArray(Object[]::new);
                 return (Type) injectConstructor.newInstance(dependencies);
             } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
@@ -53,12 +56,6 @@ public class Context {
             }
         });
 
-    }
-
-    public <Type> Type get(Class<Type> type) {
-        return get_(type).orElseThrow(DependencyNotFoundException::new);
-//        if(!providers.containsKey(type)) throw new DependencyNotFoundException();
-//        return (Type) providers.get(type).get();
     }
 
     public <Type> Optional<Type> get_(Class<Type> type) {
