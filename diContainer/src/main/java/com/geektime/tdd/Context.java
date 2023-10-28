@@ -29,7 +29,7 @@ public class Context {
             try {
 
                 Object[] dependencies = stream(injectConstructor.getParameters()).map(p -> {
-                            return get_(p.getType()).orElseThrow(DependencyNotFoundException::new);
+                            return get(p.getType()).orElseThrow(DependencyNotFoundException::new);
 //        if(!providers.containsKey(type)) throw new DependencyNotFoundException();
 //        return (Type) providers.get(type).get();
                         })
@@ -58,7 +58,7 @@ public class Context {
 
     }
 
-    public <Type> Optional<Type> get_(Class<Type> type) {
+    public <Type> Optional<Type> get(Class<Type> type) {
         return Optional.ofNullable(providers.get(type)).map(provider -> (Type)provider.get());
     }
 }
