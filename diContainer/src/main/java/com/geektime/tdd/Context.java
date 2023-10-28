@@ -49,6 +49,7 @@ public class Context {
     private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation)  {
         Stream<Constructor<?>> injectConstructor = stream(implementation.getConstructors())
                 .filter(c -> c.isAnnotationPresent(Inject.class));
+        //找不到被@Inject标注的，并且找不到默认的构造函数
         return (Constructor<Type>) injectConstructor.findFirst().orElseGet(() -> {
             try {
                 return implementation.getConstructor();
