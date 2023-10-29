@@ -29,7 +29,7 @@ public class Context {
     }
 
     private <Type> Provider<Type> getTypeProvider(Constructor<Type> injectConstructor) {
-        return () -> getImplementation(injectConstructor);
+        return new ConstructorInjectionProvider<>(injectConstructor);
     }
 
     private <Type> Type getImplementation(Constructor<Type> injectConstructor) {
