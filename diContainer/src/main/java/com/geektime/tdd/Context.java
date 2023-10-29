@@ -18,20 +18,21 @@ public class Context {
     public <Type> void bind(Class<Type> type, Type instance) {
         providers.put(type, (Provider<Type>) () -> instance);
     }
+
     //这个和    public static <T> T parse(Class<T> optionsClass, String... args) 一样的，只是泛型的名字变了。
     public <Type, Implementation extends Type>
     void bind(Class<Type> type, Class<Implementation> implementation) {
         Constructor<Implementation> injectConstructor = getInjectConstructor(implementation);
-        providers.put(type, new ConstructorInjectionProvider<>(type,injectConstructor));
+        providers.put(type, new ConstructorInjectionProvider<>(type, injectConstructor));
     }
 
 
     public <Type> Optional<Type> get(Class<Type> type) {
-        return Optional.ofNullable(providers.get(type)).map(provider -> (Type)provider.get());
+        return Optional.ofNullable(providers.get(type)).map(provider -> (Type) provider.get());
     }
 
 
-    class ConstructorInjectionProvider<T> implements Provider<T>{
+    class ConstructorInjectionProvider<T> implements Provider<T> {
 
         private Class<?> componentType;
         private Constructor<T> injectConstructor;
@@ -45,25 +46,25 @@ public class Context {
 
         @Override
         public T get() {
-            if(constructing) throw new CyclicDependenciesFoundException();
+            if (constructing) throw new CyclicDependenciesFoundException();
             try {
                 constructing = true;
                 Object[] dependencies = stream(injectConstructor.getParameters())
-                        .map(p -> Context.this.get(p.getType()).orElseThrow(()-> new DependencyNotFoundException(componentType,p.getType())))
+                        .map(p -> Context.this.get(p.getType()).orElseThrow(() -> new DependencyNotFoundException(componentType, p.getType())))
                         .toArray(Object[]::new);
                 return injectConstructor.newInstance(dependencies);
             } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
-            }finally {
+            } finally {
                 constructing = false;
             }
         }
     }
 
-    private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation)  {
+    private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {
         List<Constructor<?>> injectConstructors = stream(implementation.getConstructors())
                 .filter(c -> c.isAnnotationPresent(Inject.class)).collect(Collectors.toList());
-        if(injectConstructors.size() > 1) throw new IllegalComponentException();
+        if (injectConstructors.size() > 1) throw new IllegalComponentException();
 
         //找不到被@Inject标注的，并且找不到默认的构造函数
         return (Constructor<Type>) injectConstructors.stream().findFirst().orElseGet(() -> {
