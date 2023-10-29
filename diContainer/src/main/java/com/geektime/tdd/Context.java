@@ -18,15 +18,18 @@ public class Context {
     public <Type> void bind(Class<Type> type, Type instance) {
         providers.put(type, (Provider<Type>) () -> instance);
     }
-
     //这个和    public static <T> T parse(Class<T> optionsClass, String... args) 一样的，只是泛型的名字变了。
-
-
     public <Type, Implementation extends Type>
     void bind(Class<Type> type, Class<Implementation> implementation) {
         Constructor<Implementation> injectConstructor = getInjectConstructor(implementation);
         providers.put(type, new ConstructorInjectionProvider<>(injectConstructor));
     }
+
+
+    public <Type> Optional<Type> get(Class<Type> type) {
+        return Optional.ofNullable(providers.get(type)).map(provider -> (Type)provider.get());
+    }
+
 
     class ConstructorInjectionProvider<T> implements Provider<T>{
         private Constructor<T> injectConstructor;
@@ -43,7 +46,7 @@ public class Context {
             try {
                 constructing = true;
                 Object[] dependencies = stream(injectConstructor.getParameters())
-                        .map(p -> Context.this.get(p.getType()).orElseThrow(DependencyNotFoundException::new))
+                        .map(p -> Context.this.get(p.getType()).orElseThrow(()-> new DependencyNotFoundException(p.getType())))
                         .toArray(Object[]::new);
                 return injectConstructor.newInstance(dependencies);
             } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
@@ -68,10 +71,5 @@ public class Context {
                 throw new IllegalComponentException();
             }
         });
-
-    }
-
-    public <Type> Optional<Type> get(Class<Type> type) {
-        return Optional.ofNullable(providers.get(type)).map(provider -> (Type)provider.get());
     }
 }
