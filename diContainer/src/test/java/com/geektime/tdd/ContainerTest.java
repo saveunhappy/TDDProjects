@@ -114,6 +114,8 @@ class ContainerTest {
                 DependencyNotFoundException exception = assertThrows(DependencyNotFoundException.class, () ->
                         context.get(Component.class).get());
                 assertEquals(Dependency.class,exception.getDependency());
+                assertEquals(Component.class,exception.getComponent());
+
             }
 
             @Test
@@ -123,6 +125,8 @@ class ContainerTest {
                 DependencyNotFoundException exception = assertThrows(DependencyNotFoundException.class, () ->
                         context.get(Component.class).get());
                 assertEquals(String.class,exception.getDependency());
+                assertEquals(Dependency.class,exception.getComponent());
+
             }
             @Test
             public void should_throw_exception_if_cyclic_dependencies_found() throws Exception {
