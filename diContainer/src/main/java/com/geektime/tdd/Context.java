@@ -49,7 +49,7 @@ public class Context {
             try {
                 constructing = true;
                 Object[] dependencies = stream(injectConstructor.getParameters())
-                        .map(p -> Context.this.get(p.getType()).orElseThrow(()-> new DependencyNotFoundException(p.getType())))
+                        .map(p -> Context.this.get(p.getType()).orElseThrow(()-> new DependencyNotFoundException(componentType,p.getType())))
                         .toArray(Object[]::new);
                 return injectConstructor.newInstance(dependencies);
             } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
