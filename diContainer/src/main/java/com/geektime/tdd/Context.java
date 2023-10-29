@@ -36,11 +36,25 @@ public class Context {
         try {
 
             Object[] dependencies = stream(injectConstructor.getParameters())
-                    .map(p -> Context.this.get(p.getType()).orElseThrow(DependencyNotFoundException::new))
+                    .map(p -> get(p.getType()).orElseThrow(DependencyNotFoundException::new))
                     .toArray(Object[]::new);
             return injectConstructor.newInstance(dependencies);
         } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    class ConstructorInjectionProvider<T> implements Provider<T>{
+        private Constructor<T> injectConstructor;
+
+        public ConstructorInjectionProvider(Constructor<T> injectConstructor) {
+            this.injectConstructor = injectConstructor;
+        }
+
+
+        @Override
+        public T get() {
+            return getImplementation(injectConstructor);
         }
     }
 
