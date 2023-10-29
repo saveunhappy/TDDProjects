@@ -32,18 +32,6 @@ public class Context {
         return new ConstructorInjectionProvider<>(injectConstructor);
     }
 
-    private <Type> Type getImplementation(Constructor<Type> injectConstructor) {
-        try {
-
-            Object[] dependencies = stream(injectConstructor.getParameters())
-                    .map(p -> get(p.getType()).orElseThrow(DependencyNotFoundException::new))
-                    .toArray(Object[]::new);
-            return injectConstructor.newInstance(dependencies);
-        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     class ConstructorInjectionProvider<T> implements Provider<T>{
         private Constructor<T> injectConstructor;
 
@@ -54,7 +42,14 @@ public class Context {
 
         @Override
         public T get() {
-            return getImplementation(injectConstructor);
+            try {
+                Object[] dependencies = stream(injectConstructor.getParameters())
+                        .map(p -> Context.this.get(p.getType()).orElseThrow(DependencyNotFoundException::new))
+                        .toArray(Object[]::new);
+                return injectConstructor.newInstance(dependencies);
+            } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
