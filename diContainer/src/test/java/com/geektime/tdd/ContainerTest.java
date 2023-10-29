@@ -49,9 +49,6 @@ class ContainerTest {
             @Test
             public void should_bind_type_to_a_class_with_default_constructor() throws Exception {
                 context.bind(Component.class, ComponentWithDefaultConstructor.class);
-                //所以这个get的时候获取的就是ComponentWithDefaultConstructor的实例，传的是class,所以就是去newInstance
-                //        if(!providers.containsKey(type)) throw new DependencyNotFoundException();
-//        return (Type) providers.get(type).get();
                 Component instance = context.get(Component.class).get();
                 assertNotNull(instance);
                 //确保确实是根据ComponentWithDefaultConstructor这个Class通过newInstance构造的
@@ -119,6 +116,14 @@ class ContainerTest {
                 assertEquals(Dependency.class,exception.getDependency());
             }
 
+            @Test
+            public void should_throw_exception_if_transitive_dependency_not_found() throws Exception {
+                context.bind(Component.class, ComponentWithInjectionConstructor.class);
+                context.bind(Dependency.class, DependencyWithInjectionConstructor.class);
+                DependencyNotFoundException exception = assertThrows(DependencyNotFoundException.class, () ->
+                        context.get(Component.class).get());
+                assertEquals(String.class,exception.getDependency());
+            }
             @Test
             public void should_throw_exception_if_cyclic_dependencies_found() throws Exception {
                 context.bind(Component.class, ComponentWithInjectionConstructor.class);
