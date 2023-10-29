@@ -22,7 +22,7 @@ public class Context {
     public <Type, Implementation extends Type>
     void bind(Class<Type> type, Class<Implementation> implementation) {
         Constructor<Implementation> injectConstructor = getInjectConstructor(implementation);
-        providers.put(type, new ConstructorInjectionProvider<>(injectConstructor));
+        providers.put(type, new ConstructorInjectionProvider<>(type,injectConstructor));
     }
 
 
@@ -32,13 +32,16 @@ public class Context {
 
 
     class ConstructorInjectionProvider<T> implements Provider<T>{
+
+        private Class<?> componentType;
         private Constructor<T> injectConstructor;
 
         private boolean constructing = false;
-        public ConstructorInjectionProvider(Constructor<T> injectConstructor) {
+
+        public ConstructorInjectionProvider(Class<?> componentType, Constructor<T> injectConstructor) {
+            this.componentType = componentType;
             this.injectConstructor = injectConstructor;
         }
-
 
         @Override
         public T get() {
