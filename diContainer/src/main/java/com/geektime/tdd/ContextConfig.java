@@ -11,25 +11,24 @@ import java.util.stream.Collectors;
 import static java.util.Arrays.stream;
 
 public class ContextConfig {
-    private Map<Class<?>, Provider<?>> providers = new HashMap<>();
-    private Map<Class<?>, ComponentProvider<?>> componentProviders = new HashMap<>();
+    private Map<Class<?>, ComponentProvider<?>> providers = new HashMap<>();
 
     public <Type> void bind(Class<Type> type, Type instance) {
-        componentProviders.put(type, context -> instance);
+        providers.put(type, context -> instance);
     }
 
     //这个和    public static <T> T parse(Class<T> optionsClass, String... args) 一样的，只是泛型的名字变了。
     public <Type, Implementation extends Type>
     void bind(Class<Type> type, Class<Implementation> implementation) {
         Constructor<Implementation> injectConstructor = getInjectConstructor(implementation);
-        componentProviders.put(type, new ConstructorInjectionProvider<>(type, injectConstructor));
+        providers.put(type, new ConstructorInjectionProvider<>(type, injectConstructor));
     }
 
     public Context getContext(){
         return new Context() {
             @Override
             public <Type> Optional<Type> get(Class<Type> type) {
-                return Optional.ofNullable(componentProviders.get(type)).map(provider -> (Type) provider.get(this));
+                return Optional.ofNullable(providers.get(type)).map(provider -> (Type) provider.get(this));
             }
         };
     }
