@@ -29,10 +29,8 @@ class ContainerTest {
             Component instance = new Component() {
             };
             config.bind(Component.class, instance);
-            //现在是失败的案例
-            //        if(!providers.containsKey(type)) throw new DependencyNotFoundException();
-//        return (Type) providers.get(type).get();
-            assertSame(instance, config.getContext().get(Component.class).get());
+            Context context = config.getContext();
+            assertSame(instance, context.get(Component.class).get());
 
         }
 
@@ -65,8 +63,6 @@ class ContainerTest {
                 };
                 config.bind(Component.class, ComponentWithInjectionConstructor.class);
                 config.bind(Dependency.class, dependency);
-                //        if(!providers.containsKey(type)) throw new DependencyNotFoundException();
-//        return (Type) providers.get(type).get();
                 Component instance = config.getContext().get(Component.class).get();
                 assertNotNull(instance);
                 assertSame(dependency, ((ComponentWithInjectionConstructor) instance).getDependency());
@@ -84,8 +80,6 @@ class ContainerTest {
                 config.bind(Component.class, ComponentWithInjectionConstructor.class);
                 config.bind(Dependency.class, DependencyWithInjectionConstructor.class);
                 config.bind(String.class, "dependency String");
-                //        if(!providers.containsKey(type)) throw new DependencyNotFoundException();
-//        return (Type) providers.get(type).get();
                 Component instance = config.getContext().get(Component.class).get();
                 assertNotNull(instance);
                 Dependency dependency = ((ComponentWithInjectionConstructor) instance).getDependency();
