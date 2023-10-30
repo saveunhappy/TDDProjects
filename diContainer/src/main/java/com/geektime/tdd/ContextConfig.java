@@ -39,7 +39,7 @@ public class ContextConfig {
         T get(Context context);
     }
 
-    class ConstructorInjectionProvider<T> implements Provider<T> {
+    class ConstructorInjectionProvider<T> implements Provider<T>,ComponentProvider<T> {
 
         private Class<?> componentType;
         private Constructor<T> injectConstructor;
@@ -67,6 +67,11 @@ public class ContextConfig {
             } finally {
                 constructing = false;
             }
+        }
+
+        @Override
+        public T get(Context context) {
+            return null;
         }
     }
 
