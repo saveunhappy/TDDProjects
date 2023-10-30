@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
 
-public class ContextConfig implements Context {
+public class ContextConfig {
     private Map<Class<?>, Provider<?>> providers = new HashMap<>();
 
     //这个是泛型方法，如果再类上加上了<T> 方法public T sayHay(){}这个是普通方法，下卖弄这个才是泛型方法
@@ -36,7 +36,6 @@ public class ContextConfig implements Context {
     }
 
 
-    @Override
     public <Type> Optional<Type> get(Class<Type> type) {
         return getContext().get(type);
     }
