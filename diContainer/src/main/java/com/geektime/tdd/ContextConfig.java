@@ -37,7 +37,7 @@ public class ContextConfig {
         T get(Context context);
     }
 
-    class ConstructorInjectionProvider<T> implements Provider<T>,ComponentProvider<T> {
+    class ConstructorInjectionProvider<T> implements ComponentProvider<T> {
 
         private Class<?> componentType;
         private Constructor<T> injectConstructor;
@@ -47,11 +47,6 @@ public class ContextConfig {
         public ConstructorInjectionProvider(Class<?> componentType, Constructor<T> injectConstructor) {
             this.componentType = componentType;
             this.injectConstructor = injectConstructor;
-        }
-
-        @Override
-        public T get() {
-            return get(getContext());
         }
 
         @Override
