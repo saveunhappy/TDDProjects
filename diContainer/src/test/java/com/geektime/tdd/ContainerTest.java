@@ -4,23 +4,21 @@ import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.internal.util.collections.Sets;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ContainerTest {
 
-    Context context;
+    ContextConfig config;
 
     @BeforeEach
     public void setup() {
-        context = new Context();
+        config = new ContextConfig();
     }
 
     @Nested
@@ -30,11 +28,11 @@ class ContainerTest {
         public void should_bind_type_to_a_specific_instance() throws Exception {
             Component instance = new Component() {
             };
-            context.bind(Component.class, instance);
+            config.bind(Component.class, instance);
             //现在是失败的案例
             //        if(!providers.containsKey(type)) throw new DependencyNotFoundException();
 //        return (Type) providers.get(type).get();
-            assertSame(instance, context.get(Component.class).get());
+            assertSame(instance, config.get(Component.class).get());
 
         }
 
@@ -43,7 +41,7 @@ class ContainerTest {
 
         @Test
         public void should_return_empty_if_component_not_defined() throws Exception {
-            Optional<Component> component = context.get(Component.class);
+            Optional<Component> component = config.get(Component.class);
             assertTrue(component.isEmpty());
         }
 
@@ -52,8 +50,8 @@ class ContainerTest {
             //TODO: no args constructor 无依赖的组件应该通过默认构造函数生成组件实例
             @Test
             public void should_bind_type_to_a_class_with_default_constructor() throws Exception {
-                context.bind(Component.class, ComponentWithDefaultConstructor.class);
-                Component instance = context.get(Component.class).get();
+                config.bind(Component.class, ComponentWithDefaultConstructor.class);
+                Component instance = config.get(Component.class).get();
                 assertNotNull(instance);
                 //确保确实是根据ComponentWithDefaultConstructor这个Class通过newInstance构造的
                 assertTrue(instance instanceof ComponentWithDefaultConstructor);
@@ -65,11 +63,11 @@ class ContainerTest {
             public void should_bind_type_to_a_class_with_injection_constructor() throws Exception {
                 Dependency dependency = new Dependency() {
                 };
-                context.bind(Component.class, ComponentWithInjectionConstructor.class);
-                context.bind(Dependency.class, dependency);
+                config.bind(Component.class, ComponentWithInjectionConstructor.class);
+                config.bind(Dependency.class, dependency);
                 //        if(!providers.containsKey(type)) throw new DependencyNotFoundException();
 //        return (Type) providers.get(type).get();
-                Component instance = context.get(Component.class).get();
+                Component instance = config.get(Component.class).get();
                 assertNotNull(instance);
                 assertSame(dependency, ((ComponentWithInjectionConstructor) instance).getDependency());
             }
@@ -83,12 +81,12 @@ class ContainerTest {
                 //的时候，去map(p -> get(p.getType()))这个get就是下面的context.bind(Dependency.class, DependencyWithInjectionConstructor.class);
                 //这个bind进去的，放到map中去的那个，就可以获取到了，就可以创建对象了。注意，DependencyWithInjectionConstructor
                 //ComponentWithInjectionConstructor这些都是通过反射创建的，都是能创建成功的，不是说接口，没办法创建。
-                context.bind(Component.class, ComponentWithInjectionConstructor.class);
-                context.bind(Dependency.class, DependencyWithInjectionConstructor.class);
-                context.bind(String.class, "dependency String");
+                config.bind(Component.class, ComponentWithInjectionConstructor.class);
+                config.bind(Dependency.class, DependencyWithInjectionConstructor.class);
+                config.bind(String.class, "dependency String");
                 //        if(!providers.containsKey(type)) throw new DependencyNotFoundException();
 //        return (Type) providers.get(type).get();
-                Component instance = context.get(Component.class).get();
+                Component instance = config.get(Component.class).get();
                 assertNotNull(instance);
                 Dependency dependency = ((ComponentWithInjectionConstructor) instance).getDependency();
                 assertNotNull(dependency);
@@ -100,7 +98,7 @@ class ContainerTest {
             @Test
             public void should_throw_exception_if_multi_inject_constructors_provided() throws Exception {
                 assertThrows(IllegalComponentException.class, () -> {
-                    context.bind(Component.class, ComponentWithMultiInjectionConstructor.class);
+                    config.bind(Component.class, ComponentWithMultiInjectionConstructor.class);
                 });
             }
 
@@ -108,15 +106,15 @@ class ContainerTest {
             @Test
             public void should_throw_exception_if_no_inject_nor_default_constructor_provided() throws Exception {
                 assertThrows(IllegalComponentException.class, () ->
-                        context.bind(Component.class, ComponentWithoutInjectionConstructorNorDefaultConstructor.class));
+                        config.bind(Component.class, ComponentWithoutInjectionConstructorNorDefaultConstructor.class));
             }
 
             //TODO dependency not exist
             @Test
             public void should_throw_exception_if_dependency_not_found() throws Exception {
-                context.bind(Component.class, ComponentWithInjectionConstructor.class);
+                config.bind(Component.class, ComponentWithInjectionConstructor.class);
                 DependencyNotFoundException exception = assertThrows(DependencyNotFoundException.class, () ->
-                        context.get(Component.class).get());
+                        config.get(Component.class).get());
                 assertEquals(Dependency.class,exception.getDependency());
                 assertEquals(Component.class,exception.getComponent());
 
@@ -124,20 +122,20 @@ class ContainerTest {
 
             @Test
             public void should_throw_exception_if_transitive_dependency_not_found() throws Exception {
-                context.bind(Component.class, ComponentWithInjectionConstructor.class);
-                context.bind(Dependency.class, DependencyWithInjectionConstructor.class);
+                config.bind(Component.class, ComponentWithInjectionConstructor.class);
+                config.bind(Dependency.class, DependencyWithInjectionConstructor.class);
                 DependencyNotFoundException exception = assertThrows(DependencyNotFoundException.class, () ->
-                        context.get(Component.class).get());
+                        config.get(Component.class).get());
                 assertEquals(String.class,exception.getDependency());
                 assertEquals(Dependency.class,exception.getComponent());
 
             }
             @Test
             public void should_throw_exception_if_cyclic_dependencies_found() throws Exception {
-                context.bind(Component.class, ComponentWithInjectionConstructor.class);
-                context.bind(Dependency.class, DependencyDependedOnComponent.class);
+                config.bind(Component.class, ComponentWithInjectionConstructor.class);
+                config.bind(Dependency.class, DependencyDependedOnComponent.class);
 
-                CyclicDependenciesFoundException exception = assertThrows(CyclicDependenciesFoundException.class, () -> context.get(Component.class));
+                CyclicDependenciesFoundException exception = assertThrows(CyclicDependenciesFoundException.class, () -> config.get(Component.class));
                 List<Class<?>> classes = Arrays.asList(exception.getComponents());
                 assertEquals(2,classes.size());
                 assertTrue(classes.contains(Component.class));
@@ -146,10 +144,10 @@ class ContainerTest {
 
             @Test
             public void should_throw_exception_if_transitive_cyclic_dependencies_found() throws Exception {
-                context.bind(Component.class,ComponentWithInjectionConstructor.class);
-                context.bind(Dependency.class,DependencyDependedOnAnotherDependency.class);
-                context.bind(AnotherDependency.class, AnotherDependencyDependedOnComponent.class);
-                CyclicDependenciesFoundException exception = assertThrows(CyclicDependenciesFoundException.class, () -> context.get(Component.class));
+                config.bind(Component.class,ComponentWithInjectionConstructor.class);
+                config.bind(Dependency.class,DependencyDependedOnAnotherDependency.class);
+                config.bind(AnotherDependency.class, AnotherDependencyDependedOnComponent.class);
+                CyclicDependenciesFoundException exception = assertThrows(CyclicDependenciesFoundException.class, () -> config.get(Component.class));
                 List<Class<?>> classes = Arrays.asList(exception.getComponents());
                 assertEquals(3,classes.size());
                 assertTrue(classes.contains(Component.class));

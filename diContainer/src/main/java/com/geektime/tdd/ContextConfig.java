@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
 
-public class Context {
+public class ContextConfig {
     private Map<Class<?>, Provider<?>> providers = new HashMap<>();
 
     //这个是泛型方法，如果再类上加上了<T> 方法public T sayHay(){}这个是普通方法，下卖弄这个才是泛型方法
@@ -50,7 +50,7 @@ public class Context {
             try {
                 constructing = true;
                 Object[] dependencies = stream(injectConstructor.getParameters())
-                        .map(p -> Context.this.get(p.getType()).orElseThrow(() -> new DependencyNotFoundException(componentType, p.getType())))
+                        .map(p -> ContextConfig.this.get(p.getType()).orElseThrow(() -> new DependencyNotFoundException(componentType, p.getType())))
                         .toArray(Object[]::new);
                 return injectConstructor.newInstance(dependencies);
             } catch (CyclicDependenciesFoundException e) {
