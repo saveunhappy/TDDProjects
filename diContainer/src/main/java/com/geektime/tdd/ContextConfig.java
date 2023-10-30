@@ -30,7 +30,7 @@ public class ContextConfig implements Context {
         return new Context() {
             @Override
             public <Type> Optional<Type> get(Class<Type> type) {
-                return Optional.empty();
+                return getType(type);
             }
         };
     }
