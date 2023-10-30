@@ -12,11 +12,11 @@ import static java.util.Arrays.stream;
 
 public class ContextConfig {
     private Map<Class<?>, Provider<?>> providers = new HashMap<>();
+    private Map<Class<?>, ComponentProvider<?>> componentProviders = new HashMap<>();
 
-    //这个是泛型方法，如果再类上加上了<T> 方法public T sayHay(){}这个是普通方法，下卖弄这个才是泛型方法
-    //测试通过，就是把一个类的Class绑定到它的实例上面去。
     public <Type> void bind(Class<Type> type, Type instance) {
         providers.put(type, (Provider<Type>) () -> instance);
+        componentProviders.put(type, context -> instance);
     }
 
     //这个和    public static <T> T parse(Class<T> optionsClass, String... args) 一样的，只是泛型的名字变了。
