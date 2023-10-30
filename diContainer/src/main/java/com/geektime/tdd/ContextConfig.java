@@ -26,6 +26,15 @@ public class ContextConfig implements Context {
         providers.put(type, new ConstructorInjectionProvider<>(type, injectConstructor));
     }
 
+    public Context getContext(){
+        return new Context() {
+            @Override
+            public <Type> Optional<Type> get(Class<Type> type) {
+                return Optional.empty();
+            }
+        };
+    }
+
 
     @Override
     public <Type> Optional<Type> get(Class<Type> type) {
