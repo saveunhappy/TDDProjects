@@ -75,7 +75,7 @@ public class ContextConfig {
 
         @Override
         public T get(Context context) {
-            return null;
+            return getT(context);
         }
     }
 
