@@ -52,7 +52,7 @@ public class ContextConfig {
     }
 
     private void checkDependencies(Class<?> component, Stack<Class<?>> visiting) {
-        for (Class<?> dependency : dependencies.get(component)) {
+        for (Class<?> dependency : providers.get(component).getDependency()) {
             //就是你bind一个接口就得有一个实现类，如果你Component依赖了Dependency
             //但是你没有bind过，那就在dependencies没有找到，就抛出异常,key是bind过的，value就是你的构造器参数
             //也是一个Class，如果没有找到，那是不应该的，因为key和value都应该在dependencies中的
