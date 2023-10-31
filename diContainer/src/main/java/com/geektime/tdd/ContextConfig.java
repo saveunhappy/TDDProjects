@@ -13,7 +13,6 @@ import static java.util.Arrays.stream;
 
 public class ContextConfig {
     private Map<Class<?>, ComponentProvider<?>> providers = new HashMap<>();
-    private Map<Class<?>, List<Class<?>>> dependencies = new HashMap<>();
 
     public <Type> void bind(Class<Type> type, Type instance) {
         providers.put(type, new ComponentProvider<>() {
@@ -71,8 +70,8 @@ public class ContextConfig {
 
     class ConstructorInjectionProvider<T> implements ComponentProvider<T> {
 
-        private Class<?> componentType;
-        private Constructor<T> injectConstructor;
+        private final Class<?> componentType;
+        private final Constructor<T> injectConstructor;
 
         public ConstructorInjectionProvider(Class<?> componentType, Constructor<T> injectConstructor) {
             this.componentType = componentType;
