@@ -59,7 +59,7 @@ public class ContextConfig {
             //Component->Dependency->String现在如果String没有，
             // 但是依赖有两个Component:Dependency,Dependency:String
             //dependencies.get(String)这个找不到，没有Bind过，所以报错
-            if (!dependencies.containsKey(dependency)) throw new DependencyNotFoundException(component, dependency);
+            if (!providers.containsKey(dependency)) throw new DependencyNotFoundException(component, dependency);
             if (visiting.contains(dependency)) throw new CyclicDependenciesFoundException(visiting);
             visiting.push(dependency);
             checkDependencies(dependency, visiting);
