@@ -8,7 +8,6 @@ import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 
 public class ContextConfig {
@@ -32,7 +31,7 @@ public class ContextConfig {
     public <Type, Implementation extends Type>
     void bind(Class<Type> type, Class<Implementation> implementation) {
         //----
-        Constructor<Implementation> injectConstructor = getInjectConstructor(implementation);
+        Constructor<Implementation> injectConstructor = ConstructorInjectionProvider.getInjectConstructor(implementation);
         providers.put(type, new ConstructorInjectionProvider<>(type, injectConstructor));
     }
 
@@ -79,6 +78,22 @@ public class ContextConfig {
             this.injectConstructor = injectConstructor;
         }
 
+        private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {
+            List<Constructor<?>> injectConstructors = stream(implementation.getConstructors())
+                    .filter(c -> c.isAnnotationPresent(Inject.class)).collect(Collectors.toList());
+            if (injectConstructors.size() > 1) throw new IllegalComponentException();
+
+            //找不到被@Inject标注的，并且找不到默认的构造函数
+            return (Constructor<Type>) injectConstructors.stream().findFirst().orElseGet(() -> {
+                try {
+                    return implementation.getConstructor();
+                } catch (NoSuchMethodException e) {
+                    //这里之前是RuntimeException，改成我们的自定义异常了
+                    throw new IllegalComponentException();
+                }
+            });
+        }
+
         @Override
         public T get(Context context) {
             try {
@@ -97,19 +112,4 @@ public class ContextConfig {
         }
     }
 
-    private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {
-        List<Constructor<?>> injectConstructors = stream(implementation.getConstructors())
-                .filter(c -> c.isAnnotationPresent(Inject.class)).collect(Collectors.toList());
-        if (injectConstructors.size() > 1) throw new IllegalComponentException();
-
-        //找不到被@Inject标注的，并且找不到默认的构造函数
-        return (Constructor<Type>) injectConstructors.stream().findFirst().orElseGet(() -> {
-            try {
-                return implementation.getConstructor();
-            } catch (NoSuchMethodException e) {
-                //这里之前是RuntimeException，改成我们的自定义异常了
-                throw new IllegalComponentException();
-            }
-        });
-    }
 }
