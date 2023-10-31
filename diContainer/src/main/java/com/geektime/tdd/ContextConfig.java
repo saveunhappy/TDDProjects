@@ -19,7 +19,7 @@ public class ContextConfig {
         providers.put(type, context -> instance);
         //为什么这里是null，循环依赖是反射创建的，就是容器帮你创建，那根据你的参数去递归创建，循环了，不知道创建谁了
         //这里是直接传的对象，就不用你去创建了，当然就不会有循环依赖了
-        dependencies.put(type,asList());
+        dependencies.put(type, asList());
     }
 
     //这个和    public static <T> T parse(Class<T> optionsClass, String... args) 一样的，只是泛型的名字变了。
@@ -30,14 +30,19 @@ public class ContextConfig {
         dependencies.put(type, stream(injectConstructor.getParameters()).map(Parameter::getType).collect(Collectors.toList()));
     }
 
-    public Context getContext(){
+    public Context getContext() {
         //这个dependencies中就是记录了所有的，还有你的参数中有的依赖，也去给你put进去，
-        for(Class<?> component: dependencies.keySet()){
-            for(Class<?> dependency: dependencies.get(component)){
+        for (Class<?> component : dependencies.keySet()) {
+            for (Class<?> dependency : dependencies.get(component)) {
                 //就是你bind一个接口就得有一个实现类，如果你Component依赖了Dependency
-                //但是你没有bind过，那就在dependencies没有找到，就抛出异常
-                if(!dependencies.containsKey(dependency)) throw new DependencyNotFoundException(component,dependency);
+                //但是你没有bind过，那就在dependencies没有找到，就抛出异常,key是bind过的，value就是你的构造器参数
+                //也是一个Class，如果没有找到，那是不应该的，因为key和value都应该在dependencies中的
+                //Component->Dependency->String现在如果String没有，
+                // 但是依赖有两个Component:Dependency,Dependency:String
+                //dependencies.get(String)这个找不到，没有Bind过，所以报错
+                if (!dependencies.containsKey(dependency)) throw new DependencyNotFoundException(component, dependency);
             }
+            checkDependencies(component,new Stack<>());
         }
         return new Context() {
             @Override
@@ -45,6 +50,15 @@ public class ContextConfig {
                 return Optional.ofNullable(providers.get(type)).map(provider -> (Type) provider.get(this));
             }
         };
+    }
+
+    private void checkDependencies(Class<?> component, Stack<Class<?>> visiting) {
+        for (Class<?> dependency : dependencies.get(component)) {
+            if (visiting.contains(dependency)) throw new CyclicDependenciesFoundException(visiting);
+            visiting.push(dependency);
+            checkDependencies(dependency, visiting);
+            visiting.pop();
+        }
     }
 
     interface ComponentProvider<T> {
