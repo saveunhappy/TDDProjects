@@ -27,9 +27,6 @@ public class ContextConfig {
                 return List.of();
             }
         });
-        //为什么这里是null，循环依赖是反射创建的，就是容器帮你创建，那根据你的参数去递归创建，循环了，不知道创建谁了
-        //这里是直接传的对象，就不用你去创建了，当然就不会有循环依赖了
-        dependencies.put(type, asList());
     }
 
     //这个和    public static <T> T parse(Class<T> optionsClass, String... args) 一样的，只是泛型的名字变了。
@@ -37,7 +34,6 @@ public class ContextConfig {
     void bind(Class<Type> type, Class<Implementation> implementation) {
         Constructor<Implementation> injectConstructor = getInjectConstructor(implementation);
         providers.put(type, new ConstructorInjectionProvider<>(type, injectConstructor));
-        dependencies.put(type, stream(injectConstructor.getParameters()).map(Parameter::getType).collect(Collectors.toList()));
     }
 
     public Context getContext() {
