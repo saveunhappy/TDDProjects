@@ -40,10 +40,6 @@ public class ContextConfig {
         dependencies.put(type, stream(injectConstructor.getParameters()).map(Parameter::getType).collect(Collectors.toList()));
     }
 
-    private static <Type, Implementation extends Type> List<Class<?>> getCollect(Constructor<Implementation> injectConstructor) {
-        return stream(injectConstructor.getParameters()).map(Parameter::getType).collect(Collectors.toList());
-    }
-
     public Context getContext() {
         //这个dependencies中就是记录了所有的，还有你的参数中有的依赖，也去给你put进去，
         dependencies.keySet().forEach(component -> checkDependencies(component, new Stack<>()));
