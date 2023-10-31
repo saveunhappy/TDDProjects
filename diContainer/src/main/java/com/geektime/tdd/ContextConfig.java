@@ -66,7 +66,7 @@ public class ContextConfig {
         List<Class<?>> getDependency();
     }
 
-    class ConstructorInjectionProvider<T> implements ComponentProvider<T> {
+    static class ConstructorInjectionProvider<T> implements ComponentProvider<T> {
 
         private Constructor<T> injectConstructor;
 
