@@ -32,9 +32,7 @@ public class ContextConfig {
 
     public Context getContext() {
         //这个dependencies中就是记录了所有的，还有你的参数中有的依赖，也去给你put进去，
-        for (Class<?> component : dependencies.keySet()) {
-            checkDependencies(component,new Stack<>());
-        }
+        dependencies.keySet().forEach(component -> checkDependencies(component,new Stack<>()));
         return new Context() {
             @Override
             public <Type> Optional<Type> get(Class<Type> type) {
