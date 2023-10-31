@@ -30,9 +30,8 @@ public class ContextConfig {
     //这个和    public static <T> T parse(Class<T> optionsClass, String... args) 一样的，只是泛型的名字变了。
     public <Type, Implementation extends Type>
     void bind(Class<Type> type, Class<Implementation> implementation) {
-        //----
         Constructor<Implementation> injectConstructor = ConstructorInjectionProvider.getInjectConstructor(implementation);
-        providers.put(type, new ConstructorInjectionProvider<>(type, injectConstructor));
+        providers.put(type, new ConstructorInjectionProvider<>(injectConstructor));
     }
 
     public Context getContext() {
@@ -70,11 +69,9 @@ public class ContextConfig {
 
     class ConstructorInjectionProvider<T> implements ComponentProvider<T> {
 
-        private final Class<?> componentType;
         private final Constructor<T> injectConstructor;
 
-        public ConstructorInjectionProvider(Class<?> componentType, Constructor<T> injectConstructor) {
-            this.componentType = componentType;
+        public ConstructorInjectionProvider(Constructor<T> injectConstructor) {
             this.injectConstructor = injectConstructor;
         }
 
