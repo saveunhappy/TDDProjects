@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
 
-class ConstructorInjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
+class ConstructorInjectionProvider<T> implements ComponentProvider<T> {
 
     private Constructor<T> injectConstructor;
 

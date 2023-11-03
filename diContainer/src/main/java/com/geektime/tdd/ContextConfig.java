@@ -54,10 +54,4 @@ public class ContextConfig {
         }
     }
 
-    interface ComponentProvider<T> {
-        T get(Context context);
-
-        List<Class<?>> getDependency();
-    }
-
 }
