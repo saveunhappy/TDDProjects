@@ -4,6 +4,7 @@ import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,6 +12,9 @@ import java.util.Optional;
 
 import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ContainerTest {
 
@@ -109,8 +113,8 @@ class ContainerTest {
                 config.bind(Component.class, ComponentWithInjectionConstructor.class);
                 DependencyNotFoundException exception = assertThrows(DependencyNotFoundException.class, () ->
                         config.getContext());
-                assertEquals(Dependency.class,exception.getDependency());
-                assertEquals(Component.class,exception.getComponent());
+                assertEquals(Dependency.class, exception.getDependency());
+                assertEquals(Component.class, exception.getComponent());
 
             }
 
@@ -120,10 +124,11 @@ class ContainerTest {
                 config.bind(Dependency.class, DependencyWithInjectionConstructor.class);
                 DependencyNotFoundException exception = assertThrows(DependencyNotFoundException.class, () ->
                         config.getContext());
-                assertEquals(String.class,exception.getDependency());
-                assertEquals(Dependency.class,exception.getComponent());
+                assertEquals(String.class, exception.getDependency());
+                assertEquals(Dependency.class, exception.getComponent());
 
             }
+
             @Test
             public void should_throw_exception_if_cyclic_dependencies_found() throws Exception {
                 config.bind(Component.class, ComponentWithInjectionConstructor.class);
@@ -132,20 +137,20 @@ class ContainerTest {
                 CyclicDependenciesFoundException exception = assertThrows(CyclicDependenciesFoundException.class,
                         () -> config.getContext());
                 List<Class<?>> classes = Arrays.asList(exception.getComponents());
-                assertEquals(2,classes.size());
+                assertEquals(2, classes.size());
                 assertTrue(classes.contains(Component.class));
                 assertTrue(classes.contains(Dependency.class));
             }
 
             @Test
             public void should_throw_exception_if_transitive_cyclic_dependencies_found() throws Exception {
-                config.bind(Component.class,ComponentWithInjectionConstructor.class);
-                config.bind(Dependency.class,DependencyDependedOnAnotherDependency.class);
+                config.bind(Component.class, ComponentWithInjectionConstructor.class);
+                config.bind(Dependency.class, DependencyDependedOnAnotherDependency.class);
                 config.bind(AnotherDependency.class, AnotherDependencyDependedOnComponent.class);
                 CyclicDependenciesFoundException exception = assertThrows(CyclicDependenciesFoundException.class,
                         () -> config.getContext());
                 List<Class<?>> classes = Arrays.asList(exception.getComponents());
-                assertEquals(3,classes.size());
+                assertEquals(3, classes.size());
                 assertTrue(classes.contains(Component.class));
                 assertTrue(classes.contains(Dependency.class));
                 assertTrue(classes.contains(AnotherDependency.class));
@@ -155,11 +160,44 @@ class ContainerTest {
 
         @Nested
         public class FieldInjection {
+            class ComponentWithFieldInjection {
+                @Inject
+                Dependency dependency;
+            }
+
+            //TODO inject field
+            @Test
+            public void should_inject_dependency_via_field() {
+                Dependency dependency = new Dependency() {
+                };
+                config.bind(Dependency.class, dependency);
+                config.bind(ComponentWithFieldInjection.class, ComponentWithFieldInjection.class);
+
+                ComponentWithFieldInjection component = config.getContext().get(ComponentWithFieldInjection.class).get();
+                assertSame(dependency, component.dependency);
+
+            }
+            @Test
+            public void should_create_component_with_injection_field() {
+                Context context = mock(Context.class);
+                Dependency dependency = mock(Dependency.class);
+                when(context.get(eq(Dependency.class))).thenReturn(Optional.of(dependency));
+                //这样只会就会找到@Inject标注的方法，目前是只有方法，
+                ConstructorInjectionProvider<ComponentWithFieldInjection> provider = new ConstructorInjectionProvider<>(ComponentWithFieldInjection.class);
+                //get的时候应该能获取到对应的依赖，因为里面有Dependency的方法，如果依赖没有那么也是就报错了，所以这里是最终要实现的
+                //根据字段注入
+                ComponentWithFieldInjection component = provider.get(context);
+                assertSame(dependency, component.dependency);
+            }
+            //TODO throw exception if dependency not found
+            //TODO throw exception if field is final
+            //TODO throw exception if cyclic dependency
 
         }
 
         @Nested
         public class MethodInjection {
+
 
         }
 
@@ -261,6 +299,7 @@ class AnotherDependencyDependedOnComponent implements AnotherDependency {
 
 class DependencyDependedOnAnotherDependency implements Dependency {
     private AnotherDependency anotherDependency;
+
     @Inject
     public DependencyDependedOnAnotherDependency(AnotherDependency anotherDependency) {
         this.anotherDependency = anotherDependency;

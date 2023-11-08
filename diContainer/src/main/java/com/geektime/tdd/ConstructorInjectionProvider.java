@@ -49,6 +49,7 @@ class ConstructorInjectionProvider<T> implements ComponentProvider<T> {
 
     @Override
     public List<Class<?>> getDependency() {
+        //注意这里，返回的是list
         return stream(injectConstructor.getParameters()).map(Parameter::getType).collect(Collectors.toList());
     }
 }
