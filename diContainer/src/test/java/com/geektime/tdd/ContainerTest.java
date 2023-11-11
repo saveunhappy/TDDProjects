@@ -177,6 +177,7 @@ class ContainerTest {
                 assertSame(dependency, component.dependency);
 
             }
+
             @Test
             public void should_create_component_with_injection_field() {
                 Context context = mock(Context.class);
@@ -190,6 +191,22 @@ class ContainerTest {
                 assertSame(dependency, component.dependency);
             }
             //TODO throw exception if dependency not found
+
+            @Test
+            public void should_throw_exception_when_field_dependency_missing() {
+                //端到端的方式
+                config.bind(ComponentWithFieldInjection.class, ComponentWithFieldInjection.class);
+                assertThrows(DependencyNotFoundException.class, () -> config.getContext());
+            }
+
+            @Test
+            public void should_include_field_dependency_in_dependencies() {
+                //类的测试，
+                ConstructorInjectionProvider<ComponentWithFieldInjection> provider = new ConstructorInjectionProvider<>(ComponentWithFieldInjection.class);
+                //注意看getDependency()的实现，就是根据Constructor的参数是什么类型就添加到这个List中去
+                assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
+            }
+
             //TODO throw exception if field is final
             //TODO throw exception if cyclic dependency
 
