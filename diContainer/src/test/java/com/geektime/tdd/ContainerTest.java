@@ -209,6 +209,22 @@ class ContainerTest {
 
             //TODO throw exception if field is final
             //TODO throw exception if cyclic dependency
+            class DependencyWithFieldInjection implements Dependency {
+                @Inject
+                ComponentWithFieldInjection component;
+            }
+
+            @Test
+            public void should_throw_exception_when_field_has_cyclic_dependencies() {
+                config.bind(ComponentWithFieldInjection.class, ComponentWithFieldInjection.class);
+                config.bind(Dependency.class, DependencyWithFieldInjection.class);
+                assertThrows(CyclicDependenciesFoundException.class, () -> config.getContext());
+            }
+            @Test
+            public void should_throw_exception_when_field_has_cyclic_dependencies_() {
+                ConstructorInjectionProvider<ComponentWithFieldInjection> provider = new ConstructorInjectionProvider<>(ComponentWithFieldInjection.class);
+                assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
+            }
 
         }
 
