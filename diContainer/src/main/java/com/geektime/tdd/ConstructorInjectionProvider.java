@@ -2,10 +2,7 @@ package com.geektime.tdd;
 
 import jakarta.inject.Inject;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Parameter;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,9 +16,13 @@ class ConstructorInjectionProvider<T> implements ComponentProvider<T> {
 
     private List<Field> injectFields;
 
+    private List<Method> injectMethods;
+
     public ConstructorInjectionProvider(Class<T> component) {
         this.injectConstructor = getInjectConstructor(component);
         this.injectFields = getInjectFields(component);
+        this.injectMethods = stream(component.getDeclaredMethods())
+                .filter(m -> m.isAnnotationPresent(Inject.class)).toList();
     }
 
 
@@ -34,6 +35,11 @@ class ConstructorInjectionProvider<T> implements ComponentProvider<T> {
             T instance = injectConstructor.newInstance(dependencies);
             for (Field field : injectFields) {
                 field.set(instance, context.get(field.getType()).get());
+            }
+            for (Method method : injectMethods) {
+                //目前是install没有参数，那么就不会进入map，一会儿看有参数的情况
+                method.invoke(instance, stream(method.getParameterTypes())
+                        .map(t -> context.get(t).get()).toArray());
             }
             return instance;
         } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
@@ -50,7 +56,7 @@ class ConstructorInjectionProvider<T> implements ComponentProvider<T> {
     private static <T> List<Field> getInjectFields(Class<T> component) {
         List<Field> injectFields = new ArrayList<>();
         Class<?> current = component;
-        while (current != Object.class){
+        while (current != Object.class) {
             //注意，这里是current
             injectFields.addAll(stream(current.getDeclaredFields())
                     .filter(f -> f.isAnnotationPresent(Inject.class)).toList());

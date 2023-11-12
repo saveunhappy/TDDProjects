@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -207,7 +208,25 @@ class ContainerTest {
 
         @Nested
         public class MethodInjection {
+            static class InjectMethodWithNoDependency{
+                boolean called = false;
+                @Inject
+                void install(){
+                    this.called = true;
+                }
+            }
+            //TODO  inject method with no dependencies will be called
+            @Test
+            public void should_call_inject_method_even_if_no_dependency_declared() throws Exception{
+                config.bind(InjectMethodWithNoDependency.class,InjectMethodWithNoDependency.class);
+                InjectMethodWithNoDependency component = config.getContext().get(InjectMethodWithNoDependency.class).get();
+                assertTrue(component.called);
+            }
 
+            //TODO  inject method with dependencies will be injected
+            //TODO  override inject method from superclass
+            //TODO  include dependencies from inject methods
+            //TODO  throw exception if type parameter defined
 
         }
 
