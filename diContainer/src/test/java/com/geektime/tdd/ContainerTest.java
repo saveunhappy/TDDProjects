@@ -204,6 +204,9 @@ class ContainerTest {
                 //类的测试，
                 ConstructorInjectionProvider<ComponentWithFieldInjection> provider = new ConstructorInjectionProvider<>(ComponentWithFieldInjection.class);
                 //注意看getDependency()的实现，就是根据Constructor的参数是什么类型就添加到这个List中去
+                //为什么要这样写测试？因为如果测试这个ConstructorInjectionProvider的实现里面没有去抛出
+                //循环依赖或者依赖找不到的，我们只能知道他的依赖是什么，就是构造器的参数，所以循环依赖和
+                //依赖找不到只能去使用这个
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
             }
 
@@ -223,6 +226,10 @@ class ContainerTest {
             @Test
             public void should_throw_exception_when_field_has_cyclic_dependencies_() {
                 ConstructorInjectionProvider<ComponentWithFieldInjection> provider = new ConstructorInjectionProvider<>(ComponentWithFieldInjection.class);
+                //注意看getDependency()的实现，就是根据Constructor的参数是什么类型就添加到这个List中去
+                //为什么要这样写测试？因为如果测试这个ConstructorInjectionProvider的实现里面没有去抛出
+                //循环依赖或者依赖找不到的，我们只能知道他的依赖是什么，就是构造器的参数，所以循环依赖和
+                //依赖找不到只能去使用这个
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
             }
 
