@@ -190,7 +190,13 @@ class ContainerTest {
                 ComponentWithFieldInjection component = provider.get(context);
                 assertSame(dependency, component.dependency);
             }
+            //TODO throw exception if field is final
+
+
             //TODO throw exception if dependency not found
+            //TODO throw exception if cyclic dependency
+            //TODO provided dependency information for field injection
+
 
             @Test
             public void should_throw_exception_when_field_dependency_missing() {
@@ -210,8 +216,6 @@ class ContainerTest {
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
             }
 
-            //TODO throw exception if field is final
-            //TODO throw exception if cyclic dependency
             class DependencyWithFieldInjection implements Dependency {
                 @Inject
                 ComponentWithFieldInjection component;
