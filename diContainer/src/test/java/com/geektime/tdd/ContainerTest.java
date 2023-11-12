@@ -161,7 +161,7 @@ class ContainerTest {
 
         @Nested
         public class FieldInjection {
-            class ComponentWithFieldInjection {
+            static class ComponentWithFieldInjection {
                 @Inject
                 Dependency dependency;
             }
@@ -179,8 +179,6 @@ class ContainerTest {
             }
 
             //TODO throw exception if field is final
-            //TODO provided dependency information for field injection
-
             @Test
             @Disabled
             public void should_include_field_dependency_in_dependencies() {
