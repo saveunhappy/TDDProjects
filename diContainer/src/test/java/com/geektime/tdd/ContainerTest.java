@@ -183,7 +183,7 @@ class ContainerTest {
             }
 
             @Test
-            public void should_inject_dependency_via_superclass_inject_field() throws Exception{
+            public void should_inject_dependency_via_superclass_inject_field() throws Exception {
                 Dependency dependency = new Dependency() {
                 };
                 config.bind(Dependency.class, dependency);
@@ -208,24 +208,50 @@ class ContainerTest {
 
         @Nested
         public class MethodInjection {
-            static class InjectMethodWithNoDependency{
+            static class InjectMethodWithNoDependency {
                 boolean called = false;
+
                 @Inject
-                void install(){
+                void install() {
                     this.called = true;
                 }
             }
+
             //TODO  inject method with no dependencies will be called
             @Test
-            public void should_call_inject_method_even_if_no_dependency_declared() throws Exception{
-                config.bind(InjectMethodWithNoDependency.class,InjectMethodWithNoDependency.class);
+            public void should_call_inject_method_even_if_no_dependency_declared() throws Exception {
+                config.bind(InjectMethodWithNoDependency.class, InjectMethodWithNoDependency.class);
                 InjectMethodWithNoDependency component = config.getContext().get(InjectMethodWithNoDependency.class).get();
                 assertTrue(component.called);
             }
 
             //TODO  inject method with dependencies will be injected
+            static class InjectMethodWithDependency {
+                Dependency dependency;
+
+                @Inject
+                void install(Dependency dependency) {
+                    this.dependency = dependency;
+                }
+            }
+
+            @Test
+            public void should_inject_dependency_via_inject_method() throws Exception {
+                Dependency dependency = new Dependency() {
+                };
+                config.bind(Dependency.class, dependency);
+                config.bind(InjectMethodWithDependency.class, InjectMethodWithDependency.class);
+                InjectMethodWithDependency component = config.getContext().get(InjectMethodWithDependency.class).get();
+                assertEquals(dependency, component.dependency);
+            }
+
             //TODO  override inject method from superclass
             //TODO  include dependencies from inject methods
+            @Test
+            public void should_include_dependencies_from_inject_method() throws Exception {
+                ConstructorInjectionProvider<InjectMethodWithDependency> provider = new ConstructorInjectionProvider<>(InjectMethodWithDependency.class);
+                assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
+            }
             //TODO  throw exception if type parameter defined
 
         }
