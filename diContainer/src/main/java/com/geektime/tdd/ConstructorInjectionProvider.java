@@ -4,6 +4,7 @@ import jakarta.inject.Inject;
 
 import java.lang.reflect.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -75,9 +76,19 @@ class ConstructorInjectionProvider<T> implements ComponentProvider<T> {
     private static <T> List<Method> getInjectMethods(Class<T> component) {
         List<Method> injectMethods = new ArrayList<>();
         Class<?> current = component;
-        while (current != Object.class){
-            injectMethods.addAll(stream(current.getDeclaredMethods())
-                    .filter(m -> m.isAnnotationPresent(Inject.class)).toList());
+        while (current != Object.class) {
+            injectMethods.addAll(
+                    //先获取到所有的方法
+                    stream(current.getDeclaredMethods())
+                    //然后获取到所有标注了Inject的
+                    .filter(m -> m.isAnnotationPresent(Inject.class))
+                    //然后如果网上走的话，filter的是要留下的，noneMatch就是不匹配的，就是如果是和父类的签名一样
+                    //那么就不添加，那反之，就不添加，所以noneMatch就是要求签名不一样的才添加进来，
+                    //然后还有一个，要求参数类型一样，记住，java中是有重载的，所以要名字和参数一样的才不添加
+                    .filter(m -> injectMethods.stream().noneMatch(o -> o.getName().equals(m.getName())
+                                    && Arrays.equals(o.getParameterTypes(),m.getParameterTypes())))
+
+                    .toList());
             current = current.getSuperclass();
         }
         Collections.reverse(injectMethods);

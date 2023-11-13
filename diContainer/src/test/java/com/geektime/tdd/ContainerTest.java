@@ -248,6 +248,7 @@ class ContainerTest {
             //TODO  override inject method from superclass
             static class SuperClassWithInjectMethod {
                 int superCalled = 0;
+
                 @Inject
                 void install() {
                     superCalled++;
@@ -256,6 +257,7 @@ class ContainerTest {
 
             static class SubClassWithInjectMethod extends SuperClassWithInjectMethod {
                 int subCalled = 0;
+
                 //注意，@inject标注的名字不能和父类的相同啊，否则永远调用的是子类的。
                 @Inject
                 void installAnother() {
@@ -264,14 +266,31 @@ class ContainerTest {
             }
 
             @Test
-            public void should_inject_dependencies_via_inject_method_from_superclass() throws Exception{
-                config.bind(SubClassWithInjectMethod.class,SubClassWithInjectMethod.class);
+            public void should_inject_dependencies_via_inject_method_from_superclass() throws Exception {
+                config.bind(SubClassWithInjectMethod.class, SubClassWithInjectMethod.class);
                 SubClassWithInjectMethod component = config.getContext().get(SubClassWithInjectMethod.class).get();
                 //如果是先是子后是父，那么刚开始，superCalled是0，superCalled + 1是1，然后再调用父，父是0，加1还是1，就该都是1
                 //如果先是父后是子，那么父先加了，是1，然后子的superCalled是1,1 + 1就是2
-                assertEquals(1,component.superCalled);
-                assertEquals(2,component.subCalled);
+                assertEquals(1, component.superCalled);
+                assertEquals(2, component.subCalled);
             }
+
+
+            static class SubClassOverrideSuperClassWithInject extends SuperClassWithInjectMethod {
+                //注意，@inject标注的名字不能和父类的相同啊，否则永远调用的是子类的。
+                @Inject
+                void install() {
+                    super.install();
+                }
+            }
+
+            @Test
+            public void should_only_call_once_if_subclass_override_inject_method_with_inject() throws Exception {
+                config.bind(SubClassOverrideSuperClassWithInject.class, SubClassOverrideSuperClassWithInject.class);
+                SubClassOverrideSuperClassWithInject component = config.getContext().get(SubClassOverrideSuperClassWithInject.class).get();
+                assertEquals(1, component.superCalled);
+            }
+
             //TODO  include dependencies from inject methods
             @Test
             public void should_include_dependencies_from_inject_method() throws Exception {
