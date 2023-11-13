@@ -22,8 +22,7 @@ class ConstructorInjectionProvider<T> implements ComponentProvider<T> {
     public ConstructorInjectionProvider(Class<T> component) {
         this.injectConstructor = getInjectConstructor(component);
         this.injectFields = getInjectFields(component);
-        this.injectMethods = stream(component.getDeclaredMethods())
-                .filter(m -> m.isAnnotationPresent(Inject.class)).toList();
+        this.injectMethods = getInjectMethods(component);
     }
 
 
@@ -70,6 +69,17 @@ class ConstructorInjectionProvider<T> implements ComponentProvider<T> {
             current = current.getSuperclass();
         }
         return injectFields;
+    }
+
+    private static <T> List<Method> getInjectMethods(Class<T> component) {
+        List<Method> injectMethods = new ArrayList<>();
+        Class<?> current = component;
+        while (current != Object.class){
+            injectMethods.addAll(stream(current.getDeclaredMethods())
+                    .filter(m -> m.isAnnotationPresent(Inject.class)).toList());
+            current = current.getSuperclass();
+        }
+        return injectMethods;
     }
 
     private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {

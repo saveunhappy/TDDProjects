@@ -246,6 +246,30 @@ class ContainerTest {
             }
 
             //TODO  override inject method from superclass
+            static class SuperClassWithInjectMethod {
+                boolean superCalled = false;
+                @Inject
+                void install() {
+                    superCalled = true;
+                }
+            }
+
+            static class SubClassWithInjectMethod extends SuperClassWithInjectMethod {
+                boolean subCalled = false;
+                //注意，@inject标注的名字不能和父类的相同啊，否则永远调用的是子类的。
+                @Inject
+                void installAnother() {
+                    subCalled = true;
+                }
+            }
+
+            @Test
+            public void should_inject_dependencies_via_inject_method_from_superclass() throws Exception{
+                config.bind(SubClassWithInjectMethod.class,SubClassWithInjectMethod.class);
+                SubClassWithInjectMethod component = config.getContext().get(SubClassWithInjectMethod.class).get();
+                assertTrue(component.superCalled);
+                assertTrue(component.subCalled);
+            }
             //TODO  include dependencies from inject methods
             @Test
             public void should_include_dependencies_from_inject_method() throws Exception {
