@@ -80,15 +80,21 @@ class ConstructorInjectionProvider<T> implements ComponentProvider<T> {
             injectMethods.addAll(
                     //先获取到所有的方法
                     stream(current.getDeclaredMethods())
-                    //然后获取到所有标注了Inject的
-                    .filter(m -> m.isAnnotationPresent(Inject.class))
-                    //然后如果网上走的话，filter的是要留下的，noneMatch就是不匹配的，就是如果是和父类的签名一样
-                    //那么就不添加，那反之，就不添加，所以noneMatch就是要求签名不一样的才添加进来，
-                    //然后还有一个，要求参数类型一样，记住，java中是有重载的，所以要名字和参数一样的才不添加
-                    .filter(m -> injectMethods.stream().noneMatch(o -> o.getName().equals(m.getName())
-                                    && Arrays.equals(o.getParameterTypes(),m.getParameterTypes())))
+                            //然后获取到所有标注了Inject的
+                            .filter(m -> m.isAnnotationPresent(Inject.class))
+                            //然后如果网上走的话，filter的是要留下的，noneMatch就是不匹配的，就是如果是和父类的签名一样
+                            //那么就不添加，那反之，就不添加，所以noneMatch就是要求签名不一样的才添加进来，
+                            //然后还有一个，要求参数类型一样，记住，java中是有重载的，所以要名字和参数一样的才不添加
+                            .filter(m -> injectMethods.stream().noneMatch(o -> o.getName().equals(m.getName())
+                                    && Arrays.equals(o.getParameterTypes(), m.getParameterTypes())))
+                            //就是你直接bind的这个实现类，如果你的方法没有加@Inject，但是你有父类，而且你的父类有同名的
+                            //方法又@Injecct,你这个没有加@Inject的方法就不应该被调用，所以要过滤掉，因为是依赖注入的
+                            //所以你这个是普通的方法，就不会在获取的时候调用
+                            .filter(m -> stream(component.getDeclaredMethods()).filter(m1 -> !m1.isAnnotationPresent(Inject.class))
+                                    .noneMatch(o -> o.getName().equals(m.getName())
+                                            && Arrays.equals(o.getParameterTypes(), m.getParameterTypes())))
 
-                    .toList());
+                            .toList());
             current = current.getSuperclass();
         }
         Collections.reverse(injectMethods);

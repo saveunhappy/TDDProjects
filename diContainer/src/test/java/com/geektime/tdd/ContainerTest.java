@@ -291,6 +291,18 @@ class ContainerTest {
                 assertEquals(1, component.superCalled);
             }
 
+            static class SubClassOverrideSuperClassWithNoInject extends SuperClassWithInjectMethod {
+                void install() {
+                    super.install();
+                }
+            }
+
+            @Test
+            public void should_not_call_inject_method_if_override_with_no_inject() throws Exception {
+                config.bind(SubClassOverrideSuperClassWithNoInject.class, SubClassOverrideSuperClassWithNoInject.class);
+                SubClassOverrideSuperClassWithNoInject component = config.getContext().get(SubClassOverrideSuperClassWithNoInject.class).get();
+                assertEquals(0, component.superCalled);
+            }
             //TODO  include dependencies from inject methods
             @Test
             public void should_include_dependencies_from_inject_method() throws Exception {
