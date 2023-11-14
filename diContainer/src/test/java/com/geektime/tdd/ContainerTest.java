@@ -41,6 +41,18 @@ class ContainerTest {
         }
 
         //TODO: abstract class
+        abstract class AbstractComponent implements Component {
+            @Inject
+            public AbstractComponent() {
+
+            }
+        }
+
+        @Test
+        public void should_throw_exception_if_component_is_abstract() throws Exception {
+             assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(AbstractComponent.class));
+
+        }
         //TODO: interface
 
         @Test
@@ -303,6 +315,7 @@ class ContainerTest {
                 SubClassOverrideSuperClassWithNoInject component = config.getContext().get(SubClassOverrideSuperClassWithNoInject.class).get();
                 assertEquals(0, component.superCalled);
             }
+
             //TODO  include dependencies from inject methods
             @Test
             public void should_include_dependencies_from_inject_method() throws Exception {
