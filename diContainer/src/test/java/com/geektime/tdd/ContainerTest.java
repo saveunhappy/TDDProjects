@@ -49,9 +49,12 @@ class ContainerTest {
         }
 
         @Test
-        public void should_throw_exception_if_component_is_abstract() throws Exception {
+        public void should_throw_exception_if_component_is_abstract() {
              assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(AbstractComponent.class));
-
+        }
+        @Test
+        public void should_throw_exception_if_component_is_interface() {
+            assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(Component.class));
         }
         //TODO: interface
 
