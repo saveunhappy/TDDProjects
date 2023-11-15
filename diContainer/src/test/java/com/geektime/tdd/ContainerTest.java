@@ -29,7 +29,6 @@ class ContainerTest {
 
     @Nested
     public class ComponentConstruction {
-        //TODO: instance
         @Test
         public void should_bind_type_to_a_specific_instance() throws Exception {
             Component instance = new Component() {
@@ -40,7 +39,6 @@ class ContainerTest {
 
         }
 
-        //TODO: abstract class
         abstract class AbstractComponent implements Component {
             @Inject
             public AbstractComponent() {
@@ -57,7 +55,6 @@ class ContainerTest {
         public void should_throw_exception_if_component_is_interface() {
             assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(Component.class));
         }
-        //TODO: interface
 
         @Test
         public void should_return_empty_if_component_not_defined() throws Exception {
@@ -67,7 +64,6 @@ class ContainerTest {
 
         @Nested
         public class ConstructorInjection {
-            //TODO: no args constructor 无依赖的组件应该通过默认构造函数生成组件实例
             @Test
             public void should_bind_type_to_a_class_with_default_constructor() throws Exception {
                 config.bind(Component.class, ComponentWithDefaultConstructor.class);
@@ -78,7 +74,6 @@ class ContainerTest {
 
             }
 
-            //TODO: with dependencies
             @Test
             public void should_bind_type_to_a_class_with_injection_constructor() throws Exception {
                 Dependency dependency = new Dependency() {
@@ -90,8 +85,6 @@ class ContainerTest {
                 assertSame(dependency, ((ComponentWithInjectionConstructor) instance).getDependency());
             }
 
-
-            //TODO: A->B->C
 
             @Test
             public void should_bind_type_to_a_class_with_transitive_dependency() throws Exception {
@@ -109,23 +102,18 @@ class ContainerTest {
                 assertEquals("dependency String", ((DependencyWithInjectionConstructor) dependency).getDependency());
 
             }
-            //TODO multi inject constructors
 
             @Test
-            public void should_throw_exception_if_multi_inject_constructors_provided() throws Exception {
-                assertThrows(IllegalComponentException.class, () -> {
-                    config.bind(Component.class, ComponentWithMultiInjectionConstructor.class);
-                });
+            public void should_throw_exception_if_multi_inject_constructors_provided() {
+                assertThrows(IllegalComponentException.class, () -> config.bind(Component.class, ComponentWithMultiInjectionConstructor.class));
             }
 
-            //TODO no default constructor and inject constructor
             @Test
             public void should_throw_exception_if_no_inject_nor_default_constructor_provided() throws Exception {
                 assertThrows(IllegalComponentException.class, () ->
                         config.bind(Component.class, ComponentWithoutInjectionConstructorNorDefaultConstructor.class));
             }
 
-            //TODO dependency not exist
             @Test
             public void should_throw_exception_if_dependency_not_found() throws Exception {
                 config.bind(Component.class, ComponentWithInjectionConstructor.class);
@@ -186,7 +174,6 @@ class ContainerTest {
             static class SubclassWithFieldInjection extends ComponentWithFieldInjection {
             }
 
-            //TODO inject field
             @Test
             public void should_inject_dependency_via_field() {
                 Dependency dependency = new Dependency() {
@@ -208,7 +195,6 @@ class ContainerTest {
                 assertSame(dependency, component.dependency);
             }
 
-            //TODO throw exception if field is final
 
             static class FinalInjectField {
                 @Inject
@@ -333,7 +319,6 @@ class ContainerTest {
                 ConstructorInjectionProvider<InjectMethodWithDependency> provider = new ConstructorInjectionProvider<>(InjectMethodWithDependency.class);
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
             }
-            //TODO  throw exception if type parameter defined
 
             static class InjectMethodWithTypeParameter {
                 @Inject
