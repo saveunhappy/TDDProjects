@@ -50,8 +50,9 @@ class ContainerTest {
 
         @Test
         public void should_throw_exception_if_component_is_abstract() {
-             assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(AbstractComponent.class));
+            assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(AbstractComponent.class));
         }
+
         @Test
         public void should_throw_exception_if_component_is_interface() {
             assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(Component.class));
@@ -208,6 +209,17 @@ class ContainerTest {
             }
 
             //TODO throw exception if field is final
+
+            static class FinalInjectField {
+                @Inject
+                final Dependency dependency = null;
+            }
+
+            @Test
+            public void should_throw_exception_if_inject_field_is_final() {
+                assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(FinalInjectField.class));
+            }
+
             @Test
             public void should_include_field_dependency_in_dependencies() {
                 //类的测试，
@@ -232,7 +244,6 @@ class ContainerTest {
                 }
             }
 
-            //TODO  inject method with no dependencies will be called
             @Test
             public void should_call_inject_method_even_if_no_dependency_declared() throws Exception {
                 config.bind(InjectMethodWithNoDependency.class, InjectMethodWithNoDependency.class);
@@ -240,7 +251,6 @@ class ContainerTest {
                 assertTrue(component.called);
             }
 
-            //TODO  inject method with dependencies will be injected
             static class InjectMethodWithDependency {
                 Dependency dependency;
 
@@ -260,7 +270,6 @@ class ContainerTest {
                 assertEquals(dependency, component.dependency);
             }
 
-            //TODO  override inject method from superclass
             static class SuperClassWithInjectMethod {
                 int superCalled = 0;
 
@@ -319,7 +328,6 @@ class ContainerTest {
                 assertEquals(0, component.superCalled);
             }
 
-            //TODO  include dependencies from inject methods
             @Test
             public void should_include_dependencies_from_inject_method() throws Exception {
                 ConstructorInjectionProvider<InjectMethodWithDependency> provider = new ConstructorInjectionProvider<>(InjectMethodWithDependency.class);
