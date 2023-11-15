@@ -35,3 +35,9 @@ java {
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
 }
+test {
+    useJUnitPlatform()
+    afterTest { descriptor, result ->
+        println "\n$descriptor.className [$descriptor.classDisplayName] > $descriptor.name [$descriptor.displayName]: $result.resultType"
+    }
+}

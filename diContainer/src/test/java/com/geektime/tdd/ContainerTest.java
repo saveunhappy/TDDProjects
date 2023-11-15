@@ -1,10 +1,7 @@
 package com.geektime.tdd;
 
 import jakarta.inject.Inject;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 
 import java.lang.reflect.Method;
@@ -30,6 +27,7 @@ class ContainerTest {
     @Nested
     public class ComponentConstruction {
         @Test
+        @DisplayName("ceshi")
         public void should_bind_type_to_a_specific_instance() throws Exception {
             Component instance = new Component() {
             };
