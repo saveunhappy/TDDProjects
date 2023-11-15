@@ -335,6 +335,18 @@ class ContainerTest {
             }
             //TODO  throw exception if type parameter defined
 
+            static class InjectMethodWithTypeParameter {
+                @Inject
+                <T> void install() {
+
+                }
+            }
+
+            @Test
+            public void should_throw_exception_if_inject_method_has_type_parameter() {
+                assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(InjectMethodWithTypeParameter.class));
+            }
+
         }
 
 

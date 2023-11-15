@@ -28,6 +28,8 @@ class ConstructorInjectionProvider<T> implements ComponentProvider<T> {
         this.injectMethods = getInjectMethods(component);
         if (injectFields.stream().anyMatch(f -> Modifier.isFinal(f.getModifiers())))
             throw new IllegalComponentException();
+        if (injectMethods.stream().anyMatch(m -> m.getTypeParameters().length != 0))
+            throw new IllegalComponentException();
     }
 
 
