@@ -34,10 +34,7 @@ public class InjectTest {
             };
             config.bind(Dependency.class, dependency);
 
-//            config.bind(Component.class, ComponentWithInjectionConstructor.class);
-//            Component instance = config.getContext().get(Component.class).get();
             Component instance = getComponent(Component.class, ComponentWithInjectionConstructor.class);
-
             assertNotNull(instance);
             assertSame(dependency, ((ComponentWithInjectionConstructor) instance).getDependency());
         }
