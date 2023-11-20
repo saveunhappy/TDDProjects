@@ -86,7 +86,7 @@ public class InjectTest {
             Dependency dependency;
         }
 
-        static class SubclassWithFieldInjection extends FieldInjection.ComponentWithFieldInjection {
+        static class SubclassWithFieldInjection extends ComponentWithFieldInjection {
         }
 
         @Test
@@ -94,8 +94,8 @@ public class InjectTest {
             Dependency dependency = new Dependency() {
             };
             config.bind(Dependency.class, dependency);
-            config.bind(FieldInjection.ComponentWithFieldInjection.class, FieldInjection.ComponentWithFieldInjection.class);
-            FieldInjection.ComponentWithFieldInjection component = config.getContext().get(FieldInjection.ComponentWithFieldInjection.class).get();
+            config.bind(ComponentWithFieldInjection.class, ComponentWithFieldInjection.class);
+            ComponentWithFieldInjection component = config.getContext().get(ComponentWithFieldInjection.class).get();
             assertSame(dependency, component.dependency);
 
         }
@@ -105,8 +105,8 @@ public class InjectTest {
             Dependency dependency = new Dependency() {
             };
             config.bind(Dependency.class, dependency);
-            config.bind(FieldInjection.SubclassWithFieldInjection.class, FieldInjection.SubclassWithFieldInjection.class);
-            FieldInjection.SubclassWithFieldInjection component = config.getContext().get(FieldInjection.SubclassWithFieldInjection.class).get();
+            config.bind(SubclassWithFieldInjection.class, SubclassWithFieldInjection.class);
+            SubclassWithFieldInjection component = config.getContext().get(SubclassWithFieldInjection.class).get();
             assertSame(dependency, component.dependency);
         }
 
@@ -118,13 +118,13 @@ public class InjectTest {
 
         @Test
         public void should_throw_exception_if_inject_field_is_final() {
-            assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(FieldInjection.FinalInjectField.class));
+            assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(FinalInjectField.class));
         }
 
         @Test
         public void should_include_field_dependency_in_dependencies() {
             //类的测试，
-            ConstructorInjectionProvider<FieldInjection.ComponentWithFieldInjection> provider = new ConstructorInjectionProvider<>(FieldInjection.ComponentWithFieldInjection.class);
+            ConstructorInjectionProvider<ComponentWithFieldInjection> provider = new ConstructorInjectionProvider<>(ComponentWithFieldInjection.class);
             //注意看getDependency()的实现，就是根据Constructor的参数是什么类型就添加到这个List中去
             //为什么要这样写测试？因为如果测试这个ConstructorInjectionProvider的实现里面没有去抛出
             //循环依赖或者依赖找不到的，我们只能知道他的依赖是什么，就是构造器的参数，所以循环依赖和
