@@ -96,7 +96,7 @@ class ContainerTest {
         }
 
         @Nested
-        public class InjectTest {
+        public static class InjectTest {
             ContextConfig config;
 
             @BeforeEach
