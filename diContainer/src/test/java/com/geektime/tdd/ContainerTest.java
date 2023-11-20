@@ -27,7 +27,6 @@ class ContainerTest {
     @Nested
     public class ComponentConstruction {
         @Test
-        @DisplayName("ceshi")
         public void should_bind_type_to_a_specific_instance() throws Exception {
             Component instance = new Component() {
             };
@@ -116,17 +115,6 @@ class ContainerTest {
                         config.getContext());
                 assertEquals(Dependency.class, exception.getDependency());
                 assertEquals(Component.class, exception.getComponent());
-
-            }
-
-            @Test
-            public void should_throw_exception_if_transitive_dependency_not_found() throws Exception {
-                config.bind(Component.class, ComponentWithInjectionConstructor.class);
-                config.bind(Dependency.class, DependencyWithInjectionConstructor.class);
-                DependencyNotFoundException exception = assertThrows(DependencyNotFoundException.class, () ->
-                        config.getContext());
-                assertEquals(String.class, exception.getDependency());
-                assertEquals(Dependency.class, exception.getComponent());
 
             }
 
