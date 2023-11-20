@@ -151,7 +151,7 @@ class ContainerTest {
             @Test
             public void should_throw_exception_if_no_inject_nor_default_constructor_provided() throws Exception {
                 assertThrows(IllegalComponentException.class, () ->
-                        config.bind(Component.class, ComponentWithoutInjectionConstructorNorDefaultConstructor.class));
+                        getBind(ComponentWithoutInjectionConstructorNorDefaultConstructor.class));
             }
 
         }
