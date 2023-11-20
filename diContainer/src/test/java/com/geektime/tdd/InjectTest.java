@@ -214,9 +214,9 @@ public class InjectTest {
         }
 
         @Test
-        public void should_only_call_once_if_subclass_override_inject_method_with_inject() throws Exception {
-            config.bind(SubClassOverrideSuperClassWithInject.class, SubClassOverrideSuperClassWithInject.class);
-            SubClassOverrideSuperClassWithInject component = config.getContext().get(SubClassOverrideSuperClassWithInject.class).get();
+        public void should_only_call_once_if_subclass_override_inject_method_with_inject() {
+
+            SubClassOverrideSuperClassWithInject component = getComponent(SubClassOverrideSuperClassWithInject.class, SubClassOverrideSuperClassWithInject.class);
             assertEquals(1, component.superCalled);
         }
 
@@ -227,9 +227,9 @@ public class InjectTest {
         }
 
         @Test
-        public void should_not_call_inject_method_if_override_with_no_inject() throws Exception {
-            config.bind(SubClassOverrideSuperClassWithNoInject.class, SubClassOverrideSuperClassWithNoInject.class);
-            SubClassOverrideSuperClassWithNoInject component = config.getContext().get(SubClassOverrideSuperClassWithNoInject.class).get();
+        public void should_not_call_inject_method_if_override_with_no_inject() {
+
+            SubClassOverrideSuperClassWithNoInject component = getComponent(SubClassOverrideSuperClassWithNoInject.class, SubClassOverrideSuperClassWithNoInject.class);
             assertEquals(0, component.superCalled);
         }
 
