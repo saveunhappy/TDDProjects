@@ -46,7 +46,6 @@ class ContainerTest {
         }
 
 
-
         @Test
         public void should_return_empty_if_component_not_defined() throws Exception {
             Optional<Component> component = config.getContext().get(Component.class);
@@ -148,6 +147,12 @@ class ContainerTest {
             public void should_throw_exception_if_no_inject_nor_default_constructor_provided() {
                 assertThrows(IllegalComponentException.class, () ->
                         new ConstructorInjectionProvider<>((Class<? extends Component>) ComponentWithoutInjectionConstructorNorDefaultConstructor.class));
+            }
+
+            @Test
+            public void should_include_dependency_from_inject_constructor() {
+                ConstructorInjectionProvider<ComponentWithInjectionConstructor> provider = new ConstructorInjectionProvider<>(ComponentWithInjectionConstructor.class);
+                assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
             }
 
         }
