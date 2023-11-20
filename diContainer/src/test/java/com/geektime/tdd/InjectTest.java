@@ -151,8 +151,8 @@ public class InjectTest {
 
         @Test
         public void should_call_inject_method_even_if_no_dependency_declared() throws Exception {
-            config.bind(InjectMethodWithNoDependency.class, InjectMethodWithNoDependency.class);
-            InjectMethodWithNoDependency component = config.getContext().get(InjectMethodWithNoDependency.class).get();
+
+            InjectMethodWithNoDependency component = getComponent(InjectMethodWithNoDependency.class, InjectMethodWithNoDependency.class);
             assertTrue(component.called);
         }
 
