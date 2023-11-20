@@ -109,8 +109,8 @@ public class InjectTest {
             Dependency dependency = new Dependency() {
             };
             config.bind(Dependency.class, dependency);
-            config.bind(SubclassWithFieldInjection.class, SubclassWithFieldInjection.class);
-            SubclassWithFieldInjection component = config.getContext().get(SubclassWithFieldInjection.class).get();
+
+            SubclassWithFieldInjection component = getComponent(SubclassWithFieldInjection.class, SubclassWithFieldInjection.class);
             assertSame(dependency, component.dependency);
         }
 
