@@ -32,9 +32,12 @@ public class InjectTest {
         public void should_bind_type_to_a_class_with_injection_constructor() throws Exception {
             Dependency dependency = new Dependency() {
             };
-            config.bind(Component.class, ComponentWithInjectionConstructor.class);
             config.bind(Dependency.class, dependency);
-            Component instance = config.getContext().get(Component.class).get();
+
+//            config.bind(Component.class, ComponentWithInjectionConstructor.class);
+//            Component instance = config.getContext().get(Component.class).get();
+            Component instance = getComponent(Component.class, ComponentWithInjectionConstructor.class);
+
             assertNotNull(instance);
             assertSame(dependency, ((ComponentWithInjectionConstructor) instance).getDependency());
         }
