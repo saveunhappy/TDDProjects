@@ -2,9 +2,7 @@ package com.geektime.tdd;
 
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.*;
-import org.mockito.Mockito;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -13,7 +11,6 @@ import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class ContainerTest {
 
@@ -142,7 +139,13 @@ class ContainerTest {
 
             @Test
             public void should_throw_exception_if_multi_inject_constructors_provided() {
-                assertThrows(IllegalComponentException.class, () -> config.bind(Component.class, ComponentWithMultiInjectionConstructor.class));
+                assertThrows(IllegalComponentException.class, () ->
+                        getBind(ComponentWithMultiInjectionConstructor.class)
+                );
+            }
+
+            private void getBind(Class<? extends Component> implementation) {
+                config.bind(Component.class, implementation);
             }
 
             @Test
