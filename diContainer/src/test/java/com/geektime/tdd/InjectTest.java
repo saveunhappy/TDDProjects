@@ -147,8 +147,8 @@ public class InjectTest {
 
         @Test
         public void should_call_inject_method_even_if_no_dependency_declared() throws Exception {
-            config.bind(MethodInjection.InjectMethodWithNoDependency.class, MethodInjection.InjectMethodWithNoDependency.class);
-            MethodInjection.InjectMethodWithNoDependency component = config.getContext().get(MethodInjection.InjectMethodWithNoDependency.class).get();
+            config.bind(InjectMethodWithNoDependency.class, InjectMethodWithNoDependency.class);
+            InjectMethodWithNoDependency component = config.getContext().get(InjectMethodWithNoDependency.class).get();
             assertTrue(component.called);
         }
 
@@ -166,8 +166,8 @@ public class InjectTest {
             Dependency dependency = new Dependency() {
             };
             config.bind(Dependency.class, dependency);
-            config.bind(MethodInjection.InjectMethodWithDependency.class, MethodInjection.InjectMethodWithDependency.class);
-            MethodInjection.InjectMethodWithDependency component = config.getContext().get(MethodInjection.InjectMethodWithDependency.class).get();
+            config.bind(InjectMethodWithDependency.class, InjectMethodWithDependency.class);
+            InjectMethodWithDependency component = config.getContext().get(InjectMethodWithDependency.class).get();
             assertEquals(dependency, component.dependency);
         }
 
@@ -180,7 +180,7 @@ public class InjectTest {
             }
         }
 
-        static class SubClassWithInjectMethod extends MethodInjection.SuperClassWithInjectMethod {
+        static class SubClassWithInjectMethod extends SuperClassWithInjectMethod {
             int subCalled = 0;
 
             //注意，@inject标注的名字不能和父类的相同啊，否则永远调用的是子类的。
@@ -192,8 +192,8 @@ public class InjectTest {
 
         @Test
         public void should_inject_dependencies_via_inject_method_from_superclass() throws Exception {
-            config.bind(MethodInjection.SubClassWithInjectMethod.class, MethodInjection.SubClassWithInjectMethod.class);
-            MethodInjection.SubClassWithInjectMethod component = config.getContext().get(MethodInjection.SubClassWithInjectMethod.class).get();
+            config.bind(SubClassWithInjectMethod.class, SubClassWithInjectMethod.class);
+            SubClassWithInjectMethod component = config.getContext().get(SubClassWithInjectMethod.class).get();
             //如果是先是子后是父，那么刚开始，superCalled是0，superCalled + 1是1，然后再调用父，父是0，加1还是1，就该都是1
             //如果先是父后是子，那么父先加了，是1，然后子的superCalled是1,1 + 1就是2
             assertEquals(1, component.superCalled);
@@ -201,7 +201,7 @@ public class InjectTest {
         }
 
 
-        static class SubClassOverrideSuperClassWithInject extends MethodInjection.SuperClassWithInjectMethod {
+        static class SubClassOverrideSuperClassWithInject extends SuperClassWithInjectMethod {
             //注意，@inject标注的名字不能和父类的相同啊，否则永远调用的是子类的。
             @Inject
             void install() {
@@ -211,12 +211,12 @@ public class InjectTest {
 
         @Test
         public void should_only_call_once_if_subclass_override_inject_method_with_inject() throws Exception {
-            config.bind(MethodInjection.SubClassOverrideSuperClassWithInject.class, MethodInjection.SubClassOverrideSuperClassWithInject.class);
-            MethodInjection.SubClassOverrideSuperClassWithInject component = config.getContext().get(MethodInjection.SubClassOverrideSuperClassWithInject.class).get();
+            config.bind(SubClassOverrideSuperClassWithInject.class, SubClassOverrideSuperClassWithInject.class);
+            SubClassOverrideSuperClassWithInject component = config.getContext().get(SubClassOverrideSuperClassWithInject.class).get();
             assertEquals(1, component.superCalled);
         }
 
-        static class SubClassOverrideSuperClassWithNoInject extends MethodInjection.SuperClassWithInjectMethod {
+        static class SubClassOverrideSuperClassWithNoInject extends SuperClassWithInjectMethod {
             void install() {
                 super.install();
             }
@@ -224,14 +224,14 @@ public class InjectTest {
 
         @Test
         public void should_not_call_inject_method_if_override_with_no_inject() throws Exception {
-            config.bind(MethodInjection.SubClassOverrideSuperClassWithNoInject.class, MethodInjection.SubClassOverrideSuperClassWithNoInject.class);
-            MethodInjection.SubClassOverrideSuperClassWithNoInject component = config.getContext().get(MethodInjection.SubClassOverrideSuperClassWithNoInject.class).get();
+            config.bind(SubClassOverrideSuperClassWithNoInject.class, SubClassOverrideSuperClassWithNoInject.class);
+            SubClassOverrideSuperClassWithNoInject component = config.getContext().get(SubClassOverrideSuperClassWithNoInject.class).get();
             assertEquals(0, component.superCalled);
         }
 
         @Test
         public void should_include_dependencies_from_inject_method() throws Exception {
-            ConstructorInjectionProvider<MethodInjection.InjectMethodWithDependency> provider = new ConstructorInjectionProvider<>(MethodInjection.InjectMethodWithDependency.class);
+            ConstructorInjectionProvider<InjectMethodWithDependency> provider = new ConstructorInjectionProvider<>(InjectMethodWithDependency.class);
             assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
         }
 
@@ -244,7 +244,7 @@ public class InjectTest {
 
         @Test
         public void should_throw_exception_if_inject_method_has_type_parameter() {
-            assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(MethodInjection.InjectMethodWithTypeParameter.class));
+            assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(InjectMethodWithTypeParameter.class));
         }
 
     }
