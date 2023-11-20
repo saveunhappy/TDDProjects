@@ -170,8 +170,8 @@ public class InjectTest {
             Dependency dependency = new Dependency() {
             };
             config.bind(Dependency.class, dependency);
-            config.bind(InjectMethodWithDependency.class, InjectMethodWithDependency.class);
-            InjectMethodWithDependency component = config.getContext().get(InjectMethodWithDependency.class).get();
+
+            InjectMethodWithDependency component = getComponent(InjectMethodWithDependency.class, InjectMethodWithDependency.class);
             assertEquals(dependency, component.dependency);
         }
 
@@ -196,8 +196,8 @@ public class InjectTest {
 
         @Test
         public void should_inject_dependencies_via_inject_method_from_superclass() throws Exception {
-            config.bind(SubClassWithInjectMethod.class, SubClassWithInjectMethod.class);
-            SubClassWithInjectMethod component = config.getContext().get(SubClassWithInjectMethod.class).get();
+
+            SubClassWithInjectMethod component = getComponent(SubClassWithInjectMethod.class, SubClassWithInjectMethod.class);
             //如果是先是子后是父，那么刚开始，superCalled是0，superCalled + 1是1，然后再调用父，父是0，加1还是1，就该都是1
             //如果先是父后是子，那么父先加了，是1，然后子的superCalled是1,1 + 1就是2
             assertEquals(1, component.superCalled);
