@@ -109,7 +109,7 @@ class ConstructorInjectionProvider<T> implements ComponentProvider<T> {
 
     private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {
         List<Constructor<?>> injectConstructors = stream(implementation.getConstructors())
-                .filter(c -> c.isAnnotationPresent(Inject.class)).collect(Collectors.toList());
+                .filter(c -> c.isAnnotationPresent(Inject.class)).toList();
         if (injectConstructors.size() > 1) throw new IllegalComponentException();
 
         //找不到被@Inject标注的，并且找不到默认的构造函数

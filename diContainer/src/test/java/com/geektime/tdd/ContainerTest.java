@@ -145,7 +145,8 @@ class ContainerTest {
             }
 
             private void getBind(Class<? extends Component> implementation) {
-                config.bind(Component.class, implementation);
+//                config.bind(Component.class, implementation);
+                new ConstructorInjectionProvider<>(implementation);
             }
 
             @Test
