@@ -11,10 +11,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @Nested
 public class InjectTest {
     ContextConfig config;
+    Dependency dependency = new Dependency() {
+    };
 
     @BeforeEach
     public void setup() {
         config = new ContextConfig();
+        config.bind(Dependency.class, dependency);
     }
 
     @Nested
@@ -30,9 +33,7 @@ public class InjectTest {
 
         @Test
         public void should_bind_type_to_a_class_with_injection_constructor() throws Exception {
-            Dependency dependency = new Dependency() {
-            };
-            config.bind(Dependency.class, dependency);
+
 
             Component instance = getComponent(Component.class, ComponentWithInjectionConstructor.class);
             assertNotNull(instance);
@@ -96,9 +97,6 @@ public class InjectTest {
 
         @Test
         public void should_inject_dependency_via_field() {
-            Dependency dependency = new Dependency() {
-            };
-            config.bind(Dependency.class, dependency);
             ComponentWithFieldInjection component = getComponent(ComponentWithFieldInjection.class, ComponentWithFieldInjection.class);
             assertSame(dependency, component.dependency);
 
@@ -106,9 +104,6 @@ public class InjectTest {
 
         @Test
         public void should_inject_dependency_via_superclass_inject_field() throws Exception {
-            Dependency dependency = new Dependency() {
-            };
-            config.bind(Dependency.class, dependency);
 
             SubclassWithFieldInjection component = getComponent(SubclassWithFieldInjection.class, SubclassWithFieldInjection.class);
             assertSame(dependency, component.dependency);
@@ -167,10 +162,6 @@ public class InjectTest {
 
         @Test
         public void should_inject_dependency_via_inject_method() throws Exception {
-            Dependency dependency = new Dependency() {
-            };
-            config.bind(Dependency.class, dependency);
-
             InjectMethodWithDependency component = getComponent(InjectMethodWithDependency.class, InjectMethodWithDependency.class);
             assertEquals(dependency, component.dependency);
         }
