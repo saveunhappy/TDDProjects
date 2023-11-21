@@ -4,20 +4,27 @@ import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Nested
 public class InjectTest {
-    ContextConfig config;
-    Dependency dependency = new Dependency() {
-    };
+    private ContextConfig config;
+    private Dependency dependency = mock(Dependency.class);
+    private Context context = mock(Context.class);
 
     @BeforeEach
     public void setup() {
         config = new ContextConfig();
         config.bind(Dependency.class, dependency);
+        when(context.get(eq(Dependency.class))).thenReturn(Optional.of(dependency));
     }
 
     @Nested
@@ -79,7 +86,7 @@ public class InjectTest {
 
     }
 
-    private <T,R extends T> T getComponent(Class<T> type, Class<R> implementation) {
+    private <T, R extends T> T getComponent(Class<T> type, Class<R> implementation) {
         config.bind(type, implementation);
         T instance = config.getContext().get(type).get();
         return instance;
