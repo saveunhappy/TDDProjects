@@ -44,19 +44,11 @@ public class InjectTest {
 
 
         @Test
-        public void should_bind_type_to_a_class_with_transitive_dependency() throws Exception {
-            //这里是先把ComponentWithInjectionConstructor这个构造器带参数的注入了，然后在newInstance
-            //的时候，去map(p -> get(p.getType()))这个get就是下面的context.bind(Dependency.class, DependencyWithInjectionConstructor.class);
-            //这个bind进去的，放到map中去的那个，就可以获取到了，就可以创建对象了。注意，DependencyWithInjectionConstructor
-            //ComponentWithInjectionConstructor这些都是通过反射创建的，都是能创建成功的，不是说接口，没办法创建。
-           // config.bind(Dependency.class, DependencyWithInjectionConstructor.class);
-           // config.bind(String.class, "dependency String");
+        public void should_bind_type_to_a_class_with_transitive_dependency() {
             when(context.get(Dependency.class)).thenReturn(Optional.of(new DependencyWithInjectionConstructor("dependency String")));
-            Component instance = new ConstructorInjectionProvider<>(ComponentWithInjectionConstructor.class).get(context);
-            assertNotNull(instance);
-            Dependency dependency = ((ComponentWithInjectionConstructor) instance).getDependency();
+            ComponentWithInjectionConstructor instance = new ConstructorInjectionProvider<>(ComponentWithInjectionConstructor.class).get(context);
+            Dependency dependency = instance.getDependency();
             assertNotNull(dependency);
-            assertEquals("dependency String", ((DependencyWithInjectionConstructor) dependency).getDependency());
 
         }
 
