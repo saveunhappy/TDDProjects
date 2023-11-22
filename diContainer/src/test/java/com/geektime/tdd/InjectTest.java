@@ -1,6 +1,7 @@
 package com.geektime.tdd;
 
 import jakarta.inject.Inject;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -16,8 +17,8 @@ import static org.mockito.Mockito.when;
 @Nested
 public class InjectTest {
     private ContextConfig config;
-    private Dependency dependency = mock(Dependency.class);
-    private Context context = mock(Context.class);
+    private final Dependency dependency = mock(Dependency.class);
+    private final Context context = mock(Context.class);
 
     @BeforeEach
     public void setup() {
@@ -30,20 +31,18 @@ public class InjectTest {
     public class ConstructorInjection {
         @Test
         public void should_bind_type_to_a_class_with_default_constructor() {
-            Component instance = new ConstructorInjectionProvider<>(ComponentWithDefaultConstructor.class).get(context);
+            ComponentWithDefaultConstructor instance = new ConstructorInjectionProvider<>(ComponentWithDefaultConstructor.class).get(context);
 
             assertNotNull(instance);
-            assertTrue(instance instanceof ComponentWithDefaultConstructor);
-
         }
 
         @Test
         public void should_bind_type_to_a_class_with_injection_constructor() throws Exception {
 
 
-            Component instance = new ConstructorInjectionProvider<>(ComponentWithInjectionConstructor.class).get(context);
+            ComponentWithInjectionConstructor instance = new ConstructorInjectionProvider<>(ComponentWithInjectionConstructor.class).get(context);
             assertNotNull(instance);
-            assertSame(dependency, ((ComponentWithInjectionConstructor) instance).getDependency());
+            assertSame(dependency, instance.getDependency());
         }
 
 
