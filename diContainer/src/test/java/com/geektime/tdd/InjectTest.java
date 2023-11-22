@@ -28,7 +28,9 @@ public class InjectTest {
     public class ConstructorInjection {
         @Test
         public void should_call_default_constructor_if_no_inject_constructor() {
-            ComponentWithDefaultConstructor instance = new ConstructorInjectionProvider<>(ComponentWithDefaultConstructor.class).get(context);
+            ComponentWithDefaultConstructor instance =
+                    new ConstructorInjectionProvider<>(ComponentWithDefaultConstructor.class)
+                            .get(context);
 
             assertNotNull(instance);
         }
