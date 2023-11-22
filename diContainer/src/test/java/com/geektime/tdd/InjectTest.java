@@ -52,8 +52,8 @@ public class InjectTest {
             //的时候，去map(p -> get(p.getType()))这个get就是下面的context.bind(Dependency.class, DependencyWithInjectionConstructor.class);
             //这个bind进去的，放到map中去的那个，就可以获取到了，就可以创建对象了。注意，DependencyWithInjectionConstructor
             //ComponentWithInjectionConstructor这些都是通过反射创建的，都是能创建成功的，不是说接口，没办法创建。
-            config.bind(Dependency.class, DependencyWithInjectionConstructor.class);
-            config.bind(String.class, "dependency String");
+           // config.bind(Dependency.class, DependencyWithInjectionConstructor.class);
+           // config.bind(String.class, "dependency String");
             when(context.get(Dependency.class)).thenReturn(Optional.of(new DependencyWithInjectionConstructor("dependency String")));
             Component instance = new ConstructorInjectionProvider<>(ComponentWithInjectionConstructor.class).get(context);
             assertNotNull(instance);
