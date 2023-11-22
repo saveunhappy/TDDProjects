@@ -61,6 +61,11 @@ public class InjectTest {
                 assertSame(dependency, instance.dependency);
             }
 
+            @Test
+            public void should_include_dependency_from_inject_constructor() {
+                ConstructorInjectionProvider<InjectionConstructor> provider = new ConstructorInjectionProvider<>(InjectionConstructor.class);
+                assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
+            }
         }
 
 
@@ -77,11 +82,7 @@ public class InjectTest {
                     new ConstructorInjectionProvider<>((Class<? extends Component>) ComponentWithoutInjectionConstructorNorDefaultConstructor.class));
         }
 
-        @Test
-        public void should_include_dependency_from_inject_constructor() {
-            ConstructorInjectionProvider<ComponentWithInjectionConstructor> provider = new ConstructorInjectionProvider<>(ComponentWithInjectionConstructor.class);
-            assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
-        }
+
 
     }
 
