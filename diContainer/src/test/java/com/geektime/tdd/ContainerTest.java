@@ -34,8 +34,6 @@ class ContainerTest {
         }
 
 
-
-
         @Test
         public void should_return_empty_if_component_not_defined() throws Exception {
             Optional<Component> component = config.getContext().get(Component.class);
@@ -101,7 +99,6 @@ class ContainerTest {
 
 
 interface Component {
-
 }
 
 interface Dependency {
