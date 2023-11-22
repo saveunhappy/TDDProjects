@@ -27,35 +27,40 @@ public class InjectTest {
     @Nested
     public class ConstructorInjection {
 
-        static class DefaultConstructor {
+        @Nested
+        class Injection{
 
-        }
+            static class DefaultConstructor {
 
-        @Test
-        public void should_call_default_constructor_if_no_inject_constructor() {
-            DefaultConstructor instance =
-                    new ConstructorInjectionProvider<>(DefaultConstructor.class)
-                            .get(context);
-
-            assertNotNull(instance);
-        }
-
-        static class InjectionConstructor {
-            private Dependency dependency;
-
-            @Inject
-            public InjectionConstructor(Dependency dependency) {
-                this.dependency = dependency;
             }
 
-        }
+            @Test
+            public void should_call_default_constructor_if_no_inject_constructor() {
+                DefaultConstructor instance =
+                        new ConstructorInjectionProvider<>(DefaultConstructor.class)
+                                .get(context);
 
-        @Test
-        public void should_inject_dependency_via_inject_constructor() {
+                assertNotNull(instance);
+            }
 
-            InjectionConstructor instance = new ConstructorInjectionProvider<>(InjectionConstructor.class).get(context);
-            assertNotNull(instance);
-            assertSame(dependency, instance.dependency);
+            static class InjectionConstructor {
+                private Dependency dependency;
+
+                @Inject
+                public InjectionConstructor(Dependency dependency) {
+                    this.dependency = dependency;
+                }
+
+            }
+
+            @Test
+            public void should_inject_dependency_via_inject_constructor() {
+
+                InjectionConstructor instance = new ConstructorInjectionProvider<>(InjectionConstructor.class).get(context);
+                assertNotNull(instance);
+                assertSame(dependency, instance.dependency);
+            }
+
         }
 
 
