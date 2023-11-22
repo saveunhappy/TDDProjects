@@ -36,7 +36,7 @@ public class InjectTest {
         }
 
         @Test
-        public void should_bind_type_to_a_class_with_injection_constructor() {
+        public void should_inject_dependency_via_inject_constructor() {
 
 
             ComponentWithInjectionConstructor instance = new ConstructorInjectionProvider<>(ComponentWithInjectionConstructor.class).get(context);
