@@ -33,17 +33,7 @@ class ContainerTest {
 
         }
 
-        abstract class AbstractComponent implements Component {
-            @Inject
-            public AbstractComponent() {
 
-            }
-        }
-
-        @Test
-        public void should_throw_exception_if_component_is_abstract() {
-            assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(AbstractComponent.class));
-        }
 
 
         @Test
@@ -152,12 +142,6 @@ class ComponentWithMultiInjectionConstructor implements Component {
     }
 }
 
-
-class ComponentWithoutInjectionConstructorNorDefaultConstructor implements Component {
-    public ComponentWithoutInjectionConstructorNorDefaultConstructor(String name) {
-
-    }
-}
 
 class DependencyWithInjectionConstructor implements Dependency {
     String dependency;

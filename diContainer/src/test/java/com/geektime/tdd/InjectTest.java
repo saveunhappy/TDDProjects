@@ -1,7 +1,6 @@
 package com.geektime.tdd;
 
 import jakarta.inject.Inject;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -69,18 +68,56 @@ public class InjectTest {
         }
 
 
-        @Test
-        public void should_throw_exception_if_multi_inject_constructors_provided() {
-            assertThrows(IllegalComponentException.class, () ->
-                    new ConstructorInjectionProvider<>((Class<? extends Component>) ComponentWithMultiInjectionConstructor.class)
-            );
+        @Nested
+        class IllegalInjectionConstructors{
+            abstract class AbstractComponent implements Component {
+                @Inject
+                public AbstractComponent() {
+
+                }
+            }
+            class MultiInjectionConstructor implements Component {
+                @Inject
+                public MultiInjectionConstructor(String name, Double value) {
+
+                }
+
+                @Inject
+                public MultiInjectionConstructor(String name) {
+
+                }
+            }
+
+            class NorDefaultConstructor implements Component {
+                public NorDefaultConstructor(String name) {
+
+                }
+            }
+            @Test
+            public void should_throw_exception_if_component_is_abstract() {
+                assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(AbstractComponent.class));
+            }
+            @Test
+            public void should_throw_exception_if_component_is_interface() {
+                assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(Component.class));
+            }
+
+            @Test
+            public void should_throw_exception_if_multi_inject_constructors_provided() {
+                assertThrows(IllegalComponentException.class, () ->
+                        new ConstructorInjectionProvider<>((Class<? extends Component>) MultiInjectionConstructor.class)
+                );
+            }
+
+            @Test
+            public void should_throw_exception_if_no_inject_nor_default_constructor_provided() {
+                assertThrows(IllegalComponentException.class, () ->
+                        new ConstructorInjectionProvider<>((Class<? extends Component>) NorDefaultConstructor.class));
+            }
+
+
         }
 
-        @Test
-        public void should_throw_exception_if_no_inject_nor_default_constructor_provided() {
-            assertThrows(IllegalComponentException.class, () ->
-                    new ConstructorInjectionProvider<>((Class<? extends Component>) ComponentWithoutInjectionConstructorNorDefaultConstructor.class));
-        }
 
 
 
