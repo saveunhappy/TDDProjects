@@ -56,7 +56,7 @@ public class InjectTest {
             //ComponentWithInjectionConstructor这些都是通过反射创建的，都是能创建成功的，不是说接口，没办法创建。
             config.bind(Dependency.class, DependencyWithInjectionConstructor.class);
             config.bind(String.class, "dependency String");
-
+            when(context.get(Dependency.class)).thenReturn(Optional.of(new DependencyWithInjectionConstructor("dependency String")));
             Component instance = getComponent(Component.class, ComponentWithInjectionConstructor.class);
             assertNotNull(instance);
             Dependency dependency = ((ComponentWithInjectionConstructor) instance).getDependency();
@@ -87,9 +87,11 @@ public class InjectTest {
     }
 
     private <T, R extends T> T getComponent(Class<T> type, Class<R> implementation) {
-        config.bind(type, implementation);
-        T instance = config.getContext().get(type).get();
-        return instance;
+        ConstructorInjectionProvider<R> provider = new ConstructorInjectionProvider<>(implementation);
+        return provider.get(context);
+//        config.bind(type, implementation);
+//        T instance = config.getContext().get(type).get();
+//        return instance;
     }
 
     @Nested
