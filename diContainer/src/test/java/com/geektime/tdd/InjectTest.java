@@ -22,8 +22,8 @@ public class InjectTest {
 
     @BeforeEach
     public void setup() {
-        config = new ContextConfig();
-        config.bind(Dependency.class, dependency);
+//        config = new ContextConfig();
+//        config.bind(Dependency.class, dependency);
         when(context.get(eq(Dependency.class))).thenReturn(Optional.of(dependency));
     }
 
