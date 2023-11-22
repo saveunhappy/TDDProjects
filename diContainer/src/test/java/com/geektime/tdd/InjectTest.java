@@ -27,9 +27,10 @@ public class InjectTest {
     @Nested
     public class ConstructorInjection {
 
-        static class DefaultConstructor{
+        static class DefaultConstructor {
 
         }
+
         @Test
         public void should_call_default_constructor_if_no_inject_constructor() {
             DefaultConstructor instance =
@@ -39,13 +40,22 @@ public class InjectTest {
             assertNotNull(instance);
         }
 
+        static class InjectionConstructor {
+            private Dependency dependency;
+
+            @Inject
+            public InjectionConstructor(Dependency dependency) {
+                this.dependency = dependency;
+            }
+
+        }
+
         @Test
         public void should_inject_dependency_via_inject_constructor() {
 
-
-            ComponentWithInjectionConstructor instance = new ConstructorInjectionProvider<>(ComponentWithInjectionConstructor.class).get(context);
+            InjectionConstructor instance = new ConstructorInjectionProvider<>(InjectionConstructor.class).get(context);
             assertNotNull(instance);
-            assertSame(dependency, instance.getDependency());
+            assertSame(dependency, instance.dependency);
         }
 
 
