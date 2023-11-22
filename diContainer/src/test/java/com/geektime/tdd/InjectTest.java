@@ -27,7 +27,7 @@ public class InjectTest {
     public class ConstructorInjection {
 
         @Nested
-        class Injection{
+        class Injection {
 
             static class DefaultConstructor {
 
@@ -69,13 +69,14 @@ public class InjectTest {
 
 
         @Nested
-        class IllegalInjectionConstructors{
+        class IllegalInjectionConstructors {
             abstract class AbstractComponent implements Component {
                 @Inject
                 public AbstractComponent() {
 
                 }
             }
+
             class MultiInjectionConstructor implements Component {
                 @Inject
                 public MultiInjectionConstructor(String name, Double value) {
@@ -93,10 +94,12 @@ public class InjectTest {
 
                 }
             }
+
             @Test
             public void should_throw_exception_if_component_is_abstract() {
                 assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(AbstractComponent.class));
             }
+
             @Test
             public void should_throw_exception_if_component_is_interface() {
                 assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(Component.class));
@@ -119,14 +122,12 @@ public class InjectTest {
         }
 
 
-
-
     }
 
     @Nested
     public class FieldInjection {
         @Nested
-        class Injection{
+        class Injection {
             static class ComponentWithFieldInjection {
                 @Inject
                 Dependency dependency;
@@ -148,6 +149,7 @@ public class InjectTest {
                 SubclassWithFieldInjection component = new ConstructorInjectionProvider<>(SubclassWithFieldInjection.class).get(context);
                 assertSame(dependency, component.dependency);
             }
+
             @Test
             public void should_include_dependency_from_field_dependency() {
                 //类的测试，
@@ -171,121 +173,126 @@ public class InjectTest {
         }
 
 
-
-
-
     }
 
     @Nested
     public class MethodInjection {
 
+        @Nested
+        class Injection {
 
-        static class InjectMethodWithNoDependency {
-            boolean called = false;
+            static class InjectMethodWithNoDependency {
+                boolean called = false;
 
-            @Inject
-            void install() {
-                this.called = true;
+                @Inject
+                void install() {
+                    this.called = true;
+                }
+            }
+
+            @Test
+            public void should_call_inject_method_even_if_no_dependency_declared() throws Exception {
+
+                InjectMethodWithNoDependency component = new ConstructorInjectionProvider<>(InjectMethodWithNoDependency.class).get(context);
+                assertTrue(component.called);
+            }
+
+            static class InjectMethodWithDependency {
+                Dependency dependency;
+
+                @Inject
+                void install(Dependency dependency) {
+                    this.dependency = dependency;
+                }
+            }
+
+            @Test
+            public void should_inject_dependency_via_inject_method() throws Exception {
+                InjectMethodWithDependency component = new ConstructorInjectionProvider<>(InjectMethodWithDependency.class).get(context);
+                assertEquals(dependency, component.dependency);
+            }
+
+            static class SuperClassWithInjectMethod {
+                int superCalled = 0;
+
+                @Inject
+                void install() {
+                    superCalled++;
+                }
+            }
+
+            static class SubClassWithInjectMethod extends SuperClassWithInjectMethod {
+                int subCalled = 0;
+
+                //注意，@inject标注的名字不能和父类的相同啊，否则永远调用的是子类的。
+                @Inject
+                void installAnother() {
+                    subCalled = superCalled + 1;
+                }
+            }
+
+            @Test
+            public void should_inject_dependencies_via_inject_method_from_superclass() throws Exception {
+
+                SubClassWithInjectMethod component = new ConstructorInjectionProvider<>(SubClassWithInjectMethod.class).get(context);
+                //如果是先是子后是父，那么刚开始，superCalled是0，superCalled + 1是1，然后再调用父，父是0，加1还是1，就该都是1
+                //如果先是父后是子，那么父先加了，是1，然后子的superCalled是1,1 + 1就是2
+                assertEquals(1, component.superCalled);
+                assertEquals(2, component.subCalled);
+            }
+
+
+            static class SubClassOverrideSuperClassWithInject extends SuperClassWithInjectMethod {
+                //注意，@inject标注的名字不能和父类的相同啊，否则永远调用的是子类的。
+                @Inject
+                void install() {
+                    super.install();
+                }
+            }
+
+            @Test
+            public void should_only_call_once_if_subclass_override_inject_method_with_inject() {
+
+                SubClassOverrideSuperClassWithInject component = new ConstructorInjectionProvider<>(SubClassOverrideSuperClassWithInject.class).get(context);
+                assertEquals(1, component.superCalled);
+            }
+
+            static class SubClassOverrideSuperClassWithNoInject extends SuperClassWithInjectMethod {
+                void install() {
+                    super.install();
+                }
+            }
+
+            @Test
+            public void should_not_call_inject_method_if_override_with_no_inject() {
+
+                SubClassOverrideSuperClassWithNoInject component = new ConstructorInjectionProvider<>(SubClassOverrideSuperClassWithNoInject.class).get(context);
+                assertEquals(0, component.superCalled);
+            }
+
+            @Test
+            public void should_include_dependencies_from_inject_method() throws Exception {
+                ConstructorInjectionProvider<InjectMethodWithDependency> provider = new ConstructorInjectionProvider<>(InjectMethodWithDependency.class);
+                assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
+            }
+
+        }
+
+        @Nested
+        class IllegalInjectMethods {
+            static class InjectMethodWithTypeParameter {
+                @Inject
+                <T> void install() {
+
+                }
+            }
+
+            @Test
+            public void should_throw_exception_if_inject_method_has_type_parameter() {
+                assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(InjectMethodWithTypeParameter.class));
             }
         }
 
-        @Test
-        public void should_call_inject_method_even_if_no_dependency_declared() throws Exception {
-
-            InjectMethodWithNoDependency component = new ConstructorInjectionProvider<>(InjectMethodWithNoDependency.class).get(context);
-            assertTrue(component.called);
-        }
-
-        static class InjectMethodWithDependency {
-            Dependency dependency;
-
-            @Inject
-            void install(Dependency dependency) {
-                this.dependency = dependency;
-            }
-        }
-
-        @Test
-        public void should_inject_dependency_via_inject_method() throws Exception {
-            InjectMethodWithDependency component = new ConstructorInjectionProvider<>(InjectMethodWithDependency.class).get(context);
-            assertEquals(dependency, component.dependency);
-        }
-
-        static class SuperClassWithInjectMethod {
-            int superCalled = 0;
-
-            @Inject
-            void install() {
-                superCalled++;
-            }
-        }
-
-        static class SubClassWithInjectMethod extends SuperClassWithInjectMethod {
-            int subCalled = 0;
-
-            //注意，@inject标注的名字不能和父类的相同啊，否则永远调用的是子类的。
-            @Inject
-            void installAnother() {
-                subCalled = superCalled + 1;
-            }
-        }
-
-        @Test
-        public void should_inject_dependencies_via_inject_method_from_superclass() throws Exception {
-
-            SubClassWithInjectMethod component = new ConstructorInjectionProvider<>(SubClassWithInjectMethod.class).get(context);
-            //如果是先是子后是父，那么刚开始，superCalled是0，superCalled + 1是1，然后再调用父，父是0，加1还是1，就该都是1
-            //如果先是父后是子，那么父先加了，是1，然后子的superCalled是1,1 + 1就是2
-            assertEquals(1, component.superCalled);
-            assertEquals(2, component.subCalled);
-        }
-
-
-        static class SubClassOverrideSuperClassWithInject extends SuperClassWithInjectMethod {
-            //注意，@inject标注的名字不能和父类的相同啊，否则永远调用的是子类的。
-            @Inject
-            void install() {
-                super.install();
-            }
-        }
-
-        @Test
-        public void should_only_call_once_if_subclass_override_inject_method_with_inject() {
-
-            SubClassOverrideSuperClassWithInject component = new ConstructorInjectionProvider<>(SubClassOverrideSuperClassWithInject.class).get(context);
-            assertEquals(1, component.superCalled);
-        }
-
-        static class SubClassOverrideSuperClassWithNoInject extends SuperClassWithInjectMethod {
-            void install() {
-                super.install();
-            }
-        }
-
-        @Test
-        public void should_not_call_inject_method_if_override_with_no_inject() {
-
-            SubClassOverrideSuperClassWithNoInject component = new ConstructorInjectionProvider<>(SubClassOverrideSuperClassWithNoInject.class).get(context);
-            assertEquals(0, component.superCalled);
-        }
-
-        @Test
-        public void should_include_dependencies_from_inject_method() throws Exception {
-            ConstructorInjectionProvider<InjectMethodWithDependency> provider = new ConstructorInjectionProvider<>(InjectMethodWithDependency.class);
-            assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
-        }
-
-        static class InjectMethodWithTypeParameter {
-            @Inject
-            <T> void install() {
-
-            }
-        }
-
-        @Test
-        public void should_throw_exception_if_inject_method_has_type_parameter() {
-            assertThrows(IllegalComponentException.class, () -> new ConstructorInjectionProvider<>(InjectMethodWithTypeParameter.class));
-        }
 
     }
 
