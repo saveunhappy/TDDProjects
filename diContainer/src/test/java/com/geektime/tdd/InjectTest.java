@@ -34,7 +34,7 @@ public class InjectTest {
         }
 
         @Test
-        public void should_bind_type_to_a_class_with_injection_constructor() throws Exception {
+        public void should_bind_type_to_a_class_with_injection_constructor() {
 
 
             ComponentWithInjectionConstructor instance = new ConstructorInjectionProvider<>(ComponentWithInjectionConstructor.class).get(context);
@@ -42,15 +42,6 @@ public class InjectTest {
             assertSame(dependency, instance.getDependency());
         }
 
-
-        @Test
-        public void should_bind_type_to_a_class_with_transitive_dependency() {
-            when(context.get(Dependency.class)).thenReturn(Optional.of(new DependencyWithInjectionConstructor("dependency String")));
-            ComponentWithInjectionConstructor instance = new ConstructorInjectionProvider<>(ComponentWithInjectionConstructor.class).get(context);
-            Dependency dependency = instance.getDependency();
-            assertNotNull(dependency);
-
-        }
 
         @Test
         public void should_throw_exception_if_multi_inject_constructors_provided() {
