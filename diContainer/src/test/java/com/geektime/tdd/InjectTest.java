@@ -87,8 +87,7 @@ public class InjectTest {
     }
 
     private <T, R extends T> T getComponent(Class<T> type, Class<R> implementation) {
-        ConstructorInjectionProvider<R> provider = new ConstructorInjectionProvider<>(implementation);
-        return provider.get(context);
+        return new ConstructorInjectionProvider<>(implementation).get(context);
 //        config.bind(type, implementation);
 //        T instance = config.getContext().get(type).get();
 //        return instance;
