@@ -32,9 +32,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     @Override
     public T get(Context context) {
         try {
-            Object[] dependencies = stream(injectConstructor.getParameters())
-                    .map(p -> context.get(p.getType()).get())
-                    .toArray(Object[]::new);
+            Object[] dependencies = stream(injectConstructor.getParameters()).map(p -> context.get(p.getType()).get()).toArray(Object[]::new);
             T instance = injectConstructor.newInstance(dependencies);
             for (Field field : injectFields) {
                 field.set(instance, context.get(field.getType()).get());
@@ -55,11 +53,9 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     @Override
     public List<Class<?>> getDependency() {
-        return concat(concat(stream(injectConstructor.getParameters()).map(Parameter::getType),
-                        injectFields.stream().map(Field::getType)),
+        return concat(concat(stream(injectConstructor.getParameters()).map(Parameter::getType), injectFields.stream().map(Field::getType)),
                 //是要取所有method的所有参数，method有多个，一个method又有多个参数，所以使用flatMap
-                injectMethods.stream().flatMap(m -> stream(m.getParameterTypes())))
-                .toList();
+                injectMethods.stream().flatMap(m -> stream(m.getParameterTypes()))).toList();
     }
 
     private static <T> List<Field> getInjectFields(Class<T> component) {
@@ -74,17 +70,17 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     }
 
 
-
     private static <T> List<Method> getInjectMethods(Class<T> component) {
         List<Method> injectMethods = new ArrayList<>();
         Class<?> current = component;
         while (current != Object.class) {
             injectMethods.addAll(injectable(current.getDeclaredMethods())
-                            .filter(m -> injectMethods.stream().noneMatch(o -> isOverride(m, o)))
-                            .filter(m -> stream(component.getDeclaredMethods()).filter(m1 -> !m1.isAnnotationPresent(Inject.class))
-                                    .noneMatch(o -> isOverride(m, o)))
-
-                            .toList());
+                    //这里一直在往父类找，injectMethods刚开始是空的，一直往上找，如果方法名字重复了，不添加
+                    //filter是留下来的，里面是用到了noneMatch,所以是过滤掉不需要的
+                    .filter(m -> isOverrideByInjectMethod(injectMethods, m))
+                    //这个是component，
+                    .filter(m -> isOverrideByNoInjectMethod(component, m))
+                    .toList());
             current = current.getSuperclass();
         }
         Collections.reverse(injectMethods);
@@ -92,10 +88,16 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         return injectMethods;
     }
 
-    private static boolean isOverride(Method m, Method o) {
-        return o.getName().equals(m.getName())
-                && Arrays.equals(o.getParameterTypes(), m.getParameterTypes());
+    private static <T> boolean isOverrideByNoInjectMethod(Class<T> component, Method m) {
+        return stream(component.getDeclaredMethods()).
+                filter(m1 -> !m1.isAnnotationPresent(Inject.class))
+                .noneMatch(o -> isOverride(m, o));
     }
+
+    private static boolean isOverrideByInjectMethod(List<Method> injectMethods, Method m) {
+        return injectMethods.stream().noneMatch(o -> isOverride(m, o));
+    }
+
 
     private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {
         List<Constructor<?>> injectConstructors = injectable(implementation.getConstructors()).toList();
@@ -113,7 +115,9 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     }
 
     private static <T extends AnnotatedElement> Stream<T> injectable(T[] declaredFields) {
-        return stream(declaredFields)
-                .filter(f -> f.isAnnotationPresent(Inject.class));
+        return stream(declaredFields).filter(f -> f.isAnnotationPresent(Inject.class));
+    }
+    private static boolean isOverride(Method m, Method o) {
+        return o.getName().equals(m.getName()) && Arrays.equals(o.getParameterTypes(), m.getParameterTypes());
     }
 }
