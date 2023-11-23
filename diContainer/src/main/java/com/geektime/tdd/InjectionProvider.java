@@ -4,6 +4,7 @@ import jakarta.inject.Inject;
 
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.stream;
 import static java.util.stream.Stream.concat;
@@ -66,11 +67,16 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         Class<?> current = component;
         while (current != Object.class) {
             //注意，这里是current
-            injectFields.addAll(stream(current.getDeclaredFields())
-                    .filter(f -> f.isAnnotationPresent(Inject.class)).toList());
+            Field[] declaredFields = current.getDeclaredFields();
+            injectFields.addAll(injectable(declaredFields).toList());
             current = current.getSuperclass();
         }
         return injectFields;
+    }
+
+    private static <T extends AnnotatedElement> Stream<T> injectable(T[] declaredFields) {
+        return stream(declaredFields)
+                .filter(f -> f.isAnnotationPresent(Inject.class));
     }
 
     private static <T> List<Method> getInjectMethods(Class<T> component) {
