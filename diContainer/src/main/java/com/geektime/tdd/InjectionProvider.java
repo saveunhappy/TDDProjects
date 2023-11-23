@@ -122,8 +122,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     }
 
     private static Stream<Constructor<?>> getConstructorStream(Constructor<?>[] constructors) {
-        return stream(constructors)
-                .filter(c -> c.isAnnotationPresent(Inject.class));
+        return injectable(constructors);
     }
 
     private static <T extends AnnotatedElement> Stream<T> injectable(T[] declaredFields) {
