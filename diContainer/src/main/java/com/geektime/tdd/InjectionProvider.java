@@ -69,14 +69,14 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         return injectFields;
     }
 
-
     private static <T> List<Method> getInjectMethods(Class<T> component) {
         List<Method> injectMethods = new ArrayList<>();
         Class<?> current = component;
         while (current != Object.class) {
+            //子到父遍历的，先把子的标注了@Inject的添加进来
             injectMethods.addAll(injectable(current.getDeclaredMethods())
-                    //这里一直在往父类找，injectMethods刚开始是空的，一直往上找，如果方法名字重复了，不添加
-                    //filter是留下来的，里面是用到了noneMatch,所以是过滤掉不需要的
+                    //然后到父类之后，injectMethods里面就有@Inject方法了，然后这个时候
+                    //父类的@Inject标注的方法和子类的就重复了，就不添加了
                     .filter(m -> isOverrideByInjectMethod(injectMethods, m))
                     //这个是component，
                     .filter(m -> isOverrideByNoInjectMethod(component, m))
@@ -84,20 +84,8 @@ class InjectionProvider<T> implements ComponentProvider<T> {
             current = current.getSuperclass();
         }
         Collections.reverse(injectMethods);
-
         return injectMethods;
     }
-
-    private static <T> boolean isOverrideByNoInjectMethod(Class<T> component, Method m) {
-        return stream(component.getDeclaredMethods()).
-                filter(m1 -> !m1.isAnnotationPresent(Inject.class))
-                .noneMatch(o -> isOverride(m, o));
-    }
-
-    private static boolean isOverrideByInjectMethod(List<Method> injectMethods, Method m) {
-        return injectMethods.stream().noneMatch(o -> isOverride(m, o));
-    }
-
 
     private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {
         List<Constructor<?>> injectConstructors = injectable(implementation.getConstructors()).toList();
@@ -120,4 +108,15 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     private static boolean isOverride(Method m, Method o) {
         return o.getName().equals(m.getName()) && Arrays.equals(o.getParameterTypes(), m.getParameterTypes());
     }
+
+    private static <T> boolean isOverrideByNoInjectMethod(Class<T> component, Method m) {
+        return stream(component.getDeclaredMethods()).
+                filter(m1 -> !m1.isAnnotationPresent(Inject.class))
+                .noneMatch(o -> isOverride(m, o));
+    }
+
+    private static boolean isOverrideByInjectMethod(List<Method> injectMethods, Method m) {
+        return injectMethods.stream().noneMatch(o -> isOverride(m, o));
+    }
+
 }
