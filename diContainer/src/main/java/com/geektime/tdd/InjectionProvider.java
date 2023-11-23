@@ -80,8 +80,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         Class<?> current = component;
         while (current != Object.class) {
             Method[] declaredMethods = current.getDeclaredMethods();
-            injectMethods.addAll(stream(declaredMethods)
-                            .filter(m -> m.isAnnotationPresent(Inject.class))
+            injectMethods.addAll(getMethodStream(declaredMethods)
                             .filter(m -> injectMethods.stream().noneMatch(o -> o.getName().equals(m.getName())
                                     && Arrays.equals(o.getParameterTypes(), m.getParameterTypes())))
                             .filter(m -> stream(component.getDeclaredMethods()).filter(m1 -> !m1.isAnnotationPresent(Inject.class))
@@ -94,6 +93,11 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         Collections.reverse(injectMethods);
 
         return injectMethods;
+    }
+
+    private static Stream<Method> getMethodStream(Method[] declaredMethods) {
+        return stream(declaredMethods)
+                .filter(m -> m.isAnnotationPresent(Inject.class));
     }
 
     private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {
