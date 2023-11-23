@@ -67,8 +67,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         Class<?> current = component;
         while (current != Object.class) {
             //注意，这里是current
-            Field[] declaredFields = current.getDeclaredFields();
-            injectFields.addAll(injectable(declaredFields).toList());
+            injectFields.addAll(injectable(current.getDeclaredFields()).toList());
             current = current.getSuperclass();
         }
         return injectFields;
