@@ -79,8 +79,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         List<Method> injectMethods = new ArrayList<>();
         Class<?> current = component;
         while (current != Object.class) {
-            Method[] declaredMethods = current.getDeclaredMethods();
-            injectMethods.addAll(injectable(declaredMethods)
+            injectMethods.addAll(injectable(current.getDeclaredMethods())
                             .filter(m -> injectMethods.stream().noneMatch(o -> o.getName().equals(m.getName())
                                     && Arrays.equals(o.getParameterTypes(), m.getParameterTypes())))
                             .filter(m -> stream(component.getDeclaredMethods()).filter(m1 -> !m1.isAnnotationPresent(Inject.class))
