@@ -6,6 +6,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -142,6 +145,82 @@ public class ContextTest {
 
             }
         }
+
+        @ParameterizedTest(name = "cyclic dependency between {0} and {1}")
+        @MethodSource
+        public void should_throw_exception_if_cyclic_dependencies_found(Class<? extends Component> component,
+                                                                        Class<? extends Dependency> dependency) {
+            //注意，这里是使用的bind，那么排列组合的时候，先说构造器，先去找Component，找到依赖Dependency
+            //然后先去实例化Dependency，发现Dependency依赖Component，循环依赖了。
+            //如果是构造器和字段的组合呢？构造器依赖Dependency，Dependency的字段是Component，标注了@Inject
+            //在checkDependency的时候还是会循环依赖
+            config.bind(Component.class, component);
+            config.bind(Dependency.class, dependency);
+
+            CyclicDependenciesFoundException exception = assertThrows(CyclicDependenciesFoundException.class,
+                    () -> config.getContext());
+            List<Class<?>> classes = Arrays.asList(exception.getComponents());
+            assertEquals(2, classes.size());
+            assertTrue(classes.contains(Component.class));
+            assertTrue(classes.contains(Dependency.class));
+        }
+
+
+        public static Stream<Arguments> should_throw_exception_if_cyclic_dependencies_found() {
+            List<Arguments> arguments = new ArrayList<>();
+            List<Named<? extends Class<? extends Component>>> componentInjections =
+                    List.of(Named.of("Inject Constructor", CyclicComponentInjectConstructor.class),
+                    Named.of("Inject Field", CyclicComponentInjectField.class),
+                    Named.of("Inject Method", CyclicComponentInjectMethod.class));
+            List<Named<? extends Class<? extends Dependency>>> dependencyInjections =
+                    List.of(Named.of("Inject Constructor", CyclicDependencyInjectConstructor.class),
+                    Named.of("Inject Field", CyclicDependencyInjectField.class),
+                    Named.of("Inject Method", CyclicDependencyInjectMethod.class));
+            for (Named component : componentInjections) {
+                for (Named dependency : dependencyInjections) {
+                    //每次传入的参数就是一个Arguments，所以list里面这么多也是一个一个去依赖的
+                    arguments.add(Arguments.of(component,dependency));
+                }
+            }
+            return arguments.stream();
+        }
+
+        static class CyclicComponentInjectConstructor implements Component {
+            @Inject
+            public CyclicComponentInjectConstructor(Dependency dependency) {
+            }
+        }
+
+        static class CyclicComponentInjectField implements Component {
+            @Inject
+            Dependency dependency;
+        }
+
+        static class CyclicComponentInjectMethod implements Component {
+            @Inject
+            void inject(Dependency dependency) {
+
+            }
+        }
+
+        static class CyclicDependencyInjectConstructor implements Dependency {
+            @Inject
+            public CyclicDependencyInjectConstructor(Component component) {
+            }
+        }
+
+        static class CyclicDependencyInjectField implements Dependency {
+            @Inject
+            Component component;
+        }
+
+        static class CyclicDependencyInjectMethod implements Dependency {
+            @Inject
+            void inject(Component component) {
+
+            }
+        }
+
     }
 
 }
