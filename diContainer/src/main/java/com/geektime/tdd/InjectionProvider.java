@@ -32,7 +32,9 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     @Override
     public T get(Context context) {
         try {
-            Object[] dependencies = stream(injectConstructor.getParameters()).map(p -> context.get(p.getType()).get()).toArray(Object[]::new);
+            Object[] dependencies = stream(injectConstructor.getParameters())
+                    .map(p -> context.get(p.getType()).get())
+                    .toArray(Object[]::new);
             T instance = injectConstructor.newInstance(dependencies);
             for (Field field : injectFields) {
                 field.set(instance, context.get(field.getType()).get());
@@ -78,7 +80,11 @@ class InjectionProvider<T> implements ComponentProvider<T> {
                     //然后到父类之后，injectMethods里面就有@Inject方法了，然后这个时候
                     //父类的@Inject标注的方法和子类的就重复了，就不添加了
                     .filter(m -> isOverrideByInjectMethod(injectMethods, m))
-                    //这个是component，
+                    //这个是component，最底层的那个，就是实现类，首先是往父类一直走的，第一步是没有添加
+                    // @Inject注解，所以没有添加进去，然后到父类，但是父类是有的@Inject注解的，然后添加进来了
+                    //然后如果没有这行代码那么就添加进来了，然后加了这行代码，发现和最底层的那个没有加@Inject
+                    //注解的方法名一样，就过滤掉，然后就不添加进来了。因为如果添加进来了，那么使用构造器创建对象
+                    //创建的就是实现类，方法是父类的方法，然后子类也有这个方法，创建的也是子类的方法，所以就调用了
                     .filter(m -> isOverrideByNoInjectMethod(component, m))
                     .toList());
             current = current.getSuperclass();
