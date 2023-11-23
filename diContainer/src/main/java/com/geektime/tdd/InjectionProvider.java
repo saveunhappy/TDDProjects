@@ -89,7 +89,8 @@ class InjectionProvider<T> implements ComponentProvider<T> {
                                     && Arrays.equals(o.getParameterTypes(), m.getParameterTypes())))
                             //就是你直接bind的这个实现类，如果你的方法没有加@Inject，但是你有父类，而且你的父类有同名的
                             //方法又@Injecct,你这个没有加@Inject的方法就不应该被调用，所以要过滤掉，因为是依赖注入的
-                            //所以你这个是普通的方法，就不会在获取的时候调用
+                            //所以你这个是普通的方法，就不会在获取的时候调用，这个就是如果没有标注@Inject但是和父类
+                            //的方法一样，也不应该添加进来
                             .filter(m -> stream(component.getDeclaredMethods()).filter(m1 -> !m1.isAnnotationPresent(Inject.class))
                                     .noneMatch(o -> o.getName().equals(m.getName())
                                             && Arrays.equals(o.getParameterTypes(), m.getParameterTypes())))
