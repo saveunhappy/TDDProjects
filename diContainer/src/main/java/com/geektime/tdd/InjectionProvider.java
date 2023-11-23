@@ -96,8 +96,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     }
 
     private static Stream<Method> getMethodStream(Method[] declaredMethods) {
-        return stream(declaredMethods)
-                .filter(m -> m.isAnnotationPresent(Inject.class));
+        return injectable(declaredMethods);
     }
 
     private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {
