@@ -1,7 +1,5 @@
 package com.geektime.tdd;
 
-import com.geektime.tdd.Context;
-import com.geektime.tdd.ContextConfig;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Named;
@@ -51,9 +49,9 @@ public class ContextTest {
             assertSame(dependency,component.get().dependency());
         }
         public static Stream<Arguments> should_bind_type_to_an_injectable_component(){
-            return Stream.of(Arguments.of(Named.of("Constructor injection",TypeBinding.ConstructorInjection.class)),
-                    Arguments.of(Named.of("Field injection",TypeBinding.FieldInjection.class)),
-                    Arguments.of(Named.of("Method injection",TypeBinding.MethodInjection.class)));
+            return Stream.of(Arguments.of(Named.of("Constructor injection",ConstructorInjection.class)),
+                    Arguments.of(Named.of("Field injection",FieldInjection.class)),
+                    Arguments.of(Named.of("Method injection",MethodInjection.class)));
         }
 
         interface Component {
@@ -171,6 +169,11 @@ public class ContextTest {
             }
         }
 
+        @Test
+        public void should_retrieve_empty_for_unbind_type() {
+            Optional<Component> component = config.getContext().get(Component.class);
+            assertTrue(component.isEmpty());
+        }
     }
 
 }
