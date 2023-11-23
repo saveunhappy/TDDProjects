@@ -80,11 +80,9 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         Class<?> current = component;
         while (current != Object.class) {
             injectMethods.addAll(injectable(current.getDeclaredMethods())
-                            .filter(m -> injectMethods.stream().noneMatch(o -> o.getName().equals(m.getName())
-                                    && Arrays.equals(o.getParameterTypes(), m.getParameterTypes())))
+                            .filter(m -> injectMethods.stream().noneMatch(o -> isOverride(m, o)))
                             .filter(m -> stream(component.getDeclaredMethods()).filter(m1 -> !m1.isAnnotationPresent(Inject.class))
-                                    .noneMatch(o -> o.getName().equals(m.getName())
-                                            && Arrays.equals(o.getParameterTypes(), m.getParameterTypes())))
+                                    .noneMatch(o -> isOverride(m, o)))
 
                             .toList());
             current = current.getSuperclass();
@@ -92,6 +90,11 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         Collections.reverse(injectMethods);
 
         return injectMethods;
+    }
+
+    private static boolean isOverride(Method m, Method o) {
+        return o.getName().equals(m.getName())
+                && Arrays.equals(o.getParameterTypes(), m.getParameterTypes());
     }
 
     private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {
