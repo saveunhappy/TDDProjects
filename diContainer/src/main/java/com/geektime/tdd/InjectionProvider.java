@@ -107,8 +107,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {
         Constructor<?>[] constructors = implementation.getConstructors();
-        List<Constructor<?>> injectConstructors = stream(constructors)
-                .filter(c -> c.isAnnotationPresent(Inject.class)).toList();
+        List<Constructor<?>> injectConstructors = getConstructorStream(constructors).toList();
         if (injectConstructors.size() > 1) throw new IllegalComponentException();
 
         //找不到被@Inject标注的，并且找不到默认的构造函数
@@ -120,6 +119,11 @@ class InjectionProvider<T> implements ComponentProvider<T> {
                 throw new IllegalComponentException();
             }
         });
+    }
+
+    private static Stream<Constructor<?>> getConstructorStream(Constructor<?>[] constructors) {
+        return stream(constructors)
+                .filter(c -> c.isAnnotationPresent(Inject.class));
     }
 
     private static <T extends AnnotatedElement> Stream<T> injectable(T[] declaredFields) {
