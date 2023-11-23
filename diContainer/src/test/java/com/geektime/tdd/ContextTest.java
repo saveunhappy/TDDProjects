@@ -54,15 +54,6 @@ public class ContextTest {
                     Arguments.of(Named.of("Method injection",MethodInjection.class)));
         }
 
-        interface Component {
-            default Dependency dependency(){
-                return null;
-            };
-        }
-
-        interface Dependency {
-
-        }
 
         interface AnotherDependency {
 

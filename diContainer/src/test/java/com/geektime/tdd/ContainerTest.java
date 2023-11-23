@@ -99,6 +99,9 @@ class ContainerTest {
 
 
 interface Component {
+    default Dependency dependency(){
+        return null;
+    };
 }
 
 interface Dependency {
