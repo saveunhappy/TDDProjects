@@ -82,8 +82,8 @@ class InjectionProvider<T> implements ComponentProvider<T> {
                     stream(current.getDeclaredMethods())
                             //然后获取到所有标注了Inject的
                             .filter(m -> m.isAnnotationPresent(Inject.class))
-                            //然后如果网上走的话，filter的是要留下的，noneMatch就是不匹配的，就是如果是和父类的签名一样
-                            //那么就不添加，那反之，就不添加，所以noneMatch就是要求签名不一样的才添加进来，
+                            //然后如果往上走的话，filter的是要留下的，noneMatch就是不匹配的，就是如果是和父类的签名一样
+                            //那么就不添加，那反之，就添加，所以noneMatch就是要求签名不一样的才添加进来，
                             //然后还有一个，要求参数类型一样，记住，java中是有重载的，所以要名字和参数一样的才不添加
                             .filter(m -> injectMethods.stream().noneMatch(o -> o.getName().equals(m.getName())
                                     && Arrays.equals(o.getParameterTypes(), m.getParameterTypes())))
