@@ -89,6 +89,8 @@ class InjectionProvider<T> implements ComponentProvider<T> {
                     .toList());
             current = current.getSuperclass();
         }
+        //注意，这里reverse了，所以是从父类开始调用的，如果是直接调用父类的话，那么不就是相当于FieldInjection吗？就不用
+        //考虑这么多了
         Collections.reverse(injectMethods);
         return injectMethods;
     }
