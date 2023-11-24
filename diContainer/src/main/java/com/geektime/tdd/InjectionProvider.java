@@ -78,7 +78,8 @@ class InjectionProvider<T> implements ComponentProvider<T> {
             //子到父遍历的，先把子的标注了@Inject的添加进来
             injectMethods.addAll(injectable(current.getDeclaredMethods())
                     //然后到父类之后，injectMethods里面就有@Inject方法了，然后这个时候
-                    //父类的@Inject标注的方法和子类的就重复了，就不添加了
+                    //父类的@Inject标注的方法和子类的就重复了，就不添加了，因为下面有reverse，
+                    //所以调用的时候也是先调用的父类的
                     .filter(m -> isOverrideByInjectMethod(injectMethods, m))
                     //这个是component，最底层的那个，就是实现类，首先是往父类一直走的，第一步是没有添加
                     // @Inject注解，所以没有添加进去，然后到父类，但是父类是有的@Inject注解的，然后添加进来了
