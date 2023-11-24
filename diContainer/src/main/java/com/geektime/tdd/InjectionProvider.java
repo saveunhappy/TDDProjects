@@ -78,9 +78,8 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
         BiFunction<List<Method>, Class<?>, List<Method>> function = (methods, current) -> getC(component, methods, current);
         Class<?> current = component;
-
         while (current != Object.class) {
-            injectMethods.addAll(getC(component, injectMethods, current));
+            injectMethods.addAll(function.apply(injectMethods,current));
             current = current.getSuperclass();
         }
         Collections.reverse(injectMethods);
