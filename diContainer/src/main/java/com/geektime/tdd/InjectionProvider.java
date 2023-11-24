@@ -32,9 +32,8 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     @Override
     public T get(Context context) {
         try {
-            Object[] dependencies = stream(injectConstructor.getParameterTypes())
-                    .map(t -> context.get(t).get())
-                    .toArray(Object[]::new);
+            Constructor<T> constructor = injectConstructor;
+            Object[] dependencies = toDependency(context, constructor);
             T instance = injectConstructor.newInstance(dependencies);
             for (Field field : injectFields) {
                 field.set(instance, context.get(field.getType()).get());
@@ -51,6 +50,12 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Object[] toDependency(Context context, Constructor<T> constructor) {
+        return stream(constructor.getParameterTypes())
+                .map(t -> context.get(t).get())
+                .toArray(Object[]::new);
     }
 
     @Override
