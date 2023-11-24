@@ -49,7 +49,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     @Override
     public List<Class<?>> getDependency() {
-        return concat(concat(stream(injectConstructor.getParameters()).map(Parameter::getType), injectFields.stream().map(Field::getType)),
+        return concat(concat(stream(injectConstructor.getParameterTypes()), injectFields.stream().map(Field::getType)),
                 //是要取所有method的所有参数，method有多个，一个method又有多个参数，所以使用flatMap
                 injectMethods.stream().flatMap(m -> stream(m.getParameterTypes()))).toList();
     }
