@@ -47,8 +47,6 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     }
 
 
-
-
     @Override
     public List<Class<?>> getDependency() {
         return concat(concat(stream(injectConstructor.getParameters()).map(Parameter::getType), injectFields.stream().map(Field::getType)),
@@ -57,9 +55,13 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     }
 
     private static <T> List<Field> getInjectFields(Class<T> component) {
+        BiFunction<List<Field>, Class<?>, List<Field>> function = InjectionProvider::getC;
+        return traverse(component, function);
+    }
+
+    private static <T> List<Field> traverse(Class<T> component, BiFunction<List<Field>, Class<?>, List<Field>> function) {
         List<Field> injectFields = new ArrayList<>();
         Class<?> current = component;
-        BiFunction<List<Field>, Class<?>, List<Field>> function = InjectionProvider::getC;
         while (current != Object.class) {
             injectFields.addAll(function.apply(injectFields, current));
             current = current.getSuperclass();
@@ -67,7 +69,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         return injectFields;
     }
 
-    private static List<Field> getC(List<Field> fields,Class<?> current) {
+    private static List<Field> getC(List<Field> fields, Class<?> current) {
         return injectable(current.getDeclaredFields()).toList();
     }
 
@@ -122,11 +124,13 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     private static boolean isOverrideByInjectMethod(List<Method> injectMethods, Method m) {
         return injectMethods.stream().noneMatch(o -> isOverride(m, o));
     }
+
     private static Object[] toDependencies(Context context, Executable executable) {
         return stream(executable.getParameterTypes())
                 .map(t -> context.get(t).get())
                 .toArray();
     }
+
     private static Object toDependency(Context context, Field field) {
         return context.get(field.getType()).get();
     }
