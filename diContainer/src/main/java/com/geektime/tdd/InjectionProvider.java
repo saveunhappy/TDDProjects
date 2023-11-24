@@ -59,13 +59,13 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         List<Field> injectFields = new ArrayList<>();
         Class<?> current = component;
         while (current != Object.class) {
-            injectFields.addAll(getC(current));
+            injectFields.addAll(getC(injectFields,current));
             current = current.getSuperclass();
         }
         return injectFields;
     }
 
-    private static List<Field> getC(Class<?> current) {
+    private static List<Field> getC(List<Field> fields,Class<?> current) {
         return injectable(current.getDeclaredFields()).toList();
     }
 
