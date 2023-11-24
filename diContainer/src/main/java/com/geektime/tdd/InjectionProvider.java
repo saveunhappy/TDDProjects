@@ -32,8 +32,8 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     @Override
     public T get(Context context) {
         try {
-            Object[] dependencies = stream(injectConstructor.getParameters())
-                    .map(p -> context.get(p.getType()).get())
+            Object[] dependencies = stream(injectConstructor.getParameterTypes())
+                    .map(t -> context.get(t).get())
                     .toArray(Object[]::new);
             T instance = injectConstructor.newInstance(dependencies);
             for (Field field : injectFields) {
@@ -115,6 +115,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     private static <T extends AnnotatedElement> Stream<T> injectable(T[] declaredFields) {
         return stream(declaredFields).filter(f -> f.isAnnotationPresent(Inject.class));
     }
+
     private static boolean isOverride(Method m, Method o) {
         return o.getName().equals(m.getName()) && Arrays.equals(o.getParameterTypes(), m.getParameterTypes());
     }
