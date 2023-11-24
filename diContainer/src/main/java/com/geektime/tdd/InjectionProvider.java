@@ -45,11 +45,6 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         }
     }
 
-    private static Object[] toDependency(Context context, Executable executable) {
-        return stream(executable.getParameterTypes())
-                .map(t -> context.get(t).get())
-                .toArray();
-    }
 
     @Override
     public List<Class<?>> getDependency() {
@@ -126,6 +121,11 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     private static boolean isOverrideByInjectMethod(List<Method> injectMethods, Method m) {
         return injectMethods.stream().noneMatch(o -> isOverride(m, o));
+    }
+    private static Object[] toDependency(Context context, Executable executable) {
+        return stream(executable.getParameterTypes())
+                .map(t -> context.get(t).get())
+                .toArray();
     }
 
 }
