@@ -55,8 +55,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     }
 
     private static <T> List<Field> getInjectFields(Class<T> component) {
-        BiFunction<List<Field>, Class<?>, List<Field>> function = InjectionProvider::getC;
-        return traverse(component, function);
+        return traverse(component, (fields, current) -> injectable(current.getDeclaredFields()).toList());
     }
 
     private static <T> List<T> traverse(Class<?> component, BiFunction<List<T>, Class<?>, List<T>> finder) {
@@ -67,10 +66,6 @@ class InjectionProvider<T> implements ComponentProvider<T> {
             current = current.getSuperclass();
         }
         return members;
-    }
-
-    private static List<Field> getC(List<Field> fields, Class<?> current) {
-        return injectable(current.getDeclaredFields()).toList();
     }
 
     private static <T> List<Method> getInjectMethods(Class<T> component) {
