@@ -37,12 +37,8 @@ class InjectionProvider<T> implements ComponentProvider<T> {
                 field.set(instance, context.get(field.getType()).get());
             }
             for (Method method : injectMethods) {
-                //目前是install没有参数，那么就不会进入map，一会儿看有参数的情况
-                method.invoke(instance, stream(method.getParameterTypes())
-                        //invoke调用的第一个参数是对象，第二个是参数，t -> context.get(t).get()是把每一个
-                        //bind过的都取出来，getParameterTypes是类型，get(t)就是取bind过的实体对象
-                        // 然后toArray，变成一个参数的数组。
-                        .map(t -> context.get(t).get()).toArray());
+                Method method1 = method;
+                method1.invoke(instance, getArray(context, method1));
             }
             return instance;
         } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
@@ -50,10 +46,14 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         }
     }
 
-    private Object[] toDependency(Context context, Executable executable) {
+    private static Object[] getArray(Context context, Method method1) {
+        return toDependency(context,method1);
+    }
+
+    private static Object[] toDependency(Context context, Executable executable) {
         return stream(executable.getParameterTypes())
                 .map(t -> context.get(t).get())
-                .toArray(Object[]::new);
+                .toArray();
     }
 
     @Override
