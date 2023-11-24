@@ -81,16 +81,6 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         return injectMethods;
     }
 
-    private static <T> List<Method> traverse1(Class<T> component, BiFunction<List<Method>, Class<?>, List<Method>> function) {
-        List<Method> injectMethods = new ArrayList<>();
-        Class<?> current = component;
-        while (current != Object.class) {
-            injectMethods.addAll(function.apply(injectMethods,current));
-            current = current.getSuperclass();
-        }
-        return injectMethods;
-    }
-
     private static <T> List<Method> getC(Class<T> component, List<Method> injectMethods, Class<?> current) {
         return injectable(current.getDeclaredMethods())
                 .filter(m -> isOverrideByInjectMethod(injectMethods, m))
