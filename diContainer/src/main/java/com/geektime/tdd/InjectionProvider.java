@@ -59,8 +59,8 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         return traverse(component, function);
     }
 
-    private static <T> List<Field> traverse(Class<T> component, BiFunction<List<Field>, Class<?>, List<Field>> function) {
-        List<Field> injectFields = new ArrayList<>();
+    private static <T> List<T> traverse(Class<T> component, BiFunction<List<T>, Class<?>, List<T>> function) {
+        List<T> injectFields = new ArrayList<>();
         Class<?> current = component;
         while (current != Object.class) {
             injectFields.addAll(function.apply(injectFields, current));
