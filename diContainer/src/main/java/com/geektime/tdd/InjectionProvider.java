@@ -59,8 +59,8 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     private static <T> List<Field> getInjectFields(Class<T> component) {
         List<Field> injectFields = new ArrayList<>();
         Class<?> current = component;
+        BiFunction<List<Field>, Class<?>, List<Field>> function = InjectionProvider::getC;
         while (current != Object.class) {
-            BiFunction<List<Field>, Class<?>, List<Field>> function = InjectionProvider::getC;
             injectFields.addAll(function.apply(injectFields, current));
             current = current.getSuperclass();
         }
