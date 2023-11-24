@@ -32,9 +32,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     @Override
     public T get(Context context) {
         try {
-            Constructor<T> constructor = injectConstructor;
-            Object[] dependencies = toDependency(context, constructor);
-            T instance = injectConstructor.newInstance(dependencies);
+            T instance = injectConstructor.newInstance(toDependency(context, injectConstructor));
             for (Field field : injectFields) {
                 field.set(instance, context.get(field.getType()).get());
             }
