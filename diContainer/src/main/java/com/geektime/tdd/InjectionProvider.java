@@ -58,6 +58,23 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         return traverse(component, (fields, current) -> injectable(current.getDeclaredFields()).toList());
     }
 
+
+    private static <T> List<Method> getInjectMethods(Class<T> component) {
+
+        List<Method> injectMethods = traverse(component, (methods, current) -> injectable(current.getDeclaredMethods())
+                .filter(m -> isOverrideByInjectMethod(methods, m))
+                .filter(m -> isOverrideByNoInjectMethod(component, m))
+                .toList());
+        Collections.reverse(injectMethods);
+        return injectMethods;
+    }
+
+    private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {
+        List<Constructor<?>> injectConstructors = injectable(implementation.getConstructors()).toList();
+        if (injectConstructors.size() > 1) throw new IllegalComponentException();
+        //找不到被@Inject标注的，并且找不到默认的构造函数
+        return (Constructor<Type>) injectConstructors.stream().findFirst().orElseGet(() -> defaultConstructor(implementation));
+    }
     private static <T> List<T> traverse(Class<?> component, BiFunction<List<T>, Class<?>, List<T>> finder) {
         List<T> members = new ArrayList<>();
         Class<?> current = component;
@@ -66,28 +83,6 @@ class InjectionProvider<T> implements ComponentProvider<T> {
             current = current.getSuperclass();
         }
         return members;
-    }
-
-    private static <T> List<Method> getInjectMethods(Class<T> component) {
-
-        BiFunction<List<Method>, Class<?>, List<Method>> function = (methods, current) -> getC(component, methods, current);
-        List<Method> injectMethods = traverse(component, function);
-        Collections.reverse(injectMethods);
-        return injectMethods;
-    }
-
-    private static <T> List<Method> getC(Class<T> component, List<Method> injectMethods, Class<?> current) {
-        return injectable(current.getDeclaredMethods())
-                .filter(m -> isOverrideByInjectMethod(injectMethods, m))
-                .filter(m -> isOverrideByNoInjectMethod(component, m))
-                .toList();
-    }
-
-    private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {
-        List<Constructor<?>> injectConstructors = injectable(implementation.getConstructors()).toList();
-        if (injectConstructors.size() > 1) throw new IllegalComponentException();
-        //找不到被@Inject标注的，并且找不到默认的构造函数
-        return (Constructor<Type>) injectConstructors.stream().findFirst().orElseGet(() -> defaultConstructor(implementation));
     }
 
     private static <Type> Constructor<Type> defaultConstructor(Class<Type> implementation) {
