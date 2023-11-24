@@ -32,18 +32,20 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     @Override
     public T get(Context context) {
         try {
-            T instance = injectConstructor.newInstance(toDependency(context, injectConstructor));
+            T instance = injectConstructor.newInstance(toDependencies(context, injectConstructor));
             for (Field field : injectFields) {
-                field.set(instance, context.get(field.getType()).get());
+                field.set(instance, toDependency(context, field));
             }
             for (Method method : injectMethods) {
-                method.invoke(instance, toDependency(context, method));
+                method.invoke(instance, toDependencies(context, method));
             }
             return instance;
         } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
+
+
 
 
     @Override
@@ -122,10 +124,12 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     private static boolean isOverrideByInjectMethod(List<Method> injectMethods, Method m) {
         return injectMethods.stream().noneMatch(o -> isOverride(m, o));
     }
-    private static Object[] toDependency(Context context, Executable executable) {
+    private static Object[] toDependencies(Context context, Executable executable) {
         return stream(executable.getParameterTypes())
                 .map(t -> context.get(t).get())
                 .toArray();
     }
-
+    private static Object toDependency(Context context, Field field) {
+        return context.get(field.getType()).get();
+    }
 }
