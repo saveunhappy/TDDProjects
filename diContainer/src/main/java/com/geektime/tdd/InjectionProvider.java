@@ -76,6 +76,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         Class<?> current = component;
         while (current != Object.class) {
             //子到父遍历的，先把子的标注了@Inject的添加进来
+            //injectable就是标注了@Inject注解的
             injectMethods.addAll(injectable(current.getDeclaredMethods())
                     //然后到父类之后，injectMethods里面就有@Inject方法了，然后这个时候
                     //父类的@Inject标注的方法和子类的就重复了，就不添加了，因为下面有reverse，
