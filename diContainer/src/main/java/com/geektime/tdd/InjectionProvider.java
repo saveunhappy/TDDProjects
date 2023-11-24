@@ -59,43 +59,37 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         List<Field> injectFields = new ArrayList<>();
         Class<?> current = component;
         while (current != Object.class) {
-            //注意，这里是current
-            injectFields.addAll(injectable(current.getDeclaredFields()).toList());
+            injectFields.addAll(getC(current));
             current = current.getSuperclass();
         }
         return injectFields;
+    }
+
+    private static List<Field> getC(Class<?> current) {
+        return injectable(current.getDeclaredFields()).toList();
     }
 
     private static <T> List<Method> getInjectMethods(Class<T> component) {
         List<Method> injectMethods = new ArrayList<>();
         Class<?> current = component;
         while (current != Object.class) {
-            //子到父遍历的，先把子的标注了@Inject的添加进来
-            //injectable就是标注了@Inject注解的
-            injectMethods.addAll(injectable(current.getDeclaredMethods())
-                    //然后到父类之后，injectMethods里面就有@Inject方法了，然后这个时候
-                    //父类的@Inject标注的方法和子类的就重复了，就不添加了，因为下面有reverse，
-                    //所以调用的时候也是先调用的父类的
-                    .filter(m -> isOverrideByInjectMethod(injectMethods, m))
-                    //这个是component，最底层的那个，就是实现类，首先是往父类一直走的，第一步是没有添加
-                    // @Inject注解，所以没有添加进去，然后到父类，但是父类是有的@Inject注解的，然后添加进来了
-                    //然后如果没有这行代码那么就添加进来了，然后加了这行代码，发现和最底层的那个没有加@Inject
-                    //注解的方法名一样，就过滤掉，然后就不添加进来了。因为如果添加进来了，那么使用构造器创建对象
-                    //创建的就是实现类，方法是父类的方法，然后子类也有这个方法，创建的也是子类的方法，所以就调用了
-                    .filter(m -> isOverrideByNoInjectMethod(component, m))
-                    .toList());
+            injectMethods.addAll(getC(component, injectMethods, current));
             current = current.getSuperclass();
         }
-        //注意，这里reverse了，所以是从父类开始调用的，如果是直接调用父类的话，那么不就是相当于FieldInjection吗？就不用
-        //考虑这么多了
         Collections.reverse(injectMethods);
         return injectMethods;
+    }
+
+    private static <T> List<Method> getC(Class<T> component, List<Method> injectMethods, Class<?> current) {
+        return injectable(current.getDeclaredMethods())
+                .filter(m -> isOverrideByInjectMethod(injectMethods, m))
+                .filter(m -> isOverrideByNoInjectMethod(component, m))
+                .toList();
     }
 
     private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {
         List<Constructor<?>> injectConstructors = injectable(implementation.getConstructors()).toList();
         if (injectConstructors.size() > 1) throw new IllegalComponentException();
-
         //找不到被@Inject标注的，并且找不到默认的构造函数
         return (Constructor<Type>) injectConstructors.stream().findFirst().orElseGet(() -> defaultConstructor(implementation));
     }
