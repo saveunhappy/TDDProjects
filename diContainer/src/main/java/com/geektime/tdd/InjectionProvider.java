@@ -58,11 +58,13 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         return traverse(component, (fields, current) -> injectable(current.getDeclaredFields()).toList());
     }
 
-
     private static <T> List<Method> getInjectMethods(Class<T> component) {
 
         List<Method> injectMethods = traverse(component, (methods, current) -> injectable(current.getDeclaredMethods())
                 .filter(m -> isOverrideByInjectMethod(methods, m))
+                //这个Component就是你去调用这个Component的方法，他的install方法没有标注@Inject，所以没有标注进来
+                //但是一直在网上找，如果没有这句代码，标注了@Inject的install方法就被放进来了，但是你不应该放进来
+                //所以如果你发现你的install方法标注了@Inject，你的子类没有标注，那就去掉它
                 .filter(m -> isOverrideByNoInjectMethod(component, m))
                 .toList());
         Collections.reverse(injectMethods);
