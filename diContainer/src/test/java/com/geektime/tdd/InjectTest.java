@@ -274,7 +274,7 @@ public class InjectTest {
             }
 
             @Test
-            public void should_include_dependencies_from_inject_method() throws Exception {
+            public void should_include_dependencies_from_inject_method() {
                 InjectionProvider<InjectMethodWithDependency> provider = new InjectionProvider<>(InjectMethodWithDependency.class);
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
             }
