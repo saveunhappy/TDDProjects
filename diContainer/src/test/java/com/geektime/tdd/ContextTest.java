@@ -27,7 +27,7 @@ public class ContextTest {
     @Nested
     class TypeBinding {
         @Test
-        public void should_bind_type_to_a_specific_instance() throws Exception {
+        public void should_bind_type_to_a_specific_instance() {
             Component instance = new Component() {
             };
             config.bind(Component.class, instance);
@@ -55,7 +55,11 @@ public class ContextTest {
                     Arguments.of(Named.of("Method injection", MethodInjection.class)));
         }
 
-
+        interface Component {
+            default Dependency dependency(){
+                return null;
+            };
+        }
         interface AnotherDependency {
 
         }
