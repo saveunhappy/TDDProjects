@@ -230,9 +230,9 @@ public class ContextTest {
         public void should_throw_exception_if_transitive_cyclic_dependencies_found(Class<? extends Component> component,
                                                                                    Class<? extends Dependency> dependency,
                                                                                    Class<? extends AnotherDependency> anotherDependency) {
-            config.bind(Component.class, ComponentWithInjectionConstructor.class);
-            config.bind(Dependency.class, DependencyDependedOnAnotherDependency.class);
-            config.bind(AnotherDependency.class, AnotherDependencyDependedOnComponent.class);
+            config.bind(Component.class, CyclicComponentInjectConstructor.class);
+            config.bind(Dependency.class, IndirectCyclicDependencyInjectConstructor.class);
+            config.bind(AnotherDependency.class, IndirectCyclicAnotherDependencyInjectConstructor.class);
             CyclicDependenciesFoundException exception = assertThrows(CyclicDependenciesFoundException.class,
                     () -> config.getContext());
             List<Class<?>> classes = Arrays.asList(exception.getComponents());
