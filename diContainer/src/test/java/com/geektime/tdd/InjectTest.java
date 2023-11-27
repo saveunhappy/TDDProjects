@@ -65,6 +65,8 @@ public class InjectTest {
                 InjectionProvider<InjectionConstructor> provider = new InjectionProvider<>(InjectionConstructor.class);
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
             }
+            //TODO support inject constructor
+
         }
 
 
@@ -172,6 +174,7 @@ public class InjectTest {
             }
         }
 
+        //TODO support inject field
 
     }
 
@@ -275,6 +278,8 @@ public class InjectTest {
                 InjectionProvider<InjectMethodWithDependency> provider = new InjectionProvider<>(InjectMethodWithDependency.class);
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
             }
+            //TODO support inject method
+
 
         }
 

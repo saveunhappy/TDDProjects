@@ -107,6 +107,9 @@ public class ContextTest {
             Optional<Component> component = config.getContext().get(Component.class);
             assertTrue(component.isEmpty());
         }
+        //Context
+        //TODO could get Provider<T> from context
+
     }
 
     @Nested
@@ -303,5 +306,6 @@ public class ContextTest {
             }
         }
     }
+
 
 }
