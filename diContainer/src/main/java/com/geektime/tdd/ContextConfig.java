@@ -1,5 +1,8 @@
 package com.geektime.tdd;
 
+import jakarta.inject.Provider;
+
+import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
 import static java.util.Arrays.stream;
@@ -25,6 +28,13 @@ public class ContextConfig {
             @Override
             public <Type> Optional<Type> get(Class<Type> type) {
                 return Optional.ofNullable(providers.get(type)).map(provider -> (Type) provider.get(this));
+            }
+
+            @Override
+            public Optional<Object> get(ParameterizedType type) {
+                Class<?> componentType = (Class<?>) type.getActualTypeArguments()[0];
+                return Optional.ofNullable(providers.get(componentType))
+                        .map(provider -> (Provider<Object>) () -> provider.get(this));
             }
         };
     }

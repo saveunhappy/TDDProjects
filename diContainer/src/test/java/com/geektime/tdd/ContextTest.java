@@ -122,14 +122,18 @@ public class ContextTest {
             };
             config.bind(Component.class, instance);
             Context context = config.getContext();
-            ParameterizedType type = (ParameterizedType) new TypeLiteral<Provider<Component>>() {}.getType();
-            assertEquals(Provider.class,type.getRawType());
-            assertEquals(Component.class,type.getActualTypeArguments()[0]);
+            ParameterizedType type = new TypeLiteral<Provider<Component>>() {
+            }.getType();
+            assertEquals(Provider.class, type.getRawType());
+            assertEquals(Component.class, type.getActualTypeArguments()[0]);
+
+            Provider<Component> provider = (Provider<Component>) context.get(type).get();
+            assertSame(instance, provider.get());
         }
 
         static abstract class TypeLiteral<T> {
-            public Type getType(){
-                return ((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+            public ParameterizedType getType() {
+                return (ParameterizedType) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
             }
         }
     }
