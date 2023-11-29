@@ -5,28 +5,32 @@ import jakarta.inject.Provider;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class GenericExample {
 
     static Type getParameterizedType() {
-        TypeLiteral<Provider<Integer>> collection = new TypeLiteral<>(){};
-        Type type = collection.getClass().getGenericSuperclass();
+//        TypeLiteral<Provider<Integer>> collection = new TypeLiteral<>(){};
+        List<LinkedList<String>> list = new ArrayList<>(){};
+        Type type = list.getClass().getGenericSuperclass();
         return type;
     }
 
     public static void main(String[] args) {
+
         Type type = getParameterizedType();
 
         if (type instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) type;
 
-//            System.out.println("Raw Type: " + parameterizedType.getRawType());
+            System.out.println("Raw Type: " + parameterizedType.getRawType());
 
-//            Type[] typeArguments = parameterizedType.getActualTypeArguments();
-//            for (Type argument : typeArguments) {
-//                System.out.println("Type Argument: " + argument);
-//            }
+            Type[] typeArguments = parameterizedType.getActualTypeArguments();
+            for (Type argument : typeArguments) {
+                System.out.println("Type Argument: " + argument);
+            }
+
             ParameterizedType actualTypeArgument = (ParameterizedType) parameterizedType.getActualTypeArguments()[0];
             System.out.println("Raw Type: " + actualTypeArgument.getRawType());
             System.out.println("Type Argument: " + actualTypeArgument.getActualTypeArguments()[0]);
