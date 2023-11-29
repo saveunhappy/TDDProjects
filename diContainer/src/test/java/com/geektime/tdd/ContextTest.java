@@ -8,15 +8,13 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Nested
 public class ContextTest {
@@ -131,6 +129,15 @@ public class ContextTest {
             assertSame(instance, provider.get());
         }
 
+        @Test
+        public void should_retrieve_bind_type_as_unsupported_container() {
+            Component instance = new Component() {
+            };
+            config.bind(Component.class, instance);
+            Context context = config.getContext();
+            ParameterizedType type = new TypeLiteral<List<Component>>() {}.getType();
+            assertFalse(context.get(type).isPresent());
+        }
         static abstract class TypeLiteral<T> {
             public ParameterizedType getType() {
                 return (ParameterizedType) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
