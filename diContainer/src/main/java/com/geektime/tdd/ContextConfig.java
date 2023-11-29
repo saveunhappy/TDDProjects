@@ -25,16 +25,19 @@ public class ContextConfig {
             checkDependencies(component, new Stack<>());
         }
         return new Context() {
+            private Context context = this;
             @Override
             public <Type> Optional<Type> get(Class<Type> type) {
-                return Optional.ofNullable(providers.get(type)).map(provider -> (Type) provider.get(this));
+                return Optional.ofNullable(providers.get(type)).map(provider -> (Type) provider.get(context));
             }
 
             @Override
             public Optional<Object> get(ParameterizedType type) {
                 Class<?> componentType = (Class<?>) type.getActualTypeArguments()[0];
                 return Optional.ofNullable(providers.get(componentType))
-                        .map(provider -> (Provider<Object>) () -> provider.get(this));
+                        .map(provider -> {
+                            return (Provider<Object>) () -> provider.get(context);
+                        });
             }
         };
     }

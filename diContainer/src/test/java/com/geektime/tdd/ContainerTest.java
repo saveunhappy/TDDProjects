@@ -1,6 +1,7 @@
 package com.geektime.tdd;
 
 import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import org.junit.jupiter.api.*;
 
 import java.util.Arrays;
