@@ -70,6 +70,10 @@ class ArgsTest {
         Args<MultiOptions> args = new Args<>(MultiOptions.class, Map.of(boolean.class, boolParser,
                 int.class, intParser, String.class, stringParser));
         MultiOptions options = args.parse("-l", "-p", "8080", "-d", "/usr/logs");
+        //为什么可以得到这个结果，首先前面进行了when，然后是调用了parse方法，然后这里把Map传过去了，这里面类型就是
+        //boolean.class,int.class,String.class,这个时候getParameter就知道了对应的OptionParser，
+        //解析完之后就返回对象，return (T) constructor.newInstance(values);既然创建对象了那么就是属性赋值了
+        //所以这里就可以获取属性的值
         assertTrue(options.logging());
         assertEquals(1000,options.port());
         assertEquals("parsed",options.directory());
