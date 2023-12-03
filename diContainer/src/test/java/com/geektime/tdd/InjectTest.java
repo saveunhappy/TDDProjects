@@ -179,20 +179,7 @@ public class InjectTest {
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
             }
 
-            static class ProviderInjectMethod{
-                Provider<Dependency> dependency;
-                @Inject
-                void install(Provider<Dependency> dependency) {
-                    this.dependency = dependency;
-                }
-            }
 
-            @Test
-            public void should_inject_provider_via_inject_constructor() {
-                ProviderInjectMethod instance = new InjectionProvider<>(ProviderInjectMethod.class).get(context);
-                assertSame(dependencyProvider,instance.dependency);
-
-            }
         }
 
 
@@ -210,7 +197,16 @@ public class InjectTest {
         }
 
         //TODO support inject field
+        static class ProviderInjectField{
+            @Inject
+            Provider<Dependency> dependency;
+        }
 
+        @Test
+        public void should_inject_provider_via_inject_method() {
+            ProviderInjectField instance = new InjectionProvider<>(ProviderInjectField.class).get(context);
+            assertSame(dependencyProvider,instance.dependency);
+        }
     }
 
     @Nested
@@ -314,7 +310,19 @@ public class InjectTest {
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
             }
             //TODO support inject method
+            static class ProviderInjectMethod{
+                Provider<Dependency> dependency;
+                @Inject
+                void install(Provider<Dependency> dependency) {
+                    this.dependency = dependency;
+                }
+            }
 
+            @Test
+            public void should_inject_provider_via_inject_method() {
+                ProviderInjectMethod instance = new InjectionProvider<>(ProviderInjectMethod.class).get(context);
+                assertSame(dependencyProvider,instance.dependency);
+            }
 
         }
 
