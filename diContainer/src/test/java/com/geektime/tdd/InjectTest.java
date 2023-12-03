@@ -65,7 +65,7 @@ public class InjectTest {
                 InjectionProvider<InjectionConstructor> provider = new InjectionProvider<>(InjectionConstructor.class);
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
             }
-            //TODO support inject constructor
+            //TODO support provider inject constructor
 
         }
 
