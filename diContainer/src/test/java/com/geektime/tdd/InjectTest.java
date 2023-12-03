@@ -178,6 +178,21 @@ public class InjectTest {
                 InjectionProvider<ComponentWithFieldInjection> provider = new InjectionProvider<>(ComponentWithFieldInjection.class);
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
             }
+
+            static class ProviderInjectMethod{
+                Provider<Dependency> dependency;
+                @Inject
+                void install(Provider<Dependency> dependency) {
+                    this.dependency = dependency;
+                }
+            }
+
+            @Test
+            public void should_inject_provider_via_inject_constructor() {
+                ProviderInjectMethod instance = new InjectionProvider<>(ProviderInjectMethod.class).get(context);
+                assertSame(dependencyProvider,instance.dependency);
+
+            }
         }
 
 
