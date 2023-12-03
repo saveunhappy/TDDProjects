@@ -77,6 +77,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         //找不到被@Inject标注的，并且找不到默认的构造函数
         return (Constructor<Type>) injectConstructors.stream().findFirst().orElseGet(() -> defaultConstructor(implementation));
     }
+
     private static <T> List<T> traverse(Class<?> component, BiFunction<List<T>, Class<?>, List<T>> finder) {
         List<T> members = new ArrayList<>();
         Class<?> current = component;
@@ -115,9 +116,13 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     }
 
     private static Object[] toDependencies(Context context, Executable executable) {
-        return stream(executable.getParameterTypes())
-                .map(t -> context.get(t).get())
-                .toArray();
+        return stream(executable.getParameters()).map(
+                p -> {
+                    Type type = p.getParameterizedType();
+                    if (type instanceof ParameterizedType) return context.get((ParameterizedType) type).get();
+                    return context.get((Class<?>)type ).get();
+                }
+        ).toArray();
     }
 
     private static Object toDependency(Context context, Field field) {

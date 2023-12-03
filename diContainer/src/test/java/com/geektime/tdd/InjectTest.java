@@ -1,14 +1,15 @@
 package com.geektime.tdd;
 
 import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.ParameterizedType;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -17,10 +18,15 @@ import static org.mockito.Mockito.when;
 public class InjectTest {
     private final Dependency dependency = mock(Dependency.class);
     private final Context context = mock(Context.class);
+    private Provider<Dependency> dependencyProvider = mock(Provider.class);
+
 
     @BeforeEach
-    public void setup() {
+    public void setup() throws NoSuchFieldException {
+        ParameterizedType providerType = (ParameterizedType)InjectTest.class.getDeclaredField("dependencyProvider").getGenericType();
         when(context.get(eq(Dependency.class))).thenReturn(Optional.of(dependency));
+        when(context.get(eq(providerType))).thenReturn(Optional.of(dependencyProvider));
+
     }
 
     @Nested
@@ -67,6 +73,20 @@ public class InjectTest {
             }
             //TODO support provider inject constructor
 
+            static class ProviderInjectConstructor{
+                Provider<Dependency> dependency;
+                @Inject
+                public ProviderInjectConstructor(Provider<Dependency> dependency) {
+                    this.dependency = dependency;
+                }
+            }
+
+            @Test
+            public void should_inject_provider_via_inject_constructor() {
+                ProviderInjectConstructor instance = new InjectionProvider<>(ProviderInjectConstructor.class).get(context);
+                assertSame(dependencyProvider,instance.dependency);
+
+            }
         }
 
 
