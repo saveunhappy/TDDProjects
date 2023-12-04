@@ -81,8 +81,6 @@ public class InjectTest {
                 InjectionProvider<InjectionConstructor> provider = new InjectionProvider<>(InjectionConstructor.class);
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray());
             }
-            //TODO include dependency type from constructor
-
             @Test
             public void should_include_provider_type_from_inject_constructor() {
                 InjectionProvider<ProviderInjectConstructor> provider = new InjectionProvider<>(ProviderInjectConstructor.class);
@@ -102,7 +100,6 @@ public class InjectTest {
             public void should_inject_provider_via_inject_constructor() {
                 ProviderInjectConstructor instance = new InjectionProvider<>(ProviderInjectConstructor.class).get(context);
                 assertSame(dependencyProvider, instance.dependency);
-
             }
         }
 
@@ -195,8 +192,11 @@ public class InjectTest {
                 InjectionProvider<ComponentWithFieldInjection> provider = new InjectionProvider<>(ComponentWithFieldInjection.class);
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray());
             }
-            //TODO include dependency type from field
-
+            @Test
+            public void should_include_provider_type_from_inject_constructor() {
+                InjectionProvider<ProviderInjectField> provider = new InjectionProvider<>(ProviderInjectField.class);
+                assertArrayEquals(new Type[]{dependencyProviderType}, provider.getDependencyTypes().toArray(Type[]::new));
+            }
             static class ProviderInjectField {
                 @Inject
                 Provider<Dependency> dependency;
