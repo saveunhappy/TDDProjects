@@ -163,8 +163,8 @@ public class ContextTest {
         public static Stream<Arguments> should_throw_exception_if_dependency_not_found() {
             return Stream.of(Arguments.of(Named.of("inject Constructor", MissingDependencyConstructor.class)),
                     Arguments.of(Named.of("inject Field", MissingDependencyField.class)),
-                    Arguments.of(Named.of("inject Method", MissingDependencyMethod.class))
-                    //TODO Arguments.of(Named.of("Provider in inject Constructor", MissingDependencyProviderConstructor.class)
+                    Arguments.of(Named.of("inject Method", MissingDependencyMethod.class)),
+                    Arguments.of(Named.of("Provider in inject Constructor", MissingDependencyProviderConstructor.class))
                     //TODO provider in inject field
                     //TODO provider in inject method
             );
