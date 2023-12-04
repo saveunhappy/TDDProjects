@@ -179,6 +179,16 @@ public class InjectTest {
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
             }
 
+            static class ProviderInjectField{
+                @Inject
+                Provider<Dependency> dependency;
+            }
+
+            @Test
+            public void should_inject_provider_via_inject_field() {
+                ProviderInjectField instance = new InjectionProvider<>(ProviderInjectField.class).get(context);
+                assertSame(dependencyProvider,instance.dependency);
+            }
 
         }
 
@@ -194,19 +204,10 @@ public class InjectTest {
             public void should_throw_exception_if_inject_field_is_final() {
                 assertThrows(IllegalComponentException.class, () -> new InjectionProvider<>(FinalInjectField.class));
             }
+
         }
 
-        //TODO support inject field
-        static class ProviderInjectField{
-            @Inject
-            Provider<Dependency> dependency;
-        }
 
-        @Test
-        public void should_inject_provider_via_inject_method() {
-            ProviderInjectField instance = new InjectionProvider<>(ProviderInjectField.class).get(context);
-            assertSame(dependencyProvider,instance.dependency);
-        }
     }
 
     @Nested
