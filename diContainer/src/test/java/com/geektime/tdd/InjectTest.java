@@ -264,7 +264,7 @@ public class InjectTest {
                 InjectMethodWithDependency component = new InjectionProvider<>(InjectMethodWithDependency.class).get(context);
                 assertEquals(dependency, component.dependency);
             }
-            //TODO include dependency type from method
+
 
             static class SuperClassWithInjectMethod {
                 int superCalled = 0;
@@ -328,6 +328,12 @@ public class InjectTest {
             public void should_include_dependencies_from_inject_method() {
                 InjectionProvider<InjectMethodWithDependency> provider = new InjectionProvider<>(InjectMethodWithDependency.class);
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray());
+            }
+
+            @Test
+            public void should_include_provider_type_from_inject_field() {
+                InjectionProvider<ProviderInjectMethod> provider = new InjectionProvider<>(ProviderInjectMethod.class);
+                assertArrayEquals(new Type[]{dependencyProviderType}, provider.getDependencyTypes().toArray(Type[]::new));
             }
 
             static class ProviderInjectMethod {
