@@ -48,10 +48,15 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
 
     @Override
-    public List<Class<?>> getDependency() {
+    public List<Class<?>> getDependencies() {
         return concat(concat(stream(injectConstructor.getParameterTypes()), injectFields.stream().map(Field::getType)),
                 //是要取所有method的所有参数，method有多个，一个method又有多个参数，所以使用flatMap
                 injectMethods.stream().flatMap(m -> stream(m.getParameterTypes()))).toList();
+    }
+
+    @Override
+    public List<Type> getDependencyTypes() {
+        return stream(injectConstructor.getParameters()).map(Parameter::getParameterizedType).toList();
     }
 
     private static <T> List<Field> getInjectFields(Class<T> component) {
@@ -120,7 +125,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
                 p -> {
                     Type type = p.getParameterizedType();
                     if (type instanceof ParameterizedType) return context.get((ParameterizedType) type).get();
-                    return context.get((Class<?>)type ).get();
+                    return context.get((Class<?>) type).get();
                 }
         ).toArray();
     }
@@ -128,6 +133,6 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     private static Object toDependency(Context context, Field field) {
         Type type = field.getGenericType();
         if (type instanceof ParameterizedType) return context.get((ParameterizedType) type).get();
-        return context.get((Class<?>)type ).get();
+        return context.get((Class<?>) type).get();
     }
 }

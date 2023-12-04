@@ -49,7 +49,7 @@ public class ContextConfig {
          * containsKey,如果没有Bind过，那么当然没有啊*/
         //这个是去找的所有bind过的依赖，然后把所有的key的依赖都放到一个栈中去，这里是找的所有的依赖，如果之前有添加过
         //那就说明有环了，就是有循环依赖
-        for (Class<?> dependency : providers.get(component).getDependency()) {
+        for (Class<?> dependency : providers.get(component).getDependencies()) {
             //就是你bind一个接口就得有一个实现类，如果你Component依赖了Dependency
             //但是你没有bind过，那就在dependencies没有找到，就抛出异常,key是bind过的，value就是你的构造器参数
             //也是一个Class，如果没有找到，那是不应该的，因为key和value都应该在dependencies中的

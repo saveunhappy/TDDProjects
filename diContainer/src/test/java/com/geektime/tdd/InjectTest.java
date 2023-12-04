@@ -2,11 +2,13 @@ package com.geektime.tdd;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,11 +23,12 @@ public class InjectTest {
     //注意，这个mock的是Provide，但是给了泛型，为什么？就是为了能把Dependency给传过去。然后就在setup里面获取到了这个泛型的类型
     private Provider<Dependency> dependencyProvider = mock(Provider.class);
 
+    private ParameterizedType dependencyProviderType;
 
     @BeforeEach
     public void setup() throws NoSuchFieldException {
         //这里有RowType(Provider)和actualType(Dependency);
-        ParameterizedType providerType = (ParameterizedType)InjectTest.class.getDeclaredField("dependencyProvider").getGenericType();
+        dependencyProviderType = (ParameterizedType) InjectTest.class.getDeclaredField("dependencyProvider").getGenericType();
         when(context.get(eq(Dependency.class))).thenReturn(Optional.of(dependency));
         //调用这个的时候，因为是ParameterizedType类型的，调用的地方也只是看类型，根据类型去获取对应的类型，然后
         //Context.get返回的确实就是Optional类型的，但是Optional的Provider我暂时没看明白(如果属性是Provider<Dependency>)
@@ -33,7 +36,7 @@ public class InjectTest {
         //这个里面是Provider接口，又是一个函数，是jakarta的，原来的没有，直接就是get，provider -> (Type) provider.get(this)
         //所以差别就是原来的返回的就是对象，然后用Optional包装了一下，这个是先用Provider包了一下，然后返回的时候是Optional的
         //ofNullable又包了一下，明白了
-        when(context.get(eq(providerType))).thenReturn(Optional.of(dependencyProvider));
+        when(context.get(eq(dependencyProviderType))).thenReturn(Optional.of(dependencyProvider));
     }
 
     @Nested
@@ -76,12 +79,19 @@ public class InjectTest {
             @Test
             public void should_include_dependency_from_inject_constructor() {
                 InjectionProvider<InjectionConstructor> provider = new InjectionProvider<>(InjectionConstructor.class);
-                assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
+                assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray());
             }
             //TODO include dependency type from constructor
 
-            static class ProviderInjectConstructor{
+            @Test
+            public void should_include_dependency_type_from_inject_constructor() {
+                InjectionProvider<ProviderInjectConstructor> provider = new InjectionProvider<>(ProviderInjectConstructor.class);
+                assertArrayEquals(new Type[]{dependencyProviderType}, provider.getDependencyTypes().toArray(Type[]::new));
+            }
+
+            static class ProviderInjectConstructor {
                 Provider<Dependency> dependency;
+
                 @Inject
                 public ProviderInjectConstructor(Provider<Dependency> dependency) {
                     this.dependency = dependency;
@@ -91,7 +101,7 @@ public class InjectTest {
             @Test
             public void should_inject_provider_via_inject_constructor() {
                 ProviderInjectConstructor instance = new InjectionProvider<>(ProviderInjectConstructor.class).get(context);
-                assertSame(dependencyProvider,instance.dependency);
+                assertSame(dependencyProvider, instance.dependency);
 
             }
         }
@@ -183,11 +193,11 @@ public class InjectTest {
             public void should_include_dependency_from_field_dependency() {
                 //类的测试，
                 InjectionProvider<ComponentWithFieldInjection> provider = new InjectionProvider<>(ComponentWithFieldInjection.class);
-                assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
+                assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray());
             }
             //TODO include dependency type from field
 
-            static class ProviderInjectField{
+            static class ProviderInjectField {
                 @Inject
                 Provider<Dependency> dependency;
             }
@@ -195,7 +205,7 @@ public class InjectTest {
             @Test
             public void should_inject_provider_via_inject_field() {
                 ProviderInjectField instance = new InjectionProvider<>(ProviderInjectField.class).get(context);
-                assertSame(dependencyProvider,instance.dependency);
+                assertSame(dependencyProvider, instance.dependency);
             }
 
         }
@@ -317,10 +327,12 @@ public class InjectTest {
             @Test
             public void should_include_dependencies_from_inject_method() {
                 InjectionProvider<InjectMethodWithDependency> provider = new InjectionProvider<>(InjectMethodWithDependency.class);
-                assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
+                assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray());
             }
-            static class ProviderInjectMethod{
+
+            static class ProviderInjectMethod {
                 Provider<Dependency> dependency;
+
                 @Inject
                 void install(Provider<Dependency> dependency) {
                     this.dependency = dependency;
@@ -330,7 +342,7 @@ public class InjectTest {
             @Test
             public void should_inject_provider_via_inject_method() {
                 ProviderInjectMethod instance = new InjectionProvider<>(ProviderInjectMethod.class).get(context);
-                assertSame(dependencyProvider,instance.dependency);
+                assertSame(dependencyProvider, instance.dependency);
             }
 
         }
