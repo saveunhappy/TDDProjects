@@ -310,7 +310,6 @@ public class InjectTest {
                 InjectionProvider<InjectMethodWithDependency> provider = new InjectionProvider<>(InjectMethodWithDependency.class);
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
             }
-            //TODO support inject method
             static class ProviderInjectMethod{
                 Provider<Dependency> dependency;
                 @Inject
