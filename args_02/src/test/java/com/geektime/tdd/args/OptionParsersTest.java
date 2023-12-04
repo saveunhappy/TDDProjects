@@ -109,7 +109,7 @@ public class OptionParsersTest {
 
     @Nested
     class ListOptionParser {
-        //TODO -g "this" "is" {"this","is"}
+        // -g "this" "is" {"this","is"}
         @Test
         public void should_parse_list_value() throws Exception {
             String[] value = OptionParsers.list(String[]::new, String::valueOf)
@@ -134,7 +134,7 @@ public class OptionParsersTest {
 
 
         }
-        //TODO -default value []
+        // -default value []
         @Test
         public void should_use_empty_array_as_default_value() throws Exception {
             //没有-g，那么index就是-1，那么就返回null，那么就进入orElse,就是数组的长度是0
@@ -145,7 +145,7 @@ public class OptionParsersTest {
 
         }
 
-        //TODO -d a throw exception  a不是数字，应该是数字的
+        // -d a throw exception  a不是数字，应该是数字的
         @Test
         public void should_throw_exception_if_value_parser_cent_parse_value() throws Exception {
             Function<String, String> parser = (it) -> {

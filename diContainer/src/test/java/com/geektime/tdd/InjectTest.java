@@ -71,7 +71,7 @@ public class InjectTest {
                 InjectionProvider<InjectionConstructor> provider = new InjectionProvider<>(InjectionConstructor.class);
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
             }
-            //TODO support provider inject constructor
+            //TODO include dependency type from constructor
 
             static class ProviderInjectConstructor{
                 Provider<Dependency> dependency;
@@ -178,6 +178,7 @@ public class InjectTest {
                 InjectionProvider<ComponentWithFieldInjection> provider = new InjectionProvider<>(ComponentWithFieldInjection.class);
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependency().toArray());
             }
+            //TODO include dependency type from field
 
             static class ProviderInjectField{
                 @Inject
@@ -246,6 +247,7 @@ public class InjectTest {
                 InjectMethodWithDependency component = new InjectionProvider<>(InjectMethodWithDependency.class).get(context);
                 assertEquals(dependency, component.dependency);
             }
+            //TODO include dependency type from method
 
             static class SuperClassWithInjectMethod {
                 int superCalled = 0;
