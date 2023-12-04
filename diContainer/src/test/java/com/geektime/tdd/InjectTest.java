@@ -18,15 +18,18 @@ import static org.mockito.Mockito.when;
 public class InjectTest {
     private final Dependency dependency = mock(Dependency.class);
     private final Context context = mock(Context.class);
+    //注意，这个mock的是Provide，但是给了泛型，为什么？就是为了能把Dependency给传过去。然后就在setup里面获取到了这个泛型的类型
     private Provider<Dependency> dependencyProvider = mock(Provider.class);
 
 
     @BeforeEach
     public void setup() throws NoSuchFieldException {
+        //这里有RowType(Provider)和actualType(Dependency);
         ParameterizedType providerType = (ParameterizedType)InjectTest.class.getDeclaredField("dependencyProvider").getGenericType();
         when(context.get(eq(Dependency.class))).thenReturn(Optional.of(dependency));
+        //调用这个的时候，因为是ParameterizedType类型的，调用的地方也只是看类型，根据类型去获取对应的类型，然后
+        //Context.get返回的确实就是Optional类型的，但是Optional的Provider我暂时没看明白
         when(context.get(eq(providerType))).thenReturn(Optional.of(dependencyProvider));
-
     }
 
     @Nested
