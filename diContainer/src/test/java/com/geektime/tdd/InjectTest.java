@@ -28,7 +28,8 @@ public class InjectTest {
         ParameterizedType providerType = (ParameterizedType)InjectTest.class.getDeclaredField("dependencyProvider").getGenericType();
         when(context.get(eq(Dependency.class))).thenReturn(Optional.of(dependency));
         //调用这个的时候，因为是ParameterizedType类型的，调用的地方也只是看类型，根据类型去获取对应的类型，然后
-        //Context.get返回的确实就是Optional类型的，但是Optional的Provider我暂时没看明白
+        //Context.get返回的确实就是Optional类型的，但是Optional的Provider我暂时没看明白(如果属性是Provider<Dependency>)
+        //那你返回的也应该是Provider<Dependency>啊，明白了
         when(context.get(eq(providerType))).thenReturn(Optional.of(dependencyProvider));
     }
 
