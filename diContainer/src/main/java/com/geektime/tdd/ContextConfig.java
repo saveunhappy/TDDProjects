@@ -28,7 +28,7 @@ public class ContextConfig {
         return new Context() {
             @Override
             public Optional get(Type type) {
-                if (type instanceof ParameterizedType) return get((ParameterizedType) type);
+                if (isContainerType(type)) return get((ParameterizedType) type);
                 return get((Class<?>) type);
             }
 
@@ -56,6 +56,10 @@ public class ContextConfig {
         };
     }
 
+    private static boolean isContainerType(Type type) {
+        return type instanceof ParameterizedType;
+    }
+
     private void checkDependencies(Class<?> component, Stack<Class<?>> visiting) {
         /*注意原来的实现，dependencies.get(component)获取的是什么？是一个List，就是所有的依赖，然后接下来就是去判断
          * containsKey,如果没有Bind过，那么当然没有啊*/
@@ -64,7 +68,7 @@ public class ContextConfig {
         for (Type dependency : providers.get(component).getDependencies()) {
             if (dependency instanceof Class)
                 checkDependency(component, visiting, (Class<?>) dependency);
-            if (dependency instanceof ParameterizedType) {
+            if (isContainerType(dependency)) {
                 Class<?> type = (Class<?>) ((ParameterizedType) dependency).getActualTypeArguments()[0];
                 if (!providers.containsKey(type)) throw new DependencyNotFoundException(component, type);
             }
