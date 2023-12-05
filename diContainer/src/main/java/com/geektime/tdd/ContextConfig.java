@@ -74,14 +74,6 @@ public class ContextConfig {
         }
     }
 
-    private static Class<?> getComponentType(Type type) {
-        return (Class<?>) ((ParameterizedType) type).getActualTypeArguments()[0];
-    }
-
-    private static boolean isContainerType(Type type) {
-        return type instanceof ParameterizedType;
-    }
-
     private void checkDependencies(Class<?> component, Stack<Class<?>> visiting) {
         /*注意原来的实现，dependencies.get(component)获取的是什么？是一个List，就是所有的依赖，然后接下来就是去判断
          * containsKey,如果没有Bind过，那么当然没有啊*/
