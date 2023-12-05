@@ -61,8 +61,8 @@ public class ContextConfig {
     }
 
     static class Ref {
-        Type container;
-        Class<?> component;
+        private Type container;
+        private Class<?> component;
 
         public Ref(ParameterizedType container) {
             this.container = container.getRawType();
@@ -76,6 +76,14 @@ public class ContextConfig {
         static Ref of(Type type) {
             if(type instanceof ParameterizedType container) return new Ref(container);
             return new Ref((Class<?>) type);
+        }
+
+        public Type getContainer() {
+            return container;
+        }
+
+        public Class<?> getComponent() {
+            return component;
         }
     }
 
