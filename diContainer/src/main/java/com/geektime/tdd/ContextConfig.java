@@ -40,8 +40,7 @@ public class ContextConfig {
             private Optional<Object> getContainer(ParameterizedType type) {
 
                 if (type.getRawType() != Provider.class) return Optional.empty();
-                Class<?> componentType = getComponentType(type);
-                return Optional.ofNullable(providers.get(componentType))
+                return Optional.ofNullable(providers.get(getComponentType(type)))
                         //如果其他类型也可以的话，这里就不是这么写的了，因为这里返回值固定就是Provider<Object>
                         //而这个方法的返回值Optional<Object>中的Object就是指代Provider<Object>这个整体，返回的只能是
                         //Provider这个类型的，其他的类型不支持，所以报错
