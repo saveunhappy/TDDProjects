@@ -9,7 +9,7 @@ import java.util.*;
 import static java.util.Arrays.stream;
 
 public class ContextConfig {
-    private Map<Class<?>, ComponentProvider<?>> providers = new HashMap<>();
+    private final Map<Class<?>, ComponentProvider<?>> providers = new HashMap<>();
 
     public <Type> void bind(Class<Type> type, Type instance) {
         providers.put(type, context -> instance);
@@ -28,13 +28,12 @@ public class ContextConfig {
         return new Context() {
             @Override
             public Optional get(Type type) {
+                Ref ref = Ref.of(type);
                 if (isContainerType(type)) {
-                    Ref ref = Ref.of((ParameterizedType) type);
                     if (ref.getContainer() != Provider.class) return Optional.empty();
                     return Optional.ofNullable(providers.get(ref.getComponent()))
                             .map(provider -> (Provider<Object>) () -> provider.get(this));
                 }
-                Ref ref = Ref.of((Class<?>) type);
                 return Optional.ofNullable(providers.get(ref.getComponent())).
                         map(provider -> provider.get(this));
             }
@@ -44,7 +43,7 @@ public class ContextConfig {
 
     static class Ref {
         private Type container;
-        private Class<?> component;
+        private final Class<?> component;
 
         public Ref(ParameterizedType container) {
             this.container = container.getRawType();
