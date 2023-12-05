@@ -8,9 +8,6 @@ import static java.util.List.of;
 interface ComponentProvider<T> {
     T get(Context context);
 
-    default List<Class<?>> getDependencies(){
-        return of();
-    };
     default List<Type> getDependencyTypes(){
         return of();
     };
