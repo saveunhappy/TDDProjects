@@ -79,7 +79,7 @@ public class InjectTest {
             @Test
             public void should_include_dependency_from_inject_constructor() {
                 InjectionProvider<InjectionConstructor> provider = new InjectionProvider<>(InjectionConstructor.class);
-                assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray());
+                assertArrayEquals(new Type[]{Dependency.class}, provider.getDependencyTypes().toArray());
             }
             @Test
             public void should_include_provider_type_from_inject_constructor() {
@@ -190,7 +190,7 @@ public class InjectTest {
             public void should_include_dependency_from_field_dependency() {
                 //类的测试，
                 InjectionProvider<ComponentWithFieldInjection> provider = new InjectionProvider<>(ComponentWithFieldInjection.class);
-                assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray());
+                assertArrayEquals(new Type[]{Dependency.class}, provider.getDependencyTypes().toArray());
             }
             @Test
             public void should_include_provider_type_from_inject_field() {
@@ -327,7 +327,7 @@ public class InjectTest {
             @Test
             public void should_include_dependencies_from_inject_method() {
                 InjectionProvider<InjectMethodWithDependency> provider = new InjectionProvider<>(InjectMethodWithDependency.class);
-                assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray());
+                assertArrayEquals(new Type[]{Dependency.class}, provider.getDependencyTypes().toArray());
             }
 
             @Test
