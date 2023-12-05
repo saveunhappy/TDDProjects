@@ -6,7 +6,4 @@ import java.util.Optional;
 
 public interface Context {
     Optional getType(Type type);
-
-    Optional<Object> get(ParameterizedType type);
-
 }
