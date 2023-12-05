@@ -40,7 +40,7 @@ public class ContextConfig {
             private Optional<Object> getContainer(ParameterizedType type) {
 
                 if (type.getRawType() != Provider.class) return Optional.empty();
-                Class<?> componentType = (Class<?>) type.getActualTypeArguments()[0];
+                Class<?> componentType = getComponentType(type);
                 return Optional.ofNullable(providers.get(componentType))
                         //如果其他类型也可以的话，这里就不是这么写的了，因为这里返回值固定就是Provider<Object>
                         //而这个方法的返回值Optional<Object>中的Object就是指代Provider<Object>这个整体，返回的只能是
@@ -56,6 +56,10 @@ public class ContextConfig {
         };
     }
 
+    private static Class<?> getComponentType(ParameterizedType type) {
+        return (Class<?>) type.getActualTypeArguments()[0];
+    }
+
     private static boolean isContainerType(Type type) {
         return type instanceof ParameterizedType;
     }
@@ -69,7 +73,7 @@ public class ContextConfig {
             if (dependency instanceof Class)
                 checkDependency(component, visiting, (Class<?>) dependency);
             if (isContainerType(dependency)) {
-                Class<?> type = (Class<?>) ((ParameterizedType) dependency).getActualTypeArguments()[0];
+                Class<?> type = getComponentType(((ParameterizedType) dependency));
                 if (!providers.containsKey(type)) throw new DependencyNotFoundException(component, type);
             }
 
