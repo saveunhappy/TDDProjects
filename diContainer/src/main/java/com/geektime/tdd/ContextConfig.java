@@ -33,16 +33,17 @@ public class ContextConfig {
             }
 
             private Optional getComponent(Class type) {
-                Type containerType = null;
-                Class componentType = type;
+                Ref ref = Ref.of(type);
+                Type containerType = ref.getContainer();
+                Class componentType = ref.getComponent();
                 return Optional.ofNullable(providers.get(componentType)).
                         map(provider -> provider.get(this));
             }
 
             private Optional<Object> getContainer(ParameterizedType type) {
-
-                Type containerType = type.getRawType();
-                Class<?> componentType = getComponentType(type);
+                Ref ref = Ref.of(type);
+                Type containerType = ref.getContainer();
+                Class<?> componentType = ref.getComponent();
 
                 if (containerType != Provider.class) return Optional.empty();
                 return Optional.ofNullable(providers.get(componentType))
