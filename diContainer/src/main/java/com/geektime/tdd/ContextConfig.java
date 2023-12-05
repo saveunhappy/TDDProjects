@@ -27,15 +27,16 @@ public class ContextConfig {
         }
         return new Context() {
             @Override
-            public <Type> Optional<Type> get(Class<Type> type) {
-                return Optional.ofNullable(providers.get(type)).
-                        map(provider -> (Type) provider.get(this));
-            }
-            @Override
-            public Optional getType(Type type){
+            public Optional getType(Type type) {
                 if (type instanceof ParameterizedType) return get((ParameterizedType) type);
                 return get((Class<?>) type);
             }
+
+            private <Type> Optional<Type> get(Class<Type> type) {
+                return Optional.ofNullable(providers.get(type)).
+                        map(provider -> (Type) provider.get(this));
+            }
+
             @Override
             public Optional<Object> get(ParameterizedType type) {
 
