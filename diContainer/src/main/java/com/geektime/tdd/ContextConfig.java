@@ -28,8 +28,7 @@ public class ContextConfig {
         return new Context() {
             @Override
             public Optional get(Type type) {
-                Ref ref = Ref.of(type);
-                return get(ref);
+                return get(Ref.of(type));
             }
 
             private Optional<?> get(Ref ref) {
