@@ -95,11 +95,10 @@ public class ContextConfig {
                 if (!providers.containsKey(ref.getComponent()))
                     throw new DependencyNotFoundException(componentType, ref.getComponent());
             } else {
-                Class<?> componentType1 = ref.getComponent();
-                if (!providers.containsKey(componentType1)) throw new DependencyNotFoundException(componentType, componentType1);
-                if (visiting.contains(componentType1)) throw new CyclicDependenciesFoundException(visiting);
-                visiting.push(componentType1);
-                checkDependencies(componentType1, visiting);
+                if (!providers.containsKey(ref.getComponent())) throw new DependencyNotFoundException(componentType, ref.getComponent());
+                if (visiting.contains(ref.getComponent())) throw new CyclicDependenciesFoundException(visiting);
+                visiting.push(ref.getComponent());
+                checkDependencies(ref.getComponent(), visiting);
                 visiting.pop();
             }
 
