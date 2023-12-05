@@ -90,29 +90,21 @@ public class ContextConfig {
         Class<?> componentType = component;
         for (Type dependency : providers.get(componentType).getDependencies()) {
             if (isContainerType(dependency)) {
-                checkContainerTypeDependency(componentType, dependency);
+                Ref ref = Ref.of(dependency);
+                Class<?> componentType1 = ref.getComponent();
+                if (!providers.containsKey(componentType1))
+                    throw new DependencyNotFoundException(componentType, componentType1);
             } else {
-                checkComponentDependency(componentType, visiting, (Class<?>) dependency);
+                Ref ref = Ref.of((Class<?>) dependency);
+                Class<?> componentType1 = ref.getComponent();
+                if (!providers.containsKey(componentType1)) throw new DependencyNotFoundException(componentType, componentType1);
+                if (visiting.contains(componentType1)) throw new CyclicDependenciesFoundException(visiting);
+                visiting.push(componentType1);
+                checkDependencies(componentType1, visiting);
+                visiting.pop();
             }
 
         }
-    }
-
-    private void checkContainerTypeDependency(Class<?> component, Type dependency) {
-        Ref ref = Ref.of(dependency);
-        Class<?> componentType = ref.getComponent();
-        if (!providers.containsKey(componentType))
-            throw new DependencyNotFoundException(component, componentType);
-    }
-
-    private void checkComponentDependency(Class<?> component, Stack<Class<?>> visiting, Class<?> dependency) {
-        Ref ref = Ref.of(dependency);
-        Class<?> componentType = ref.getComponent();
-        if (!providers.containsKey(componentType)) throw new DependencyNotFoundException(component, componentType);
-        if (visiting.contains(componentType)) throw new CyclicDependenciesFoundException(visiting);
-        visiting.push(componentType);
-        checkDependencies(componentType, visiting);
-        visiting.pop();
     }
 
 }
