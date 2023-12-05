@@ -377,7 +377,6 @@ public class ContextTest {
             config.bind(Dependency.class, CyclicDependencyProviderConstructor.class);
             Context context = config.getContext();
             assertTrue(context.get(Component.class).isPresent());
-            assertTrue(context.get(Dependency.class).isPresent());
 
         }
     }

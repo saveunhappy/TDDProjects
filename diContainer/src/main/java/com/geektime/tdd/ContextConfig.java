@@ -41,6 +41,12 @@ public class ContextConfig {
                         //如果其他类型也可以的话，这里就不是这么写的了，因为这里返回值固定就是Provider<Object>
                         //而这个方法的返回值Optional<Object>中的Object就是指代Provider<Object>这个整体，返回的只能是
                         //Provider这个类型的，其他的类型不支持，所以报错
+                        /** 注意这里 ，map里面是创建了一个Provider，创建这个对象的时候，
+                         * 对象是Dependency的实现类，构造器依赖是Provider<Component>
+                         * 然后Component是jakarta的Provider的get获取的，可以理解为
+                         * 懒加载，或者说是创建了一个Provider对象，并不是Component对象
+                         * 在真正获取对象的时候采取调用get方法
+                         * */
                         .map(provider -> (Provider<Object>) () -> provider.get(this));
             }
         };
