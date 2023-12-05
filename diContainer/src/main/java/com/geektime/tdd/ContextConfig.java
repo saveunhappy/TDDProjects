@@ -60,8 +60,27 @@ public class ContextConfig {
         };
     }
 
+    static class Ref {
+        Type container;
+        Class<?> component;
+
+        public Ref(ParameterizedType container) {
+            this.container = container.getRawType();
+            this.component = (Class<?>) container.getActualTypeArguments()[0];
+        }
+
+        public Ref(Class<?> component) {
+            this.component = component;
+        }
+
+        static Ref of(Type type) {
+            if(type instanceof ParameterizedType container) return new Ref(container);
+            return new Ref((Class<?>) type);
+        }
+    }
+
     private static Class<?> getComponentType(Type type) {
-        return (Class<?>) ((ParameterizedType)type).getActualTypeArguments()[0];
+        return (Class<?>) ((ParameterizedType) type).getActualTypeArguments()[0];
     }
 
     private static boolean isContainerType(Type type) {
@@ -77,7 +96,7 @@ public class ContextConfig {
         for (Type dependency : providers.get(componentType).getDependencies()) {
             if (isContainerType(dependency)) {
                 checkContainerTypeDependency(componentType, dependency);
-            }else{
+            } else {
                 checkComponentDependency(componentType, visiting, (Class<?>) dependency);
             }
 
@@ -85,7 +104,8 @@ public class ContextConfig {
     }
 
     private void checkContainerTypeDependency(Class<?> component, Type dependency) {
-        if (!providers.containsKey(getComponentType(dependency))) throw new DependencyNotFoundException(component, getComponentType(dependency));
+        if (!providers.containsKey(getComponentType(dependency)))
+            throw new DependencyNotFoundException(component, getComponentType(dependency));
     }
 
     private void checkComponentDependency(Class<?> component, Stack<Class<?>> visiting, Class<?> dependency) {
