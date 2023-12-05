@@ -128,7 +128,9 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         return stream(executable.getParameters()).map(
                 p -> {
                     Type type = p.getParameterizedType();
-                    if (type instanceof ParameterizedType) return context.get((ParameterizedType) type).get();
+                    if (type instanceof ParameterizedType) {
+                        return context.get((ParameterizedType) type).get();
+                    }
                     return context.get((Class<?>) type).get();
                 }
         ).toArray();

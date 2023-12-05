@@ -134,9 +134,11 @@ public class ContextTest {
             };
             config.bind(Component.class, instance);
             Context context = config.getContext();
-            ParameterizedType type = new TypeLiteral<List<Component>>() {}.getType();
+            ParameterizedType type = new TypeLiteral<List<Component>>() {
+            }.getType();
             assertFalse(context.get(type).isPresent());
         }
+
         static abstract class TypeLiteral<T> {
             public ParameterizedType getType() {
                 return (ParameterizedType) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
@@ -188,16 +190,18 @@ public class ContextTest {
 
             }
         }
-        
+
         static class MissingDependencyProviderConstructor implements Component {
             @Inject
             public MissingDependencyProviderConstructor(Provider<Dependency> dependency) {
             }
         }
+
         static class MissingDependencyProviderField implements Component {
             @Inject
             Provider<Dependency> dependency;
         }
+
         static class MissingDependencyProviderMethod implements Component {
             @Inject
             void install(Provider<Dependency> dependency) {
@@ -244,6 +248,7 @@ public class ContextTest {
         }
 
         static class CyclicComponentInjectConstructor implements Component {
+            String name = "111";
             @Inject
             public CyclicComponentInjectConstructor(Dependency dependency) {
             }
@@ -355,6 +360,25 @@ public class ContextTest {
             void inject(Component component) {
 
             }
+        }
+
+        static class CyclicDependencyProviderConstructor implements Dependency {
+            String name = "222";
+            Provider<Component> component;
+            @Inject
+            public CyclicDependencyProviderConstructor(Provider<Component> component) {
+                this.component = component;
+            }
+        }
+
+        @Test
+        public void should_not_throw_exception_if_cyclic_dependency_via_provider() {
+            config.bind(Component.class, CyclicComponentInjectConstructor.class);
+            config.bind(Dependency.class, CyclicDependencyProviderConstructor.class);
+            Context context = config.getContext();
+            assertTrue(context.get(Component.class).isPresent());
+            assertTrue(context.get(Dependency.class).isPresent());
+
         }
     }
 
