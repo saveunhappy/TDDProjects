@@ -72,10 +72,14 @@ public class ContextConfig {
             if (dependency instanceof Class)
                 checkDependency(component, visiting, (Class<?>) dependency);
             if (isContainerType(dependency)) {
-                if (!providers.containsKey(getComponentType(dependency))) throw new DependencyNotFoundException(component, getComponentType(dependency));
+                checkContainerTypeDependency(component, dependency);
             }
 
         }
+    }
+
+    private void checkContainerTypeDependency(Class<?> component, Type dependency) {
+        if (!providers.containsKey(getComponentType(dependency))) throw new DependencyNotFoundException(component, getComponentType(dependency));
     }
 
     private void checkDependency(Class<?> component, Stack<Class<?>> visiting, Class<?> dependency) {
