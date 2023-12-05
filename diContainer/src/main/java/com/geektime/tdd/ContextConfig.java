@@ -92,9 +92,8 @@ public class ContextConfig {
             Ref ref = Ref.of(dependency);
 
             if (ref.isContainer()) {
-                Class<?> componentType1 = ref.getComponent();
-                if (!providers.containsKey(componentType1))
-                    throw new DependencyNotFoundException(componentType, componentType1);
+                if (!providers.containsKey(ref.getComponent()))
+                    throw new DependencyNotFoundException(componentType, ref.getComponent());
             } else {
                 Class<?> componentType1 = ref.getComponent();
                 if (!providers.containsKey(componentType1)) throw new DependencyNotFoundException(componentType, componentType1);
