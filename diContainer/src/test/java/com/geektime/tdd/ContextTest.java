@@ -33,7 +33,7 @@ public class ContextTest {
             };
             config.bind(Component.class, instance);
             Context context = config.getContext();
-            assertSame(instance, context.getType(Component.class).get());
+            assertSame(instance, context.get(Component.class).get());
 
         }
 
@@ -45,7 +45,7 @@ public class ContextTest {
             config.bind(Dependency.class, dependency);
             config.bind(Component.class, componentType);
 
-            Optional<Component> component = config.getContext().getType(Component.class);
+            Optional<Component> component = config.getContext().get(Component.class);
             assertTrue(component.isPresent());
             assertSame(dependency, component.get().dependency());
         }
@@ -108,7 +108,7 @@ public class ContextTest {
 
         @Test
         public void should_retrieve_empty_for_unbind_type() {
-            Optional<Component> component = config.getContext().getType(Component.class);
+            Optional<Component> component = config.getContext().get(Component.class);
             assertTrue(component.isEmpty());
         }
 
@@ -124,7 +124,7 @@ public class ContextTest {
             assertEquals(Provider.class, type.getRawType());
             assertEquals(Component.class, type.getActualTypeArguments()[0]);
 
-            Provider<Component> provider = (Provider<Component>) context.getType(type).get();
+            Provider<Component> provider = (Provider<Component>) context.get(type).get();
             assertSame(instance, provider.get());
         }
 
@@ -136,7 +136,7 @@ public class ContextTest {
             Context context = config.getContext();
             ParameterizedType type = new TypeLiteral<List<Component>>() {
             }.getType();
-            assertFalse(context.getType(type).isPresent());
+            assertFalse(context.get(type).isPresent());
         }
 
         static abstract class TypeLiteral<T> {
@@ -376,7 +376,7 @@ public class ContextTest {
             config.bind(Component.class, CyclicComponentInjectConstructor.class);
             config.bind(Dependency.class, CyclicDependencyProviderConstructor.class);
             Context context = config.getContext();
-            assertTrue(context.getType(Component.class).isPresent());
+            assertTrue(context.get(Component.class).isPresent());
 
         }
     }
