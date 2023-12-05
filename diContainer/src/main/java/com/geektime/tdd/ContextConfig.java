@@ -32,15 +32,20 @@ public class ContextConfig {
                 return getComponent((Class<?>) type);
             }
 
-            private <Type> Optional<Type> getComponent(Class<Type> type) {
-                return Optional.ofNullable(providers.get(type)).
-                        map(provider -> (Type) provider.get(this));
+            private Optional getComponent(Class type) {
+                Type containerType = null;
+                Class componentType = type;
+                return Optional.ofNullable(providers.get(componentType)).
+                        map(provider -> provider.get(this));
             }
 
             private Optional<Object> getContainer(ParameterizedType type) {
 
-                if (type.getRawType() != Provider.class) return Optional.empty();
-                return Optional.ofNullable(providers.get(getComponentType(type)))
+                Type containerType = type.getRawType();
+                Class<?> componentType = getComponentType(type);
+
+                if (containerType != Provider.class) return Optional.empty();
+                return Optional.ofNullable(providers.get(componentType))
                         //如果其他类型也可以的话，这里就不是这么写的了，因为这里返回值固定就是Provider<Object>
                         //而这个方法的返回值Optional<Object>中的Object就是指代Provider<Object>这个整体，返回的只能是
                         //Provider这个类型的，其他的类型不支持，所以报错
