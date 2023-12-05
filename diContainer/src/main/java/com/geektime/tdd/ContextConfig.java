@@ -55,8 +55,8 @@ public class ContextConfig {
         };
     }
 
-    private static Class<?> getComponentType(ParameterizedType type) {
-        return (Class<?>) type.getActualTypeArguments()[0];
+    private static Class<?> getComponentType(Type type) {
+        return (Class<?>) ((ParameterizedType)type).getActualTypeArguments()[0];
     }
 
     private static boolean isContainerType(Type type) {
