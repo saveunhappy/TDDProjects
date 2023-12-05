@@ -170,8 +170,9 @@ static char* nextToken(__ctx_args *pctx) {
                 }
                 ch = *nextc;
             }
-            //刚开始
+            //刚开始，这边就是开始找参数或者是双引号中的参数，
             pctx->state = (pctx->state == FIND_NEXT) ? IN_TOKEN : IN_QUOTE;
+            //没花钱anchor是和当前指针指向的下一个字符是一致的
             anchor = nextc;
         // Deal with escape sequences
         } else if (pctx->state == IN_ESCAPE) {
@@ -256,6 +257,7 @@ static char* nextToken(__ctx_args *pctx) {
                 }
                 JLI_List_addSubstring(pctx->parts, anchor, nextc - anchor);
                 pctx->state = IN_ESCAPE;
+
                 break;
             case '\'':
             case '"':
@@ -288,8 +290,9 @@ static char* nextToken(__ctx_args *pctx) {
     }
     return NULL;
 }
-
+//读取参数
 static JLI_List readArgFile(FILE *file) {
+    //缓存的大小
     char buf[4096];
     JLI_List rv;
     __ctx_args ctx;
@@ -303,6 +306,7 @@ static JLI_List readArgFile(FILE *file) {
     rv = JLI_List_new(8);
 
     while (!feof(file)) {
+        /* 每次读取4096个字节 */
         size = fread(buf, sizeof(char), sizeof(buf), file);
         if (ferror(file)) {
             JLI_List_free(rv);
@@ -317,8 +321,11 @@ static JLI_List readArgFile(FILE *file) {
         ctx.eob = buf + size;
         token = nextToken(&ctx);
         while (token != NULL) {
+            //检查参数 例如java -jar,token就是token
             checkArg(token);
+            //添加到一个list中去
             JLI_List_add(rv, token);
+            //继续解析下一个token
             token = nextToken(&ctx);
         }
     }
