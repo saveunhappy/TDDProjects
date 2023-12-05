@@ -136,7 +136,6 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     }
 
     private static Object toDependency(Context context, Field field) {
-        Type type = field.getGenericType();
-        return toDependency(context, type);
+        return toDependency(context, field.getGenericType());
     }
 }
