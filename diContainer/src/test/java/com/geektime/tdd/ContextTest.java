@@ -33,7 +33,7 @@ public class ContextTest {
             };
             config.bind(Component.class, instance);
             Context context = config.getContext();
-            assertSame(instance, context.get(Component.class).get());
+            assertSame(instance, context.getType(Component.class).get());
 
         }
 
@@ -45,7 +45,7 @@ public class ContextTest {
             config.bind(Dependency.class, dependency);
             config.bind(Component.class, componentType);
 
-            Optional<Component> component = config.getContext().get(Component.class);
+            Optional<Component> component = config.getContext().getType(Component.class);
             assertTrue(component.isPresent());
             assertSame(dependency, component.get().dependency());
         }
@@ -108,7 +108,7 @@ public class ContextTest {
 
         @Test
         public void should_retrieve_empty_for_unbind_type() {
-            Optional<Component> component = config.getContext().get(Component.class);
+            Optional<Component> component = config.getContext().getType(Component.class);
             assertTrue(component.isEmpty());
         }
 
@@ -376,7 +376,7 @@ public class ContextTest {
             config.bind(Component.class, CyclicComponentInjectConstructor.class);
             config.bind(Dependency.class, CyclicDependencyProviderConstructor.class);
             Context context = config.getContext();
-            assertTrue(context.get(Component.class).isPresent());
+            assertTrue(context.getType(Component.class).isPresent());
 
         }
     }
