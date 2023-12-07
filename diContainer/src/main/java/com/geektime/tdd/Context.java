@@ -14,8 +14,7 @@ public interface Context {
         }
 
         public static Ref of(Type type) {
-            if (type instanceof ParameterizedType container) return new Ref(container);
-            return new Ref((Class<?>) type);
+            return new Ref(type);
         }
 
         private Type container;
