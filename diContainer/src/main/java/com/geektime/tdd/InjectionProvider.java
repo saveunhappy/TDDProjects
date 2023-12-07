@@ -63,7 +63,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
                 //因为Constructor直接就是可以获取数组，所以不用flatMap,然后InjectMethod是List，所以要使用Stream
                 //那为什么Map不行呢？因为后面的m.getParameterTypes()返回的还是数组，你要把它变成一维的，所以要使用flatMap
                 injectMethods.stream().flatMap(p -> stream(p.getParameters()).map(Parameter::getParameterizedType)))
-                .toList().stream().map(Context.Ref::of).toList();
+                .map(Context.Ref::of).toList();
     }
 
     private static <T> List<Field> getInjectFields(Class<T> component) {
