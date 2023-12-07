@@ -6,9 +6,12 @@ import java.util.Objects;
 import java.util.Optional;
 
 public interface Context {
-    Optional get(Ref ref);
+    <ComponentType> Optional<ComponentType> get(Ref<ComponentType> ref);
 
-    class Ref {
+    class Ref<ComponentType> {
+        public static <ComponentType> Ref<ComponentType> of(Class<ComponentType> component) {
+            return new Ref(component);
+        }
         public static Ref of(Type type) {
             if (type instanceof ParameterizedType container) return new Ref(container);
             return new Ref((Class<?>) type);
@@ -20,7 +23,7 @@ public interface Context {
             this.component = (Class<?>) container.getActualTypeArguments()[0];
         }
 
-        public Ref(Class<?> component) {
+        public Ref(Class<ComponentType> component) {
             this.component = component;
         }
 
