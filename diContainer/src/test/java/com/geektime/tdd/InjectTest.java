@@ -28,16 +28,14 @@ public class InjectTest {
     public void setup() throws NoSuchFieldException {
         //这里有RowType(Provider)和actualType(Dependency);
         dependencyProviderType = (ParameterizedType) InjectTest.class.getDeclaredField("dependencyProvider").getGenericType();
-        Type type1 = eq(Dependency.class);
-        when(context.get(Context.Ref.of(type1))).thenReturn(Optional.of(dependency));
+        when(context.get(eq(Context.Ref.of(Dependency.class)))).thenReturn(Optional.of(dependency));
         //调用这个的时候，因为是ParameterizedType类型的，调用的地方也只是看类型，根据类型去获取对应的类型，然后
         //Context.get返回的确实就是Optional类型的，但是Optional的Provider我暂时没看明白(如果属性是Provider<Dependency>)
         //那你返回的也应该是Provider<Dependency>啊，明白了，因为在context中的map，里面是provider -> (Provider<Object>) () -> provider.get(this)
         //这个里面是Provider接口，又是一个函数，是jakarta的，原来的没有，直接就是get，provider -> (Type) provider.get(this)
         //所以差别就是原来的返回的就是对象，然后用Optional包装了一下，这个是先用Provider包了一下，然后返回的时候是Optional的
         //ofNullable又包了一下，明白了
-        Type type = eq(dependencyProviderType);
-        when(context.get(Context.Ref.of(type))).thenReturn(Optional.of(dependencyProvider));
+        when(context.get(eq(Context.Ref.of(dependencyProviderType)))).thenReturn(Optional.of(dependencyProvider));
     }
 
     @Nested
