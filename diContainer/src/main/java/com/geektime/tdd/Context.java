@@ -21,17 +21,20 @@ public interface Context {
         private Type container;
         private Class<?> component;
 
-        public Ref(ParameterizedType container) {
-            this.container = container.getRawType();
-            this.component = (Class<?>) container.getActualTypeArguments()[0];
+        public Ref(Type type) {
+            init(type);
         }
 
         public Ref(Class<ComponentType> component) {
-            this.component = component;
+            init(component);
         }
 
         protected Ref() {
             Type type = ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+            init(type);
+        }
+
+        private void init(Type type) {
             if (type instanceof ParameterizedType container) {
                 this.container = container.getRawType();
                 this.component = (Class<?>) container.getActualTypeArguments()[0];
