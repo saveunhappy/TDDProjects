@@ -4,9 +4,12 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 class Ref {
+    public static Ref of(Type type) {
+        if (type instanceof ParameterizedType container) return new Ref(container);
+        return new Ref((Class<?>) type);
+    }
     private Type container;
-    private final Class<?> component;
-
+    private Class<?> component;
     public Ref(ParameterizedType container) {
         this.container = container.getRawType();
         this.component = (Class<?>) container.getActualTypeArguments()[0];
@@ -14,11 +17,6 @@ class Ref {
 
     public Ref(Class<?> component) {
         this.component = component;
-    }
-
-    static Ref of(Type type) {
-        if (type instanceof ParameterizedType container) return new Ref(container);
-        return new Ref((Class<?>) type);
     }
 
     public Type getContainer() {
