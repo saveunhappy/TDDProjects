@@ -121,10 +121,6 @@ public class ContextTest {
             };
             config.bind(Component.class, instance);
             Context context = config.getContext();
-            ParameterizedType type = new TypeLiteral<Provider<Component>>() {
-            }.getType();
-            assertEquals(Provider.class, type.getRawType());
-            assertEquals(Component.class, type.getActualTypeArguments()[0]);
             Provider<Component> provider =  context.get(new Context.Ref<Provider<Component>>(){}).get();
             assertSame(instance, provider.get());
         }
@@ -135,18 +131,10 @@ public class ContextTest {
             };
             config.bind(Component.class, instance);
             Context context = config.getContext();
-            ParameterizedType type = new TypeLiteral<List<Component>>() {
-            }.getType();
 
 //            assertFalse(context.get(Context.Ref.of(type)).isPresent());
             //还是没有变，因为如果是List类型，不支持，返回的就是Optional.empty，isPresent就是false
             assertFalse(context.get(new Context.Ref<List<Component>>(){}).isPresent());
-        }
-
-        static abstract class TypeLiteral<T> {
-            public ParameterizedType getType() {
-                return (ParameterizedType) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-            }
         }
     }
 
