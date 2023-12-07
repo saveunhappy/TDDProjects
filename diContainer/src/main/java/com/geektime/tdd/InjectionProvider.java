@@ -46,7 +46,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         }
     }
     @Override
-    public List<Context.Ref> getDependenciesRef(){
+    public List<Context.Ref> getDependencies(){
         return concat(concat(stream(injectConstructor.getParameters()).map(Parameter::getParameterizedType),
                         injectFields.stream().map(Field::getGenericType)),
                 //因为Constructor直接就是可以获取数组，所以不用flatMap,然后InjectMethod是List，所以要使用Stream
