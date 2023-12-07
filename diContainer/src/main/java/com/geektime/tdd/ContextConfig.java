@@ -45,8 +45,7 @@ public class ContextConfig {
         //这个是去找的所有bind过的依赖，然后把所有的key的依赖都放到一个栈中去，这里是找的所有的依赖，如果之前有添加过
         //那就说明有环了，就是有循环依赖
         Class<?> componentType = component;
-        for (Type dependency : providers.get(componentType).getDependencies()) {
-            Context.Ref ref = Context.Ref.of(dependency);
+        for (Context.Ref ref : providers.get(componentType).getDependenciesRef()) {
             if (!providers.containsKey(ref.getComponent())) throw new DependencyNotFoundException(componentType, ref.getComponent());
             if (!ref.isContainer()) {
                 if (visiting.contains(ref.getComponent())) throw new CyclicDependenciesFoundException(visiting);
