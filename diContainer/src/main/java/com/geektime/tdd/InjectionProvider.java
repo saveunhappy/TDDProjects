@@ -56,6 +56,10 @@ class InjectionProvider<T> implements ComponentProvider<T> {
                 injectMethods.stream().flatMap(p -> stream(p.getParameters()).map(Parameter::getParameterizedType)))
                 .toList();
     }
+    @Override
+    public List<Context.Ref> getDependenciesRef(){
+        return getDependencies().stream().map(Context.Ref::of).toList();
+    }
 
     private static <T> List<Field> getInjectFields(Class<T> component) {
         return traverse(component, (fields, current) -> injectable(current.getDeclaredFields()).toList());
