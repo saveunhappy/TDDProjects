@@ -46,7 +46,7 @@ public class ContextConfig {
         //那就说明有环了，就是有循环依赖
         Class<?> componentType = component;
         for (Type dependency : providers.get(componentType).getDependencies()) {
-            Ref ref = Ref.of(dependency);
+            Context.Ref ref = Context.Ref.of(dependency);
             if (!providers.containsKey(ref.getComponent())) throw new DependencyNotFoundException(componentType, ref.getComponent());
             if (!ref.isContainer()) {
                 if (visiting.contains(ref.getComponent())) throw new CyclicDependenciesFoundException(visiting);
