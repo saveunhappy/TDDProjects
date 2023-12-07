@@ -9,9 +9,7 @@ interface ComponentProvider<T> {
     T get(Context context);
 
     default List<Context.Ref> getDependenciesRef(){
-        return getDependencies().stream().map(Context.Ref::of).toList();
-    }
-    default List<Type> getDependencies(){
         return of();
-    };
+    }
+
 }
