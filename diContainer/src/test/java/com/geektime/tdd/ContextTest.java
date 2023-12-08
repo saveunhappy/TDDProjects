@@ -140,6 +140,15 @@ public class ContextTest {
         @Nested
         public class WithQualifier{
             //TODO binding component with qualifier
+            @Test
+            public void should_bind_instance_with_qualifier() {
+                Component instance = new Component() {
+                };
+                config.bind(Component.class,instance,new NamedLiteral("ChosenOne"));
+                Context context = config.getContext();
+                Component choseOne = context.get(Context.Ref.of(Component.class, new NamedLiteral("ChoseOne"))).get();
+                assertSame(instance,choseOne);
+            }
             //TODO binding component with multi qualifiers
             //TODO throw illegal component if illegal qualifier
         }
@@ -362,7 +371,6 @@ public class ContextTest {
         }
 
         static class CyclicDependencyProviderConstructor implements Dependency {
-            String name = "222";
             Provider<Component> component;
             @Inject
             public CyclicDependencyProviderConstructor(Provider<Component> component) {
@@ -371,7 +379,6 @@ public class ContextTest {
         }
 
         static class CyclicComponentProviderConstructor implements Component {
-            String name = "333";
             Provider<Dependency> dependency;
             @Inject
             public CyclicComponentProviderConstructor(Provider<Dependency> dependency) {
@@ -385,7 +392,6 @@ public class ContextTest {
             config.bind(Dependency.class, CyclicDependencyProviderConstructor.class);
             Context context = config.getContext();
             assertTrue(context.get(Context.Ref.of(Component.class)).isPresent());
-
         }
 
         @Test
