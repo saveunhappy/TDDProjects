@@ -7,7 +7,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -135,6 +134,13 @@ public class ContextTest {
 //            assertFalse(context.get(Context.Ref.of(type)).isPresent());
             //还是没有变，因为如果是List类型，不支持，返回的就是Optional.empty，isPresent就是false
             assertFalse(context.get(new Context.Ref<List<Component>>(){}).isPresent());
+        }
+
+        @Nested
+        public class WithQualifier{
+            //TODO binding component with qualifier
+            //TODO binding component with multi qualifiers
+            //TODO throw illegal component if illegal qualifier
         }
     }
 
@@ -388,7 +394,14 @@ public class ContextTest {
             Context context = config.getContext();
             assertTrue(context.get(Context.Ref.of(Component.class)).isPresent());
         }
+
+        @Nested
+        public class WithQualifier{
+            //TODO dependency missing if qualifier not match
+            //TODO check cyclic dependencies with qualifier
+        }
     }
+
 
 
 }
