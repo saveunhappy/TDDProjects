@@ -172,7 +172,7 @@ static char* nextToken(__ctx_args *pctx) {
             }
             //刚开始，这边就是开始找参数或者是双引号中的参数，
             pctx->state = (pctx->state == FIND_NEXT) ? IN_TOKEN : IN_QUOTE;
-            //没花钱anchor是和当前指针指向的下一个字符是一致的
+            //没移动前anchor是和当前指针指向的下一个字符是一致的
             anchor = nextc;
         // Deal with escape sequences
         } else if (pctx->state == IN_ESCAPE) {
