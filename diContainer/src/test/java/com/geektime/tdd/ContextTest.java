@@ -363,6 +363,15 @@ public class ContextTest {
             }
         }
 
+        static class CyclicComponentProviderConstructor implements Component {
+            String name = "333";
+            Provider<Dependency> dependency;
+            @Inject
+            public CyclicComponentProviderConstructor(Provider<Dependency> dependency) {
+                this.dependency = dependency;
+            }
+        }
+
         @Test
         public void should_not_throw_exception_if_cyclic_dependency_via_provider() {
             config.bind(Component.class, CyclicComponentInjectConstructor.class);
@@ -370,6 +379,14 @@ public class ContextTest {
             Context context = config.getContext();
             assertTrue(context.get(Context.Ref.of(Component.class)).isPresent());
 
+        }
+
+        @Test
+        public void should_not_throw_exception_if_cyclic_dependency_via_other_provider() {
+            config.bind(Component.class, CyclicComponentProviderConstructor.class);
+            config.bind(Dependency.class, CyclicDependencyProviderConstructor.class);
+            Context context = config.getContext();
+            assertTrue(context.get(Context.Ref.of(Component.class)).isPresent());
         }
     }
 
