@@ -145,9 +145,9 @@ public class ContextTest {
                 Component instance = new Component() {
                 };
                 //原来是要写成config.bind(Component.class,instance,@Named("ChosenOne"));但是java不允许，所以还是继承
-                config.bind(Component.class,instance,new NamedLiteral("ChosenOne"));
+                config.bind(Component.class, instance,new NamedLiteral("ChosenOne"));
                 Context context = config.getContext();
-                Component choseOne = context.get(Context.Ref.of(Component.class, new NamedLiteral("ChoseOne"))).get();
+                Component choseOne = context.get(Context.Ref.of(Component.class, new NamedLiteral("ChosenOne"))).get();
                 assertSame(instance,choseOne);
             }
             //TODO binding component with multi qualifiers

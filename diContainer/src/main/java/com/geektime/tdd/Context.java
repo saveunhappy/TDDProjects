@@ -11,24 +11,22 @@ public interface Context {
 
     class Ref<ComponentType> {
         public static <ComponentType> Ref<ComponentType> of(Class<ComponentType> component) {
-            return new Ref(component);
+            return new Ref(component, null);
         }
         public static <ComponentType> Ref<ComponentType> of(Class<ComponentType> component, Annotation qualifier) {
-            return new Ref(component);
+            return new Ref(component, qualifier);
         }
         public static Ref of(Type type) {
-            return new Ref(type);
+            return new Ref(type, null);
         }
 
         private Type container;
         private Class<?> component;
+        private Annotation qualifier;
 
-        public Ref(Type type) {
+        Ref(Type type, Annotation qualifier) {
             init(type);
-        }
-
-        public Ref(Class<ComponentType> component) {
-            init(component);
+            this.qualifier = qualifier;
         }
 
         protected Ref() {
@@ -43,6 +41,10 @@ public interface Context {
             }else{
                 this.component = (Class<?>) type;
             }
+        }
+
+        public Annotation getQualifier() {
+            return qualifier;
         }
 
         public Type getContainer() {
