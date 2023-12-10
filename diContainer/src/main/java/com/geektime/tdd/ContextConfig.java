@@ -28,6 +28,10 @@ public class ContextConfig {
         providers.put(type, new InjectionProvider<>(implementation));
     }
 
+    public <Type, Implementation extends Type>
+    void bind(Class<Type> type, Class<Implementation> implementation,Annotation qualifier) {
+        components.put(new Component(type, qualifier), new InjectionProvider<>(implementation));
+    }
     public Context getContext() {
         //这个dependencies中就是记录了所有的，还有你的参数中有的依赖，也去给你put进去，
         for (Class<?> component : providers.keySet()) {
