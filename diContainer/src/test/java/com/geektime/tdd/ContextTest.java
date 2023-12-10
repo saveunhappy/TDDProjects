@@ -371,6 +371,7 @@ public class ContextTest {
         }
 
         static class CyclicDependencyProviderConstructor implements Dependency {
+            String name = "dependency";
             Provider<Component> component;
             @Inject
             public CyclicDependencyProviderConstructor(Provider<Component> component) {
@@ -379,6 +380,7 @@ public class ContextTest {
         }
 
         static class CyclicComponentProviderConstructor implements Component {
+            String name = "component";
             Provider<Dependency> dependency;
             @Inject
             public CyclicComponentProviderConstructor(Provider<Dependency> dependency) {
@@ -400,6 +402,10 @@ public class ContextTest {
             config.bind(Dependency.class, CyclicDependencyProviderConstructor.class);
             Context context = config.getContext();
             assertTrue(context.get(Context.Ref.of(Component.class)).isPresent());
+            CyclicComponentProviderConstructor component = (CyclicComponentProviderConstructor)context.get(Context.Ref.of(Component.class)).get();
+            CyclicDependencyProviderConstructor dependency = (CyclicDependencyProviderConstructor)context.get(Context.Ref.of(Dependency.class)).get();
+            System.out.println(component.name);
+            System.out.println(dependency.name);
         }
 
         @Nested
