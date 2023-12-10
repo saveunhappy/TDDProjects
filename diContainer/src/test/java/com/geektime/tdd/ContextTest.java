@@ -144,6 +144,7 @@ public class ContextTest {
             public void should_bind_instance_with_qualifier() {
                 Component instance = new Component() {
                 };
+                //原来是要写成config.bind(Component.class,instance,@Named("ChosenOne"));但是java不允许，所以还是继承
                 config.bind(Component.class,instance,new NamedLiteral("ChosenOne"));
                 Context context = config.getContext();
                 Component choseOne = context.get(Context.Ref.of(Component.class, new NamedLiteral("ChoseOne"))).get();
