@@ -161,7 +161,18 @@ public class ContextTest {
                 assertSame(dependency,choseOne.dependency);
             }
             //TODO binding component with multi qualifiers
-
+            @Test
+            public void should_bind_instance_with_multi_qualifiers() {
+                Component instance = new Component() {
+                };
+                //原来是要写成config.bind(Component.class,instance,@Named("ChosenOne"));但是java不允许，所以还是继承
+                config.bind(Component.class, instance,new NamedLiteral("ChosenOne"),new NamedLiteral("Skywalker"));
+                Context context = config.getContext();
+                Component choseOne = context.get(Context.Ref.of(Component.class, new NamedLiteral("ChosenOne"))).get();
+                Component skywalker = context.get(Context.Ref.of(Component.class, new NamedLiteral("Skywalker"))).get();
+                assertSame(instance,choseOne);
+                assertSame(instance,skywalker);
+            }
             //TODO throw illegal component if illegal qualifier
         }
     }

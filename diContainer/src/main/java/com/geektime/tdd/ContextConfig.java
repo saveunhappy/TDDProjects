@@ -15,8 +15,10 @@ public class ContextConfig {
         providers.put(type, context -> instance);
     }
 
-    public <Type> void bind(Class<Type> type, Type instance, Annotation qualifier) {
-        components.put(new Component(type, qualifier), context -> instance);
+    public <Type> void bind(Class<Type> type, Type instance, Annotation... qualifiers) {
+        for (Annotation qualifier : qualifiers) {
+            components.put(new Component(type, qualifier), context -> instance);
+        }
     }
 
     record Component(Class<?> type, Annotation qualifier) {
@@ -30,7 +32,7 @@ public class ContextConfig {
 
     public <Type, Implementation extends Type>
     void bind(Class<Type> type, Class<Implementation> implementation,Annotation qualifier) {
-        components.put(new Component(type, qualifier), new InjectionProvider<>(implementation));
+            components.put(new Component(type, qualifier), new InjectionProvider<>(implementation));
     }
     public Context getContext() {
         //这个dependencies中就是记录了所有的，还有你的参数中有的依赖，也去给你put进去，
