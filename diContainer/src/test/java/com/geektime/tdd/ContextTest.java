@@ -139,7 +139,6 @@ public class ContextTest {
 
         @Nested
         public class WithQualifier{
-            //TODO binding component with qualifier
             @Test
             public void should_bind_instance_with_qualifier() {
                 Component instance = new Component() {
@@ -172,6 +171,18 @@ public class ContextTest {
                 Component skywalker = context.get(Context.Ref.of(Component.class, new NamedLiteral("Skywalker"))).get();
                 assertSame(instance,choseOne);
                 assertSame(instance,skywalker);
+            }
+            @Test
+            public void should_bind_component_with_multi_qualifier() {
+                Dependency dependency = new Dependency() {
+                };
+                config.bind(Dependency.class, dependency);
+                config.bind(ConstructorInjection.class, ConstructorInjection.class,new NamedLiteral("ChosenOne"),new NamedLiteral("Skywalker"));
+                Context context = config.getContext();
+                ConstructorInjection choseOne = context.get(Context.Ref.of(ConstructorInjection.class, new NamedLiteral("ChosenOne"))).get();
+                ConstructorInjection skywalker = context.get(Context.Ref.of(ConstructorInjection.class, new NamedLiteral("Skywalker"))).get();
+                assertSame(dependency,choseOne.dependency);
+                assertSame(dependency,skywalker.dependency);
             }
             //TODO throw illegal component if illegal qualifier
         }
@@ -433,8 +444,8 @@ public class ContextTest {
 
         @Nested
         public class WithQualifier{
-            //TODO dependency missing if qualifier not match
-            //TODO check cyclic dependencies with qualifier
+            //TODO  dependency missing if qualifier not match
+            //TODO  check cyclic dependencies with qualifier
         }
     }
 

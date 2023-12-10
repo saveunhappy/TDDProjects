@@ -31,9 +31,12 @@ public class ContextConfig {
     }
 
     public <Type, Implementation extends Type>
-    void bind(Class<Type> type, Class<Implementation> implementation,Annotation qualifier) {
+    void bind(Class<Type> type, Class<Implementation> implementation, Annotation... qualifiers) {
+        for (Annotation qualifier : qualifiers) {
             components.put(new Component(type, qualifier), new InjectionProvider<>(implementation));
+        }
     }
+
     public Context getContext() {
         //这个dependencies中就是记录了所有的，还有你的参数中有的依赖，也去给你put进去，
         for (Class<?> component : providers.keySet()) {
@@ -42,11 +45,11 @@ public class ContextConfig {
         return new Context() {
             @Override
             public <ComponentType> Optional<ComponentType> get(Ref<ComponentType> ref) {
-                if(ref.getQualifier() != null){
+                if (ref.getQualifier() != null) {
                     return Optional.ofNullable(components.get(
-                            new Component(ref.getComponent(), ref.getQualifier())
+                                    new Component(ref.getComponent(), ref.getQualifier())
                             )).
-                            map(provider ->(ComponentType) provider.get(this));
+                            map(provider -> (ComponentType) provider.get(this));
                 }
                 if (ref.isContainer()) {
                     if (ref.getContainer() != Provider.class) return Optional.empty();
@@ -54,7 +57,7 @@ public class ContextConfig {
                             .map(provider -> (Provider<Object>) () -> provider.get(this));
                 }
                 return Optional.ofNullable(providers.get(ref.getComponent())).
-                        map(provider ->(ComponentType) provider.get(this));
+                        map(provider -> (ComponentType) provider.get(this));
             }
 
         };
