@@ -39,10 +39,8 @@ public class ContextConfig {
 
     public Context getContext() {
         //这个dependencies中就是记录了所有的，还有你的参数中有的依赖，也去给你put进去，
-        for (Class<?> component : providers.keySet()) {
-            checkDependencies(component, new Stack<>());
-        }
-        //components.keySet().forEach(component -> checkDependencies(component, new Stack<>()));
+
+        components.keySet().forEach(component -> checkDependencies(component, new Stack<>()));
         return new Context() {
             @Override
             public <ComponentType> Optional<ComponentType> get(Ref<ComponentType> ref) {
@@ -62,21 +60,19 @@ public class ContextConfig {
         return components.get(new Component(ref.getComponent(), ref.getQualifier()));
     }
 
-    private void checkDependencies(/*Component*/Class<?> component, Stack<Class<?>> visiting) {
+    private void checkDependencies(Component component, Stack<Class<?>> visiting) {
         /*注意原来的实现，dependencies.get(component)获取的是什么？是一个List，就是所有的依赖，然后接下来就是去判断
          * containsKey,如果没有Bind过，那么当然没有啊*/
         //这个是去找的所有bind过的依赖，然后把所有的key的依赖都放到一个栈中去，这里是找的所有的依赖，如果之前有添加过
         //那就说明有环了，就是有循环依赖
-        //for (Context.Ref dependency : component.get(component).getDependencies()) {
-        for (Context.Ref dependency : providers.get(component).getDependencies()) {
-            //if (!components.containsKey(new Component(dependency.getComponent())))
-            if (!providers.containsKey(dependency.getComponent()))
-                throw new DependencyNotFoundException(component, dependency.getComponent());
+        for (Context.Ref dependency : components.get(component).getDependencies()) {
+            if (!components.containsKey(new Component(dependency.getComponent(),dependency.getQualifier())))
+                throw new DependencyNotFoundException(component.type(), dependency.getComponent());
             if (!dependency.isContainer()) {
                 if (visiting.contains(dependency.getComponent())) throw new CyclicDependenciesFoundException(visiting);
                 visiting.push(dependency.getComponent());
-                //checkDependencies(new Component(dependency.getComponent()), visiting);
-                checkDependencies(dependency.getComponent(), visiting);
+                checkDependencies(new Component(dependency.getComponent(),dependency.getQualifier()), visiting);
+//                checkDependencies(dependency.getComponent(), visiting);
                 visiting.pop();
             }
 
