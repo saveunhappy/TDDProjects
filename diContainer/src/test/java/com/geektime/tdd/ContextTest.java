@@ -174,6 +174,10 @@ public class ContextTest {
                 };
                 assertThrows(IllegalComponentException.class, () -> config.bind(Component.class, instance, new TestLiteral()));
             }
+            @Test
+            public void should_throw_exception_if_illegal_qualifier_given_to_component() {
+                assertThrows(IllegalComponentException.class, () -> config.bind(ConstructorInjection.class, ConstructorInjection.class, new TestLiteral()));
+            }
         }
     }
 
