@@ -45,16 +45,12 @@ public class ComponentRef<ComponentType> {
         }
     }
 
-    public Annotation getQualifier() {
-        return qualifier;
-    }
-
     public Type getContainer() {
         return container;
     }
 
     public Class<?> getComponentType() {
-        return componentType;
+        return component.type();
     }
 
     public boolean isContainer() {
