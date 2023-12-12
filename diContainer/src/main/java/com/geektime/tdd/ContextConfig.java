@@ -8,7 +8,6 @@ import java.util.*;
 import static java.util.Arrays.stream;
 
 public class ContextConfig {
-    private final Map<Class<?>, ComponentProvider<?>> providers = new HashMap<>();
     private final Map<Component, ComponentProvider<?>> components = new HashMap<>();
 
     public <Type> void bind(Class<Type> type, Type instance) {
