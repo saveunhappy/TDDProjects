@@ -42,7 +42,7 @@ public class ContextConfig {
         components.keySet().forEach(component -> checkDependencies(component, new Stack<>()));
         return new Context() {
             @Override
-            public <ComponentType> Optional<ComponentType> get(Ref<ComponentType> ref) {
+            public <ComponentType> Optional<ComponentType> get(ComponentRef<ComponentType> ref) {
                 if (ref.isContainer()) {
                     if (ref.getContainer() != Provider.class) return Optional.empty();
                     return (Optional<ComponentType>) Optional.ofNullable(getComponent(ref))
@@ -55,7 +55,7 @@ public class ContextConfig {
         };
     }
 
-    private <ComponentType> ComponentProvider<?> getComponent(Context.Ref<ComponentType> ref) {
+    private <ComponentType> ComponentProvider<?> getComponent(Context.ComponentRef<ComponentType> ref) {
         return components.get(new Component(ref.getComponent(), ref.getQualifier()));
     }
 
@@ -64,13 +64,14 @@ public class ContextConfig {
          * containsKey,如果没有Bind过，那么当然没有啊*/
         //这个是去找的所有bind过的依赖，然后把所有的key的依赖都放到一个栈中去，这里是找的所有的依赖，如果之前有添加过
         //那就说明有环了，就是有循环依赖
-        for (Context.Ref dependency : components.get(component).getDependencies()) {
-            if (!components.containsKey(new Component(dependency.getComponent(),dependency.getQualifier())))
+        for (Context.ComponentRef dependency : components.get(component).getDependencies()) {
+            Component key = new Component(dependency.getComponent(), dependency.getQualifier());
+            if (!components.containsKey(key))
                 throw new DependencyNotFoundException(component.type(), dependency.getComponent());
             if (!dependency.isContainer()) {
                 if (visiting.contains(dependency.getComponent())) throw new CyclicDependenciesFoundException(visiting);
                 visiting.push(dependency.getComponent());
-                checkDependencies(new Component(dependency.getComponent(),dependency.getQualifier()), visiting);
+                checkDependencies(key, visiting);
 //                checkDependencies(dependency.getComponent(), visiting);
                 visiting.pop();
             }

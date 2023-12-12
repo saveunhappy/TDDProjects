@@ -46,13 +46,13 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         }
     }
     @Override
-    public List<Context.Ref> getDependencies(){
+    public List<Context.ComponentRef> getDependencies(){
         return concat(concat(stream(injectConstructor.getParameters()).map(Parameter::getParameterizedType),
                         injectFields.stream().map(Field::getGenericType)),
                 //因为Constructor直接就是可以获取数组，所以不用flatMap,然后InjectMethod是List，所以要使用Stream
                 //那为什么Map不行呢？因为后面的m.getParameterTypes()返回的还是数组，你要把它变成一维的，所以要使用flatMap
                 injectMethods.stream().flatMap(p -> stream(p.getParameters()).map(Parameter::getParameterizedType)))
-                .map(Context.Ref::of).toList();
+                .map(Context.ComponentRef::of).toList();
     }
 
     private static <T> List<Field> getInjectFields(Class<T> component) {
@@ -128,7 +128,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     }
 
     private static Object toDependency(Context context, Type type) {
-        return context.get(Context.Ref.of(type)).get();
+        return context.get(Context.ComponentRef.of(type)).get();
     }
 
 }

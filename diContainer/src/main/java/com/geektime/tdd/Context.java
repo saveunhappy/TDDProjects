@@ -7,29 +7,29 @@ import java.util.Objects;
 import java.util.Optional;
 
 public interface Context {
-    <ComponentType> Optional<ComponentType> get(Ref<ComponentType> ref);
+    <ComponentType> Optional<ComponentType> get(ComponentRef<ComponentType> ref);
 
-    class Ref<ComponentType> {
-        public static <ComponentType> Ref<ComponentType> of(Class<ComponentType> component) {
-            return new Ref(component, null);
+    class ComponentRef<ComponentType> {
+        public static <ComponentType> ComponentRef<ComponentType> of(Class<ComponentType> component) {
+            return new ComponentRef(component, null);
         }
-        public static <ComponentType> Ref<ComponentType> of(Class<ComponentType> component, Annotation qualifier) {
-            return new Ref(component, qualifier);
+        public static <ComponentType> ComponentRef<ComponentType> of(Class<ComponentType> component, Annotation qualifier) {
+            return new ComponentRef(component, qualifier);
         }
-        public static Ref of(Type type) {
-            return new Ref(type, null);
+        public static ComponentRef of(Type type) {
+            return new ComponentRef(type, null);
         }
 
         private Type container;
-        private Class<?> component;
+        private Class<ComponentType> component;
         private Annotation qualifier;
 
-        Ref(Type type, Annotation qualifier) {
+        ComponentRef(Type type, Annotation qualifier) {
             init(type);
             this.qualifier = qualifier;
         }
 
-        protected Ref() {
+        protected ComponentRef() {
             Type type = ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
             init(type);
         }
@@ -37,9 +37,9 @@ public interface Context {
         private void init(Type type) {
             if (type instanceof ParameterizedType container) {
                 this.container = container.getRawType();
-                this.component = (Class<?>) container.getActualTypeArguments()[0];
+                this.component = (Class<ComponentType>) container.getActualTypeArguments()[0];
             }else{
-                this.component = (Class<?>) type;
+                this.component = (Class<ComponentType>) type;
             }
         }
 
@@ -63,7 +63,7 @@ public interface Context {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            Ref ref = (Ref) o;
+            ComponentRef ref = (ComponentRef) o;
             return Objects.equals(container, ref.container) && Objects.equals(component, ref.component);
         }
 
