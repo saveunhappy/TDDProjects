@@ -140,27 +140,6 @@ public class ContextTest {
         @Nested
         public class WithQualifier{
             @Test
-            public void should_bind_instance_with_qualifier() {
-                Component instance = new Component() {
-                };
-                //原来是要写成config.bind(Component.class,instance,@Named("ChosenOne"));但是java不允许，所以还是继承
-                config.bind(Component.class, instance,new NamedLiteral("ChosenOne"));
-                Context context = config.getContext();
-                Component choseOne = context.get(ComponentRef.of(Component.class, new NamedLiteral("ChosenOne"))).get();
-                assertSame(instance,choseOne);
-            }
-            @Test
-            public void should_bind_component_with_qualifier() {
-                Dependency dependency = new Dependency() {
-                };
-                config.bind(Dependency.class, dependency);
-                config.bind(ConstructorInjection.class, ConstructorInjection.class,new NamedLiteral("ChosenOne"));
-                Context context = config.getContext();
-                ConstructorInjection choseOne = context.get(ComponentRef.of(ConstructorInjection.class, new NamedLiteral("ChosenOne"))).get();
-                assertSame(dependency,choseOne.dependency);
-            }
-            //TODO binding component with multi qualifiers
-            @Test
             public void should_bind_instance_with_multi_qualifiers() {
                 Component instance = new Component() {
                 };
