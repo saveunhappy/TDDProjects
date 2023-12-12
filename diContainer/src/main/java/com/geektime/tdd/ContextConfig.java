@@ -53,14 +53,18 @@ public class ContextConfig {
                 }
                 if (ref.isContainer()) {
                     if (ref.getContainer() != Provider.class) return Optional.empty();
-                    return (Optional<ComponentType>) Optional.ofNullable(providers.get(ref.getComponent()))
+                    return (Optional<ComponentType>) Optional.ofNullable(getComponent(ref))
                             .map(provider -> (Provider<Object>) () -> provider.get(this));
                 }
-                return Optional.ofNullable(providers.get(ref.getComponent())).
+                return Optional.ofNullable(getComponent(ref)).
                         map(provider -> (ComponentType) provider.get(this));
             }
 
         };
+    }
+
+    private <ComponentType> ComponentProvider<?> getComponent(Context.Ref<ComponentType> ref) {
+        return providers.get(ref.getComponent());
     }
 
     private void checkDependencies(Class<?> component, Stack<Class<?>> visiting) {
