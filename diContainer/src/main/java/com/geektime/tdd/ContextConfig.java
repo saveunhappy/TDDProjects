@@ -42,6 +42,7 @@ public class ContextConfig {
         for (Class<?> component : providers.keySet()) {
             checkDependencies(component, new Stack<>());
         }
+        //components.keySet().forEach(component -> checkDependencies(component, new Stack<>()));
         return new Context() {
             @Override
             public <ComponentType> Optional<ComponentType> get(Ref<ComponentType> ref) {
