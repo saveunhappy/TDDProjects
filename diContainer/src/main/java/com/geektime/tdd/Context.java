@@ -21,6 +21,8 @@ public interface Context {
         }
 
         private Type container;
+
+        //private Component component;
         private Class<ComponentType> component;
         private Annotation qualifier;
 
