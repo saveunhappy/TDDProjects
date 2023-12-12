@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Nested
@@ -62,7 +63,6 @@ public class ContextTest {
                 return null;
             }
 
-            ;
         }
 
         interface AnotherDependency {
@@ -121,7 +121,8 @@ public class ContextTest {
             };
             config.bind(Component.class, instance);
             Context context = config.getContext();
-            Provider<Component> provider =  context.get(new ComponentRef<Provider<Component>>(){}).get();
+            Provider<Component> provider = context.get(new ComponentRef<Provider<Component>>() {
+            }).get();
             assertSame(instance, provider.get());
         }
 
@@ -134,36 +135,45 @@ public class ContextTest {
 
 //            assertFalse(context.get(Context.Ref.of(type)).isPresent());
             //还是没有变，因为如果是List类型，不支持，返回的就是Optional.empty，isPresent就是false
-            assertFalse(context.get(new ComponentRef<List<Component>>(){}).isPresent());
+            assertFalse(context.get(new ComponentRef<List<Component>>() {
+            }).isPresent());
         }
 
         @Nested
-        public class WithQualifier{
+        public class WithQualifier {
             @Test
             public void should_bind_instance_with_multi_qualifiers() {
                 Component instance = new Component() {
                 };
                 //原来是要写成config.bind(Component.class,instance,@Named("ChosenOne"));但是java不允许，所以还是继承
-                config.bind(Component.class, instance,new NamedLiteral("ChosenOne"),new NamedLiteral("Skywalker"));
+                config.bind(Component.class, instance, new NamedLiteral("ChosenOne"), new SkywalkerLiteral());
                 Context context = config.getContext();
                 Component choseOne = context.get(ComponentRef.of(Component.class, new NamedLiteral("ChosenOne"))).get();
-                Component skywalker = context.get(ComponentRef.of(Component.class, new NamedLiteral("Skywalker"))).get();
-                assertSame(instance,choseOne);
-                assertSame(instance,skywalker);
+                Component skywalker = context.get(ComponentRef.of(Component.class, new SkywalkerLiteral())).get();
+                assertSame(instance, choseOne);
+                assertSame(instance, skywalker);
             }
+
             @Test
             public void should_bind_component_with_multi_qualifier() {
                 Dependency dependency = new Dependency() {
                 };
                 config.bind(Dependency.class, dependency);
-                config.bind(ConstructorInjection.class, ConstructorInjection.class,new NamedLiteral("ChosenOne"),new NamedLiteral("Skywalker"));
+                config.bind(ConstructorInjection.class, ConstructorInjection.class, new NamedLiteral("ChosenOne"), new SkywalkerLiteral());
                 Context context = config.getContext();
                 ConstructorInjection choseOne = context.get(ComponentRef.of(ConstructorInjection.class, new NamedLiteral("ChosenOne"))).get();
-                ConstructorInjection skywalker = context.get(ComponentRef.of(ConstructorInjection.class, new NamedLiteral("Skywalker"))).get();
-                assertSame(dependency,choseOne.dependency);
-                assertSame(dependency,skywalker.dependency);
+                ConstructorInjection skywalker = context.get(ComponentRef.of(ConstructorInjection.class, new SkywalkerLiteral())).get();
+                assertSame(dependency, choseOne.dependency);
+                assertSame(dependency, skywalker.dependency);
             }
+
             //TODO throw illegal component if illegal qualifier
+            @Test
+            public void should_throw_exception_if_illegal_qualifier_given_to_instance() {
+                Component instance = new Component() {
+                };
+                assertThrows(IllegalComponentException.class, () -> config.bind(Component.class, instance, new TestLiteral()));
+            }
         }
     }
 
@@ -270,6 +280,7 @@ public class ContextTest {
 
         static class CyclicComponentInjectConstructor implements TestComponent {
             String name = "111";
+
             @Inject
             public CyclicComponentInjectConstructor(Dependency dependency) {
             }
@@ -386,6 +397,7 @@ public class ContextTest {
         static class CyclicDependencyProviderConstructor implements Dependency {
             String name = "dependency";
             Provider<TestComponent> component;
+
             @Inject
             public CyclicDependencyProviderConstructor(Provider<TestComponent> component) {
                 this.component = component;
@@ -395,6 +407,7 @@ public class ContextTest {
         static class CyclicComponentProviderConstructor implements TestComponent {
             String name = "component";
             Provider<Dependency> dependency;
+
             @Inject
             public CyclicComponentProviderConstructor(Provider<Dependency> dependency) {
                 this.dependency = dependency;
@@ -415,25 +428,47 @@ public class ContextTest {
             config.bind(Dependency.class, CyclicDependencyProviderConstructor.class);
             Context context = config.getContext();
             assertTrue(context.get(ComponentRef.of(TestComponent.class)).isPresent());
-            CyclicComponentProviderConstructor component = (CyclicComponentProviderConstructor)context.get(ComponentRef.of(TestComponent.class)).get();
-            CyclicDependencyProviderConstructor dependency = (CyclicDependencyProviderConstructor)context.get(ComponentRef.of(Dependency.class)).get();
+            CyclicComponentProviderConstructor component = (CyclicComponentProviderConstructor) context.get(ComponentRef.of(TestComponent.class)).get();
+            CyclicDependencyProviderConstructor dependency = (CyclicDependencyProviderConstructor) context.get(ComponentRef.of(Dependency.class)).get();
             System.out.println(component.name);
             System.out.println(dependency.name);
         }
 
         @Nested
-        public class WithQualifier{
+        public class WithQualifier {
             //TODO  dependency missing if qualifier not match
             //TODO  check cyclic dependencies with qualifier
         }
     }
 
 
-
 }
-record NamedLiteral(String value) implements jakarta.inject.Named{
+
+record NamedLiteral(String value) implements jakarta.inject.Named {
     @Override
     public Class<? extends Annotation> annotationType() {
         return jakarta.inject.Named.class;
     }
 }
+
+@java.lang.annotation.Documented
+@java.lang.annotation.Retention(RUNTIME)
+@jakarta.inject.Qualifier
+@interface SkyWalker {
+}
+
+record SkywalkerLiteral() implements SkyWalker {
+    @Override
+    public Class<? extends Annotation> annotationType() {
+        return SkyWalker.class;
+    }
+}
+
+record TestLiteral() implements Test {
+    @Override
+    public Class<? extends Annotation> annotationType() {
+        return Test.class;
+    }
+}
+
+

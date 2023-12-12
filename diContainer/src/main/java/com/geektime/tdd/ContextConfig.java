@@ -1,6 +1,7 @@
 package com.geektime.tdd;
 
 import jakarta.inject.Provider;
+import jakarta.inject.Qualifier;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -11,10 +12,13 @@ public class ContextConfig {
     private final Map<Component, ComponentProvider<?>> components = new HashMap<>();
 
     public <Type> void bind(Class<Type> type, Type instance) {
-        components.put(new Component(type,null), context -> instance);
+        components.put(new Component(type, null), context -> instance);
     }
 
     public <Type> void bind(Class<Type> type, Type instance, Annotation... qualifiers) {
+        if (stream(qualifiers).anyMatch(q -> !q.annotationType().isAnnotationPresent(Qualifier.class))) {
+            throw new IllegalComponentException();
+        }
         for (Annotation qualifier : qualifiers) {
             components.put(new Component(type, qualifier), context -> instance);
         }
@@ -22,7 +26,7 @@ public class ContextConfig {
 
     public <Type, Implementation extends Type>
     void bind(Class<Type> type, Class<Implementation> implementation) {
-        components.put(new Component(type,null), new InjectionProvider<>(implementation));
+        components.put(new Component(type, null), new InjectionProvider<>(implementation));
     }
 
     public <Type, Implementation extends Type>
@@ -64,7 +68,8 @@ public class ContextConfig {
             if (!components.containsKey(dependency.component()))
                 throw new DependencyNotFoundException(component.type(), dependency.getComponentType());
             if (!dependency.isContainer()) {
-                if (visiting.contains(dependency.getComponentType())) throw new CyclicDependenciesFoundException(visiting);
+                if (visiting.contains(dependency.getComponentType()))
+                    throw new CyclicDependenciesFoundException(visiting);
                 visiting.push(dependency.getComponentType());
                 checkDependencies(dependency.component(), visiting);
 //                checkDependencies(dependency.getComponent(), visiting);
