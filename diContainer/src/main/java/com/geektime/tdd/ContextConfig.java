@@ -52,7 +52,7 @@ public class ContextConfig {
     }
 
     private <ComponentType> ComponentProvider<?> getComponent(ComponentRef<ComponentType> ref) {
-        return components.get(new Component(ref.getComponent(), ref.getQualifier()));
+        return components.get(ref.component());
     }
 
     private void checkDependencies(Component component, Stack<Class<?>> visiting) {
@@ -61,12 +61,12 @@ public class ContextConfig {
         //这个是去找的所有bind过的依赖，然后把所有的key的依赖都放到一个栈中去，这里是找的所有的依赖，如果之前有添加过
         //那就说明有环了，就是有循环依赖
         for (ComponentRef dependency : components.get(component).getDependencies()) {
-            Component key = new Component(dependency.getComponent(), dependency.getQualifier());
+            Component key = new Component(dependency.getComponentType(), dependency.getQualifier());
             if (!components.containsKey(key))
-                throw new DependencyNotFoundException(component.type(), dependency.getComponent());
+                throw new DependencyNotFoundException(component.type(), dependency.getComponentType());
             if (!dependency.isContainer()) {
-                if (visiting.contains(dependency.getComponent())) throw new CyclicDependenciesFoundException(visiting);
-                visiting.push(dependency.getComponent());
+                if (visiting.contains(dependency.getComponentType())) throw new CyclicDependenciesFoundException(visiting);
+                visiting.push(dependency.getComponentType());
                 checkDependencies(key, visiting);
 //                checkDependencies(dependency.getComponent(), visiting);
                 visiting.pop();

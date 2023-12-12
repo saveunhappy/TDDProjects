@@ -1,14 +1,7 @@
 package com.geektime.tdd;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Provider;
 import org.junit.jupiter.api.*;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -40,7 +33,7 @@ class ContainerTest {
 }
 
 
-interface Component {
+interface TestComponent {
     default Dependency dependency() {
         return null;
     }

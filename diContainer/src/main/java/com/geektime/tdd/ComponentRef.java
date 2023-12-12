@@ -20,26 +20,28 @@ public class ComponentRef<ComponentType> {
 
     private Type container;
 
-    //private Component component;
-    private Class<ComponentType> component;
+    private Component component;
+    private Class<ComponentType> componentType;
     private Annotation qualifier;
 
     ComponentRef(Type type, Annotation qualifier) {
-        init(type);
+        init(type, qualifier);
         this.qualifier = qualifier;
     }
 
     protected ComponentRef() {
         Type type = ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-        init(type);
+        init(type, null);
     }
 
-    private void init(Type type) {
+    private void init(Type type, Annotation qualifier) {
         if (type instanceof ParameterizedType container) {
             this.container = container.getRawType();
-            this.component = (Class<ComponentType>) container.getActualTypeArguments()[0];
+            this.componentType = (Class<ComponentType>) container.getActualTypeArguments()[0];
+            this.component = new Component(componentType,qualifier);
         } else {
-            this.component = (Class<ComponentType>) type;
+            this.componentType = (Class<ComponentType>) type;
+            this.component = new Component(componentType,qualifier);
         }
     }
 
@@ -51,8 +53,8 @@ public class ComponentRef<ComponentType> {
         return container;
     }
 
-    public Class<?> getComponent() {
-        return component;
+    public Class<?> getComponentType() {
+        return componentType;
     }
 
     public boolean isContainer() {
@@ -64,11 +66,16 @@ public class ComponentRef<ComponentType> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ComponentRef ref = (ComponentRef) o;
-        return Objects.equals(container, ref.container) && Objects.equals(component, ref.component);
+        return Objects.equals(container, ref.container) && Objects.equals(componentType, ref.componentType);
+    }
+
+    public Component component() {
+        return component;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(container, component);
+        return Objects.hash(container, componentType);
     }
+
 }
