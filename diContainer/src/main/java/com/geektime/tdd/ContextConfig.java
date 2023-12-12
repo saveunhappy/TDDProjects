@@ -64,6 +64,7 @@ public class ContextConfig {
     }
 
     private <ComponentType> ComponentProvider<?> getComponent(Context.Ref<ComponentType> ref) {
+        //return components.get(new Component(ref.getComponent(), ref.getQualifier()));
         return providers.get(ref.getComponent());
     }
 
