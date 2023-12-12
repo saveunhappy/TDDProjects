@@ -21,7 +21,6 @@ public class ComponentRef<ComponentType> {
     private Type container;
 
     private Component component;
-    private Class<ComponentType> componentType;
 
     ComponentRef(Type type, Annotation qualifier) {
         init(type, qualifier);
@@ -35,11 +34,9 @@ public class ComponentRef<ComponentType> {
     private void init(Type type, Annotation qualifier) {
         if (type instanceof ParameterizedType container) {
             this.container = container.getRawType();
-            this.componentType = (Class<ComponentType>) container.getActualTypeArguments()[0];
-            this.component = new Component(componentType,qualifier);
+            this.component = new Component((Class<ComponentType>) container.getActualTypeArguments()[0],qualifier);
         } else {
-            this.componentType = (Class<ComponentType>) type;
-            this.component = new Component(componentType,qualifier);
+            this.component = new Component((Class<ComponentType>) type,qualifier);
         }
     }
 
@@ -54,22 +51,20 @@ public class ComponentRef<ComponentType> {
     public boolean isContainer() {
         return this.container != null;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ComponentRef ref = (ComponentRef) o;
-        return Objects.equals(container, ref.container) && Objects.equals(componentType, ref.componentType);
-    }
-
     public Component component() {
         return component;
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(container, componentType);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ComponentRef<?> that = (ComponentRef<?>) o;
+        return Objects.equals(container, that.container) && Objects.equals(component, that.component);
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(container, component);
+    }
 }
