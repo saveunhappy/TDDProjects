@@ -33,7 +33,7 @@ public class ContextTest {
             };
             config.bind(Component.class, instance);
             Context context = config.getContext();
-            assertSame(instance, context.get(Context.ComponentRef.of(Component.class)).get());
+            assertSame(instance, context.get(ComponentRef.of(Component.class)).get());
 
         }
 
@@ -46,7 +46,7 @@ public class ContextTest {
             config.bind(Component.class, componentType);
 
             Context context = config.getContext();
-            Optional<Component> component = context.get(Context.ComponentRef.of(Component.class));
+            Optional<Component> component = context.get(ComponentRef.of(Component.class));
             assertTrue(component.isPresent());
             assertSame(dependency, component.get().dependency());
         }
@@ -110,7 +110,7 @@ public class ContextTest {
         @Test
         public void should_retrieve_empty_for_unbind_type() {
             Context context = config.getContext();
-            Optional<Component> component = context.get(Context.ComponentRef.of(Component.class));
+            Optional<Component> component = context.get(ComponentRef.of(Component.class));
             assertTrue(component.isEmpty());
         }
 
@@ -121,7 +121,7 @@ public class ContextTest {
             };
             config.bind(Component.class, instance);
             Context context = config.getContext();
-            Provider<Component> provider =  context.get(new Context.ComponentRef<Provider<Component>>(){}).get();
+            Provider<Component> provider =  context.get(new ComponentRef<Provider<Component>>(){}).get();
             assertSame(instance, provider.get());
         }
 
@@ -134,7 +134,7 @@ public class ContextTest {
 
 //            assertFalse(context.get(Context.Ref.of(type)).isPresent());
             //还是没有变，因为如果是List类型，不支持，返回的就是Optional.empty，isPresent就是false
-            assertFalse(context.get(new Context.ComponentRef<List<Component>>(){}).isPresent());
+            assertFalse(context.get(new ComponentRef<List<Component>>(){}).isPresent());
         }
 
         @Nested
@@ -146,7 +146,7 @@ public class ContextTest {
                 //原来是要写成config.bind(Component.class,instance,@Named("ChosenOne"));但是java不允许，所以还是继承
                 config.bind(Component.class, instance,new NamedLiteral("ChosenOne"));
                 Context context = config.getContext();
-                Component choseOne = context.get(Context.ComponentRef.of(Component.class, new NamedLiteral("ChosenOne"))).get();
+                Component choseOne = context.get(ComponentRef.of(Component.class, new NamedLiteral("ChosenOne"))).get();
                 assertSame(instance,choseOne);
             }
             @Test
@@ -156,7 +156,7 @@ public class ContextTest {
                 config.bind(Dependency.class, dependency);
                 config.bind(ConstructorInjection.class, ConstructorInjection.class,new NamedLiteral("ChosenOne"));
                 Context context = config.getContext();
-                ConstructorInjection choseOne = context.get(Context.ComponentRef.of(ConstructorInjection.class, new NamedLiteral("ChosenOne"))).get();
+                ConstructorInjection choseOne = context.get(ComponentRef.of(ConstructorInjection.class, new NamedLiteral("ChosenOne"))).get();
                 assertSame(dependency,choseOne.dependency);
             }
             //TODO binding component with multi qualifiers
@@ -167,8 +167,8 @@ public class ContextTest {
                 //原来是要写成config.bind(Component.class,instance,@Named("ChosenOne"));但是java不允许，所以还是继承
                 config.bind(Component.class, instance,new NamedLiteral("ChosenOne"),new NamedLiteral("Skywalker"));
                 Context context = config.getContext();
-                Component choseOne = context.get(Context.ComponentRef.of(Component.class, new NamedLiteral("ChosenOne"))).get();
-                Component skywalker = context.get(Context.ComponentRef.of(Component.class, new NamedLiteral("Skywalker"))).get();
+                Component choseOne = context.get(ComponentRef.of(Component.class, new NamedLiteral("ChosenOne"))).get();
+                Component skywalker = context.get(ComponentRef.of(Component.class, new NamedLiteral("Skywalker"))).get();
                 assertSame(instance,choseOne);
                 assertSame(instance,skywalker);
             }
@@ -179,8 +179,8 @@ public class ContextTest {
                 config.bind(Dependency.class, dependency);
                 config.bind(ConstructorInjection.class, ConstructorInjection.class,new NamedLiteral("ChosenOne"),new NamedLiteral("Skywalker"));
                 Context context = config.getContext();
-                ConstructorInjection choseOne = context.get(Context.ComponentRef.of(ConstructorInjection.class, new NamedLiteral("ChosenOne"))).get();
-                ConstructorInjection skywalker = context.get(Context.ComponentRef.of(ConstructorInjection.class, new NamedLiteral("Skywalker"))).get();
+                ConstructorInjection choseOne = context.get(ComponentRef.of(ConstructorInjection.class, new NamedLiteral("ChosenOne"))).get();
+                ConstructorInjection skywalker = context.get(ComponentRef.of(ConstructorInjection.class, new NamedLiteral("Skywalker"))).get();
                 assertSame(dependency,choseOne.dependency);
                 assertSame(dependency,skywalker.dependency);
             }
@@ -427,7 +427,7 @@ public class ContextTest {
             config.bind(Component.class, CyclicComponentInjectConstructor.class);
             config.bind(Dependency.class, CyclicDependencyProviderConstructor.class);
             Context context = config.getContext();
-            assertTrue(context.get(Context.ComponentRef.of(Component.class)).isPresent());
+            assertTrue(context.get(ComponentRef.of(Component.class)).isPresent());
         }
 
         @Test
@@ -435,9 +435,9 @@ public class ContextTest {
             config.bind(Component.class, CyclicComponentProviderConstructor.class);
             config.bind(Dependency.class, CyclicDependencyProviderConstructor.class);
             Context context = config.getContext();
-            assertTrue(context.get(Context.ComponentRef.of(Component.class)).isPresent());
-            CyclicComponentProviderConstructor component = (CyclicComponentProviderConstructor)context.get(Context.ComponentRef.of(Component.class)).get();
-            CyclicDependencyProviderConstructor dependency = (CyclicDependencyProviderConstructor)context.get(Context.ComponentRef.of(Dependency.class)).get();
+            assertTrue(context.get(ComponentRef.of(Component.class)).isPresent());
+            CyclicComponentProviderConstructor component = (CyclicComponentProviderConstructor)context.get(ComponentRef.of(Component.class)).get();
+            CyclicDependencyProviderConstructor dependency = (CyclicDependencyProviderConstructor)context.get(ComponentRef.of(Dependency.class)).get();
             System.out.println(component.name);
             System.out.println(dependency.name);
         }
