@@ -22,11 +22,9 @@ public class ComponentRef<ComponentType> {
 
     private Component component;
     private Class<ComponentType> componentType;
-    private Annotation qualifier;
 
     ComponentRef(Type type, Annotation qualifier) {
         init(type, qualifier);
-        this.qualifier = qualifier;
     }
 
     protected ComponentRef() {
