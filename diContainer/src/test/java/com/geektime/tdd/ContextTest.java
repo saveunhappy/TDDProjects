@@ -8,10 +8,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -470,6 +467,13 @@ record NamedLiteral(String value) implements jakarta.inject.Named {
     public Class<? extends Annotation> annotationType() {
         return jakarta.inject.Named.class;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if(o instanceof jakarta.inject.Named named) return Objects.equals(value,named.value());
+        return false;
+    }
+
 }
 
 @java.lang.annotation.Documented
