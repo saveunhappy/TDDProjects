@@ -445,8 +445,8 @@ public class ContextTest {
                 });
                 config.bind(InjectConstructor.class, InjectConstructor.class, new NamedLiteral("Owner"));
                 DependencyNotFoundException exception = assertThrows(DependencyNotFoundException.class, () -> config.getContext());
+                assertEquals(new Component(InjectConstructor.class, new NamedLiteral("Owner")), exception.getComponentComponent());
                 assertEquals(new Component(Dependency.class, new SkywalkerLiteral()), exception.getDependencyComponent());
-                assertEquals(new Component(Dependency.class, new NamedLiteral("Owner")), exception.getComponentComponent());
             }
 
             static class InjectConstructor {
@@ -486,6 +486,11 @@ record SkywalkerLiteral() implements SkyWalker {
     @Override
     public Class<? extends Annotation> annotationType() {
         return SkyWalker.class;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof SkyWalker;
     }
 }
 

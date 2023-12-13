@@ -69,7 +69,7 @@ public class ContextConfig {
         //那就说明有环了，就是有循环依赖
         for (ComponentRef dependency : components.get(component).getDependencies()) {
             if (!components.containsKey(dependency.component()))
-                throw new DependencyNotFoundException(component.type(), dependency.getComponentType());
+                throw new DependencyNotFoundException(component, dependency.component());
             if (!dependency.isContainer()) {
                 if (visiting.contains(dependency.getComponentType()))
                     throw new CyclicDependenciesFoundException(visiting);
