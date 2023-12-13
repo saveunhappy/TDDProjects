@@ -17,6 +17,9 @@ public class ComponentRef<ComponentType> {
     public static ComponentRef of(Type type) {
         return new ComponentRef(type, null);
     }
+    public static ComponentRef of(Type type,Annotation qualifier) {
+        return new ComponentRef(type, qualifier);
+    }
 
     private Type container;
 
