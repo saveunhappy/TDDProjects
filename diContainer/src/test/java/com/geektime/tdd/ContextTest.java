@@ -443,8 +443,10 @@ public class ContextTest {
             public void should_throw_exception_if_dependency() {
                 config.bind(Dependency.class, new Dependency() {
                 });
-                config.bind(InjectConstructor.class, InjectConstructor.class);
-                assertThrows(DependencyNotFoundException.class, () -> config.getContext());
+                config.bind(InjectConstructor.class, InjectConstructor.class, new NamedLiteral("Owner"));
+                DependencyNotFoundException exception = assertThrows(DependencyNotFoundException.class, () -> config.getContext());
+                assertEquals(new Component(Dependency.class, new SkywalkerLiteral()), exception.getDependencyComponent());
+                assertEquals(new Component(Dependency.class, new NamedLiteral("Owner")), exception.getComponentComponent());
             }
 
             static class InjectConstructor {
@@ -468,7 +470,7 @@ record NamedLiteral(String value) implements jakarta.inject.Named {
 
     @Override
     public boolean equals(Object o) {
-        if(o instanceof jakarta.inject.Named named) return Objects.equals(value,named.value());
+        if (o instanceof jakarta.inject.Named named) return Objects.equals(value, named.value());
         return false;
     }
 
