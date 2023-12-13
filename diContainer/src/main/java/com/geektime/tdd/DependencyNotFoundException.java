@@ -10,15 +10,6 @@ public class DependencyNotFoundException extends RuntimeException{
     }
 
 
-
-    public Class<?> getDependency() {
-        return dependencyComponent.type();
-    }
-
-    public Class<?> getComponent() {
-        return componentComponent.type();
-    }
-
     public Component getDependencyComponent() {
         return dependencyComponent;
     }
