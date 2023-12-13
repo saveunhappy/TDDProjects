@@ -439,9 +439,7 @@ public class ContextTest {
 
         @Nested
         public class WithQualifier {
-            //TODO  dependency missing if qualifier not match
             @Test
-            @Disabled
             public void should_throw_exception_if_dependency() {
                 config.bind(Dependency.class, new Dependency() {
                 });
