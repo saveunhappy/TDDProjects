@@ -191,8 +191,8 @@ public class ContextTest {
             //这个就是哪个组件找不到哪个依赖，具体看checkDependencies这个方法
             //Field和Method找不到可以去看getDependency()这个方法，它是把构造器的参数
             //字段，还有方法的参数都添加进去了，进行concat
-            assertEquals(Dependency.class, exception.getDependency());
-            assertEquals(TestComponent.class, exception.getComponent());
+            assertEquals(Dependency.class, exception.getDependencyComponent().type());
+            assertEquals(TestComponent.class, exception.getComponentComponent().type());
 
         }
 
