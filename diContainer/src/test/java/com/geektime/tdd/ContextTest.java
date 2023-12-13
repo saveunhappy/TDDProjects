@@ -191,8 +191,8 @@ public class ContextTest {
             //这个就是哪个组件找不到哪个依赖，具体看checkDependencies这个方法
             //Field和Method找不到可以去看getDependency()这个方法，它是把构造器的参数
             //字段，还有方法的参数都添加进去了，进行concat
-            assertEquals(Dependency.class, exception.getDependencyComponent().type());
-            assertEquals(TestComponent.class, exception.getComponentComponent().type());
+            assertEquals(Dependency.class, exception.getDependency().type());
+            assertEquals(TestComponent.class, exception.getComponent().type());
 
         }
 
@@ -445,8 +445,8 @@ public class ContextTest {
                 });
                 config.bind(InjectConstructor.class, InjectConstructor.class, new NamedLiteral("Owner"));
                 DependencyNotFoundException exception = assertThrows(DependencyNotFoundException.class, () -> config.getContext());
-                assertEquals(new Component(InjectConstructor.class, new NamedLiteral("Owner")), exception.getComponentComponent());
-                assertEquals(new Component(Dependency.class, new SkywalkerLiteral()), exception.getDependencyComponent());
+                assertEquals(new Component(InjectConstructor.class, new NamedLiteral("Owner")), exception.getComponent());
+                assertEquals(new Component(Dependency.class, new SkywalkerLiteral()), exception.getDependency());
             }
 
             static class InjectConstructor {
