@@ -3,6 +3,8 @@ package com.geektime.tdd;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.inject.Provider;
+import org.junit.Assert;
+import org.junit.Assert.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -167,7 +169,7 @@ public class InjectTest {
                 InjectionProvider<InjectConstructor> provider = new InjectionProvider<>(InjectConstructor.class);
                 assertArrayEquals(new ComponentRef<?>[]{
                         ComponentRef.of(Dependency.class,new NamedLiteral("ChosenOne"))
-                },provider.getDependencies().toArray());
+                }, provider.getDependencies().toArray());
             }
 
             static class InjectConstructor {
