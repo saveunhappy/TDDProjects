@@ -62,7 +62,7 @@ public class ContextConfig {
         return components.get(ref.component());
     }
 
-    private void checkDependencies(Component component, Stack<Class<?>> visiting) {
+    private void checkDependencies(Component component, Stack<Component> visiting) {
         /*注意原来的实现，dependencies.get(component)获取的是什么？是一个List，就是所有的依赖，然后接下来就是去判断
          * containsKey,如果没有Bind过，那么当然没有啊*/
         //这个是去找的所有bind过的依赖，然后把所有的key的依赖都放到一个栈中去，这里是找的所有的依赖，如果之前有添加过
@@ -71,8 +71,8 @@ public class ContextConfig {
             if (!components.containsKey(dependency.component()))
                 throw new DependencyNotFoundException(component, dependency.component());
             if (!dependency.isContainer()) {
-                if (visiting.contains(dependency.getComponentType())) throw new CyclicDependenciesFoundException(visiting);
-                visiting.push(dependency.getComponentType());
+                if (visiting.contains(dependency.component())) throw new CyclicDependenciesFoundException(visiting);
+                visiting.push(dependency.component());
                 checkDependencies(dependency.component(), visiting);
 //                checkDependencies(dependency.getComponent(), visiting);
                 visiting.pop();
