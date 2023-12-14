@@ -71,8 +71,7 @@ public class ContextConfig {
             if (!components.containsKey(dependency.component()))
                 throw new DependencyNotFoundException(component, dependency.component());
             if (!dependency.isContainer()) {
-                if (visiting.contains(dependency.getComponentType()))
-                    throw new CyclicDependenciesFoundException(visiting);
+                if (visiting.contains(dependency.getComponentType())) throw new CyclicDependenciesFoundException(visiting);
                 visiting.push(dependency.getComponentType());
                 checkDependencies(dependency.component(), visiting);
 //                checkDependencies(dependency.getComponent(), visiting);

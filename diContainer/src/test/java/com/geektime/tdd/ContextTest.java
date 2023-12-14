@@ -456,6 +456,33 @@ public class ContextTest {
 
             }
             //TODO  check cyclic dependencies with qualifier
+            //TODO A -> A 这个是循环依赖，但是A -> @Skywalker A就不是循环依赖了，因为现在注解也是bind的一部分，
+            //TODO 就是说现在注解和这个类一起组合作为key，那么你就不应该找到
+
+            //TODO A -> @Skywalker A -> @Named A   传递依赖比较多，直接用这个
+            static class SkywalkerDependency implements Dependency {
+                @Inject
+                public SkywalkerDependency(@jakarta.inject.Named("ChosenOne") Dependency dependency) {
+                }
+            }
+
+            static class NotCyclicDependency implements Dependency {
+                @Inject
+                public NotCyclicDependency(@SkyWalker Dependency dependency) {
+
+                }
+            }
+
+            @Test
+            public void should_not_throw_cyclic_exception_if_component_with_same_type_tag_with_different_qualifier() {
+                Dependency instance = new Dependency() {
+                };
+                config.bind(Dependency.class, instance, new NamedLiteral("ChosenOne"));
+                config.bind(Dependency.class, SkywalkerDependency.class, new SkywalkerLiteral());
+                config.bind(Dependency.class, NotCyclicDependency.class);
+                assertDoesNotThrow(() -> config.getContext());
+
+            }
         }
     }
 
@@ -472,6 +499,10 @@ record NamedLiteral(String value) implements jakarta.inject.Named {
     public boolean equals(Object o) {
         if (o instanceof jakarta.inject.Named named) return Objects.equals(value, named.value());
         return false;
+    }
+    @Override
+    public int hashCode(){
+        return "value".hashCode() * 127 ^ value.hashCode();
     }
 
 }
