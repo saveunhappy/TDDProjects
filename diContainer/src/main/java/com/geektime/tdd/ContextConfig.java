@@ -42,7 +42,9 @@ public class ContextConfig {
     public Context getContext() {
         //这个dependencies中就是记录了所有的，还有你的参数中有的依赖，也去给你put进去，
 
-        components.keySet().forEach(component -> checkDependencies(component, new Stack<>()));
+        for (Component component : components.keySet()) {
+            checkDependencies(component, new Stack<>());
+        }
         return new Context() {
             @Override
             public <ComponentType> Optional<ComponentType> get(ComponentRef<ComponentType> ref) {
@@ -68,8 +70,11 @@ public class ContextConfig {
         //这个是去找的所有bind过的依赖，然后把所有的key的依赖都放到一个栈中去，这里是找的所有的依赖，如果之前有添加过
         //那就说明有环了，就是有循环依赖
         for (ComponentRef dependency : components.get(component).getDependencies()) {
-            if (!components.containsKey(dependency.component()))
+            //这个dependency.component()就是指的Dependency，其实就是dependency本身，但是有其他的属性，所以就
+            //把属性封装到了component()这个方法中去，
+            if (!components.containsKey(dependency.component())){
                 throw new DependencyNotFoundException(component, dependency.component());
+            }
             if (!dependency.isContainer()) {
                 if (visiting.contains(dependency.component())) throw new CyclicDependenciesFoundException(visiting);
                 visiting.push(dependency.component());

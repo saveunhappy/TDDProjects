@@ -477,9 +477,10 @@ public class ContextTest {
             public void should_not_throw_cyclic_exception_if_component_with_same_type_tag_with_different_qualifier() {
                 Dependency instance = new Dependency() {
                 };
-                config.bind(Dependency.class, instance, new NamedLiteral("ChosenOne"));
-                config.bind(Dependency.class, SkywalkerDependency.class, new SkywalkerLiteral());
+                //A->B->C(instance) 这个时候就不该有循环依赖，这个是正确的
                 config.bind(Dependency.class, NotCyclicDependency.class);
+                config.bind(Dependency.class, SkywalkerDependency.class, new SkywalkerLiteral());
+                config.bind(Dependency.class, instance, new NamedLiteral("ChosenOne"));
                 assertDoesNotThrow(() -> config.getContext());
 
             }
