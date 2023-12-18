@@ -288,6 +288,12 @@ public class InjectTest {
                 @Named("ChosenOne")
                 Dependency dependency;
             }
+            @Test
+            public void should_inject_dependency_with_qualifier_via_field() {
+                InjectionProvider<InjectField> provider = new InjectionProvider<>(InjectField.class);
+                InjectField component = provider.get(context);
+                assertSame(dependency,component.dependency);
+            }
             //TODO throw illegal component if illegal qualifier given to injection point
         }
     }
