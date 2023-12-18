@@ -166,6 +166,7 @@ public class InjectTest {
             @BeforeEach
             public void before(){
                 Mockito.reset(context);
+                when(context.get(eq(ComponentRef.of(Dependency.class,new NamedLiteral("ChosenOne"))))).thenReturn(Optional.of(dependency));
             }
             @Test
             public void should_include_dependency_with_qualifier() {
