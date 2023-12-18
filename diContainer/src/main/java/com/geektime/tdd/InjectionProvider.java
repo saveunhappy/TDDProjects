@@ -133,8 +133,12 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     private static Object[] toDependencies(Context context, Executable executable) {
         return stream(executable.getParameters())
-                .map(p -> toDependency(context, p.getParameterizedType())
+                .map(p -> getDependency(context, p)
         ).toArray();
+    }
+
+    private static Object getDependency(Context context, Parameter p) {
+        return toDependency(context, p.getParameterizedType());
     }
 
 
