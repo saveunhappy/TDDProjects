@@ -59,7 +59,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     @Override
     public List<ComponentRef> getDependencies() {
-        return concat(concat(stream(injectConstructor.getParameters()).map(InjectionProvider::toComponentRef),
+        return concat(concat(stream(injectableConstructor.require()),
                         injectFields.stream().map(InjectionProvider::toComponentRef)),
                 //因为Constructor直接就是可以获取数组，所以不用flatMap,然后InjectMethod是List，所以要使用Stream
                 //那为什么Map不行呢？因为后面的m.getParameterTypes()返回的还是数组，你要把它变成一维的，所以要使用flatMap
