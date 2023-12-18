@@ -137,11 +137,6 @@ class InjectionProvider<T> implements ComponentProvider<T> {
                 .map(p -> toDependency(context, p.getParameterizedType(),getQualifier(p))
         ).toArray();
     }
-//
-//    private static Annotation getQualifier(Parameter parameter) {
-//        return stream(parameter.getAnnotations()).filter(a -> a.annotationType().isAnnotationPresent(Qualifier.class))
-//                .findFirst().orElse(null);
-//    }
 
 
     private static Object toDependency(Context context, Field field) {
