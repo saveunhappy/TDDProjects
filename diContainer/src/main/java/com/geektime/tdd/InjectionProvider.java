@@ -50,8 +50,8 @@ class InjectionProvider<T> implements ComponentProvider<T> {
             for (Field field : injectFields) {
                 field.set(instance, toDependency(context, field));
             }
-            for (Method method : injectMethods) {
-                method.invoke(instance, toDependencies(context, method));
+            for (Injectable<Method> method : injectableMethods) {
+                method.element().invoke(instance, method.toDependencies(context));
             }
             return instance;
         } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
