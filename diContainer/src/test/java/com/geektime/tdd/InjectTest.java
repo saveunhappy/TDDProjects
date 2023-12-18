@@ -195,7 +195,6 @@ public class InjectTest {
                 assertSame(dependency, component.dependency);
             }
 
-            //TODO throw illegal component if illegal qualifier given to injection point
             static class MultiQualifierInjectConstructor {
                 @Inject
 
@@ -486,7 +485,17 @@ public class InjectTest {
                 }
             }
             //TODO throw illegal component if illegal qualifier given to injection point
+            static class MultiQualifierInjectMethod {
+                @Inject
+                void install(@Named("ChosenOne") @SkyWalker Dependency dependency) {
+                }
+            }
 
+            @Test
+            public void should_throw_exception_if_multi_qualifiers_given() {
+                assertThrows(IllegalComponentException.class, () -> new InjectionProvider<>(MultiQualifierInjectMethod.class));
+
+            }
 
         }
 
