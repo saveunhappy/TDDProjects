@@ -15,8 +15,6 @@ import static java.util.stream.Stream.concat;
 
 class InjectionProvider<T> implements ComponentProvider<T> {
 
-    private final Constructor<T> injectConstructor;
-
     private final List<Field> injectFields;
 
     private final List<Method> injectMethods;
@@ -24,13 +22,13 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     private final List<ComponentRef> dependencies;
 
     private Injectable<Constructor<T>> injectableConstructor;
+
     public InjectionProvider(Class<T> component) {
         if (Modifier.isAbstract(component.getModifiers())) throw new IllegalComponentException();
         Constructor<T> constructor = getInjectConstructor(component);
         ComponentRef<?>[] require = stream(constructor.getParameters()).map(InjectionProvider::toComponentRef).toArray(ComponentRef<?>[]::new);
-        this.injectableConstructor = new Injectable<>(constructor,require);
+        this.injectableConstructor = new Injectable<>(constructor, require);
 
-        this.injectConstructor = constructor;
         this.injectFields = getInjectFields(component);
         this.injectMethods = getInjectMethods(component);
         if (injectFields.stream().anyMatch(f -> Modifier.isFinal(f.getModifiers())))
@@ -44,7 +42,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     @Override
     public T get(Context context) {
         try {
-            T instance = injectableConstructor.element().newInstance(toDependencies(context, injectableConstructor.element()));
+            T instance = injectableConstructor.element().newInstance(injectableConstructor.toDependencies(context));
             for (Field field : injectFields) {
                 field.set(instance, toDependency(context, field));
             }
@@ -67,8 +65,16 @@ class InjectionProvider<T> implements ComponentProvider<T> {
                 .toList();
     }
 
-    record Injectable<Element extends AccessibleObject>(Element element,ComponentRef<?>[] require){
-
+    record Injectable<Element extends AccessibleObject>(Element element, ComponentRef<?>[] require) {
+        Object[] toDependencies(Context context) {
+            List<Object> list = new ArrayList<>();
+            for (ComponentRef<?> ref : require) {
+                Optional<?> o = context.get(ref);
+                Object o1 = o.get();
+                list.add(o1);
+            }
+            return list.toArray();
+        }
     }
 
     private static Annotation getQualifier(AnnotatedElement field) {
@@ -152,6 +158,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     private static ComponentRef toComponentRef(Field field) {
         return ComponentRef.of(field.getGenericType(), getQualifier(field));
     }
+
     private static ComponentRef<?> toComponentRef(Parameter parameter) {
         return ComponentRef.of(parameter.getParameterizedType(), getQualifier(parameter));
     }
