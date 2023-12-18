@@ -163,7 +163,7 @@ public class InjectTest {
             //TODO inject with qualifier
 
             @Test
-            public void should_include_qualifier_with_dependency() {
+            public void should_include_dependency_with_qualifier() {
                 InjectionProvider<InjectConstructor> provider = new InjectionProvider<>(InjectConstructor.class);
                 assertArrayEquals(new ComponentRef<?>[]{
                         ComponentRef.of(Dependency.class,new NamedLiteral("ChosenOne"))
