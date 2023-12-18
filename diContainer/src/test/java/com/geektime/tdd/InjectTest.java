@@ -171,10 +171,21 @@ public class InjectTest {
             }
 
             static class InjectConstructor {
+                Dependency dependency;
                 @Inject
                 public InjectConstructor(@Named("ChosenOne") Dependency dependency){
-
+                    this.dependency = dependency;
                 }
+            }
+
+            @Test
+            public void should_inject_dependency_with_qualifier_via_constructor() {
+                //为什么这个现在是可以他通过的？因为现在mock的还是原来不加Qualifier的，我们现在也没有加Qualifier的地方
+                //所以就相当于你这个地方加上了@Named("ChosenOne")，但其实是没有put进去的，然后get的时候也没有跟去Qualifier
+                //去找，所以现在和之前的是没差别的，就是你加了注解，但是你没有对应的方法去放进去和取。
+                InjectionProvider<InjectConstructor> provider = new InjectionProvider<>(InjectConstructor.class);
+                InjectConstructor component = provider.get(context);
+                assertSame(dependency,component.dependency);
             }
             //TODO throw illegal component if illegal qualifier given to injection point
         }

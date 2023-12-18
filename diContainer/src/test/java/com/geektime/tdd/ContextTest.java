@@ -455,11 +455,11 @@ public class ContextTest {
                 }
 
             }
-            //TODO  check cyclic dependencies with qualifier
-            //TODO A -> A 这个是循环依赖，但是A -> @Skywalker A就不是循环依赖了，因为现在注解也是bind的一部分，
-            //TODO 就是说现在注解和这个类一起组合作为key，那么你就不应该找到
+            //  check cyclic dependencies with qualifier
+            // A -> A 这个是循环依赖，但是A -> @Skywalker A就不是循环依赖了，因为现在注解也是bind的一部分，
+            // 就是说现在注解和这个类一起组合作为key，那么你就不应该找到
 
-            //TODO A -> @Skywalker A -> @Named A   传递依赖比较多，直接用这个
+            // A -> @Skywalker A -> @Named A   传递依赖比较多，直接用这个
             static class SkywalkerDependency implements Dependency {
                 @Inject
                 public SkywalkerDependency(@jakarta.inject.Named("ChosenOne") Dependency dependency) {
