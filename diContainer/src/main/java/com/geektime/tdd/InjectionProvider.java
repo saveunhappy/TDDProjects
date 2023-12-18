@@ -21,7 +21,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     private List<Method> injectMethods;
 
-//    private List<ComponentRef> dependencies;
+    private List<ComponentRef> dependencies;
 
     public InjectionProvider(Class<T> component) {
         if (Modifier.isAbstract(component.getModifiers())) throw new IllegalComponentException();
@@ -32,7 +32,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
             throw new IllegalComponentException();
         if (injectMethods.stream().anyMatch(m -> m.getTypeParameters().length != 0))
             throw new IllegalComponentException();
-//        dependencies = getDependencies();
+        dependencies = getDependencies();
     }
 
 
