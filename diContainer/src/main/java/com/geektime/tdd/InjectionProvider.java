@@ -139,10 +139,6 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         return toDependency(context, toComponentRef(field));
     }
 
-    private static Object toDependency(Context context, Type type, Annotation qualifier) {
-        return toDependency(context, ComponentRef.of(type, qualifier));
-    }
-
     private static Object toDependency(Context context, ComponentRef of) {
         return context.get(of).get();
     }
