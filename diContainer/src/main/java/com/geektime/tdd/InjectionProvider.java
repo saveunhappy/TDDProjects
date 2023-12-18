@@ -21,13 +21,13 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     private final List<ComponentRef> dependencies;
 
-    private Injectable<Constructor<T>> injectableConstructor;
+    private Injectable<Constructor<T>> injectConstructor;
 
     public InjectionProvider(Class<T> component) {
         if (Modifier.isAbstract(component.getModifiers())) throw new IllegalComponentException();
         Constructor<T> constructor = getInjectConstructor(component);
         ComponentRef<?>[] require = stream(constructor.getParameters()).map(InjectionProvider::toComponentRef).toArray(ComponentRef<?>[]::new);
-        this.injectableConstructor = new Injectable<>(constructor, require);
+        this.injectConstructor = new Injectable<>(constructor, require);
 
         this.injectFields = getInjectFields(component);
         this.injectMethods = getInjectMethods(component);
@@ -42,7 +42,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     @Override
     public T get(Context context) {
         try {
-            T instance = injectableConstructor.element().newInstance(injectableConstructor.toDependencies(context));
+            T instance = injectConstructor.element().newInstance(injectConstructor.toDependencies(context));
             for (Field field : injectFields) {
                 field.set(instance, toDependency(context, field));
             }
@@ -57,7 +57,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     @Override
     public List<ComponentRef> getDependencies() {
-        return concat(concat(stream(injectableConstructor.require()),
+        return concat(concat(stream(injectConstructor.require()),
                         injectFields.stream().map(InjectionProvider::toComponentRef)),
                 //因为Constructor直接就是可以获取数组，所以不用flatMap,然后InjectMethod是List，所以要使用Stream
                 //那为什么Map不行呢？因为后面的m.getParameterTypes()返回的还是数组，你要把它变成一维的，所以要使用flatMap
