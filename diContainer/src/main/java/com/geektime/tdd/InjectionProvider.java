@@ -44,7 +44,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     @Override
     public T get(Context context) {
         try {
-            T instance = injectConstructor.newInstance(toDependencies(context, injectConstructor));
+            T instance = injectableConstructor.element().newInstance(toDependencies(context, injectableConstructor.element()));
             for (Field field : injectFields) {
                 field.set(instance, toDependency(context, field));
             }
