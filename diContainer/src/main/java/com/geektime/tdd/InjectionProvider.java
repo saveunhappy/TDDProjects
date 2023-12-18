@@ -22,12 +22,11 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     private final List<ComponentRef> dependencies;
 
     private Injectable<Constructor<T>> injectConstructor;
+    private List<Injectable<Constructor<T>>> injectableMethods;
 
     public InjectionProvider(Class<T> component) {
         if (Modifier.isAbstract(component.getModifiers())) throw new IllegalComponentException();
-        Constructor<T> constructor = getInjectConstructor(component);
-        ComponentRef<?>[] require = stream(constructor.getParameters()).map(InjectionProvider::toComponentRef).toArray(ComponentRef<?>[]::new);
-        this.injectConstructor = new Injectable<>(constructor, require);
+        this.injectConstructor = getInjectable(getInjectConstructor(component));
 
         this.injectFields = getInjectFields(component);
         this.injectMethods = getInjectMethods(component);
@@ -36,6 +35,10 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         if (injectMethods.stream().anyMatch(m -> m.getTypeParameters().length != 0))
             throw new IllegalComponentException();
         dependencies = getDependencies();
+    }
+
+    private <Element extends Executable> Injectable<Element> getInjectable(Element injectable) {
+        return new Injectable<>(injectable, stream(injectable.getParameters()).map(InjectionProvider::toComponentRef).toArray(ComponentRef<?>[]::new));
     }
 
 
