@@ -6,6 +6,7 @@ import jakarta.inject.Provider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.Optional;
@@ -162,6 +163,10 @@ public class InjectTest {
         public class WithQualifier {
             //TODO inject with qualifier
 
+            @BeforeEach
+            public void before(){
+                Mockito.reset(context);
+            }
             @Test
             public void should_include_dependency_with_qualifier() {
                 InjectionProvider<InjectConstructor> provider = new InjectionProvider<>(InjectConstructor.class);
