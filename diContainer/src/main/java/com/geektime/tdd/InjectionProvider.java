@@ -7,6 +7,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.stream;
@@ -20,6 +21,8 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     private List<Method> injectMethods;
 
+//    private List<ComponentRef> dependencies;
+
     public InjectionProvider(Class<T> component) {
         if (Modifier.isAbstract(component.getModifiers())) throw new IllegalComponentException();
         this.injectConstructor = getInjectConstructor(component);
@@ -29,6 +32,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
             throw new IllegalComponentException();
         if (injectMethods.stream().anyMatch(m -> m.getTypeParameters().length != 0))
             throw new IllegalComponentException();
+//        dependencies = getDependencies();
     }
 
 
@@ -47,8 +51,9 @@ class InjectionProvider<T> implements ComponentProvider<T> {
             throw new RuntimeException(e);
         }
     }
+
     @Override
-    public List<ComponentRef> getDependencies(){
+    public List<ComponentRef> getDependencies() {
         return concat(concat(stream(injectConstructor.getParameters()).map(InjectionProvider::toComponentRef),
                         injectFields.stream().map(InjectionProvider::toComponentRef)),
                 //因为Constructor直接就是可以获取数组，所以不用flatMap,然后InjectMethod是List，所以要使用Stream
@@ -63,8 +68,9 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     }
 
     private static Annotation getQualifier(AnnotatedElement field) {
-        return stream(field.getAnnotations()).filter(a -> a.annotationType().isAnnotationPresent(Qualifier.class))
-                .findFirst().orElse(null);
+        List<Annotation> qualifiers = stream(field.getAnnotations()).filter(a -> a.annotationType().isAnnotationPresent(Qualifier.class)).collect(Collectors.toList());
+        if (qualifiers.size() > 1) throw new IllegalComponentException();
+        return qualifiers.stream().findFirst().orElse(null);
     }
 
     private static ComponentRef<?> toComponentRef(Parameter parameter) {
@@ -134,8 +140,8 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     private static Object[] toDependencies(Context context, Executable executable) {
         return stream(executable.getParameters())
-                .map(p -> toDependency(context, p.getParameterizedType(),getQualifier(p))
-        ).toArray();
+                .map(p -> toDependency(context, p.getParameterizedType(), getQualifier(p))
+                ).toArray();
     }
 
 
@@ -144,7 +150,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     }
 
     private static Object toDependency(Context context, Type type, Annotation qualifier) {
-        return context.get(ComponentRef.of(type,qualifier)).get();
+        return context.get(ComponentRef.of(type, qualifier)).get();
     }
 
 }

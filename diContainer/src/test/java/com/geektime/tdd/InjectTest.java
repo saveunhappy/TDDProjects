@@ -194,7 +194,20 @@ public class InjectTest {
                 InjectConstructor component = provider.get(context);
                 assertSame(dependency, component.dependency);
             }
+
             //TODO throw illegal component if illegal qualifier given to injection point
+            static class MultiQualifierInjectConstructor {
+                @Inject
+
+                public MultiQualifierInjectConstructor(@Named("ChosenOne") @SkyWalker Dependency dependency) {
+                }
+            }
+
+            @Test
+            public void should_throw_exception_if_multi_qualifiers_given() {
+                assertThrows(IllegalComponentException.class, () -> new InjectionProvider<>(MultiQualifierInjectConstructor.class));
+
+            }
         }
     }
 
@@ -288,11 +301,12 @@ public class InjectTest {
                 @Named("ChosenOne")
                 Dependency dependency;
             }
+
             @Test
             public void should_inject_dependency_with_qualifier_via_field() {
                 InjectionProvider<InjectField> provider = new InjectionProvider<>(InjectField.class);
                 InjectField component = provider.get(context);
-                assertSame(dependency,component.dependency);
+                assertSame(dependency, component.dependency);
             }
             //TODO throw illegal component if illegal qualifier given to injection point
         }
@@ -460,8 +474,9 @@ public class InjectTest {
             public void should_inject_dependency_with_qualifier_via_method() {
                 InjectionProvider<InjectMethod> provider = new InjectionProvider<>(InjectMethod.class);
                 InjectMethod component = provider.get(context);
-                assertSame(dependency,component.dependency);
+                assertSame(dependency, component.dependency);
             }
+
             static class InjectMethod {
                 Dependency dependency;
 
@@ -471,6 +486,8 @@ public class InjectTest {
                 }
             }
             //TODO throw illegal component if illegal qualifier given to injection point
+
+
         }
 
     }
