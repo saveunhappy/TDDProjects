@@ -64,10 +64,8 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     }
 
-    private static ComponentRef<?> toComponentRef(Parameter p) {
-        Annotation qualifier = stream(p.getAnnotations()).filter(a -> a.annotationType().isAnnotationPresent(Qualifier.class))
-                .findFirst().orElse(null);
-        return ComponentRef.of(p.getParameterizedType(),qualifier);
+    private static ComponentRef<?> toComponentRef(Parameter parameter) {
+        return ComponentRef.of(parameter.getParameterizedType(), getQualifier(parameter));
     }
 
     private static <T> List<Field> getInjectFields(Class<T> component) {
@@ -137,17 +135,22 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         ).toArray();
     }
 
-    private static Object getDependency(Context context, Parameter p) {
-        return toDependency(context, p.getParameterizedType());
+    private static Object getDependency(Context context, Parameter parameter) {
+        return toDependency(context, parameter.getParameterizedType(),getQualifier(parameter));
+    }
+
+    private static Annotation getQualifier(Parameter parameter) {
+        return stream(parameter.getAnnotations()).filter(a -> a.annotationType().isAnnotationPresent(Qualifier.class))
+                .findFirst().orElse(null);
     }
 
 
     private static Object toDependency(Context context, Field field) {
-        return toDependency(context, field.getGenericType());
+        return toDependency(context, field.getGenericType(), null);
     }
 
-    private static Object toDependency(Context context, Type type) {
-        return context.get(ComponentRef.of(type)).get();
+    private static Object toDependency(Context context, Type type, Annotation qualifier) {
+        return context.get(ComponentRef.of(type,qualifier)).get();
     }
 
 }
