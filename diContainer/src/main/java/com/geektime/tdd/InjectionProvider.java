@@ -67,7 +67,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     record Injectable<Element extends AccessibleObject>(Element element, ComponentRef<?>[] require) {
         Object[] toDependencies(Context context) {
-            return stream(require).map((ComponentRef<?> ref) -> context.get(ref)).map(o -> o.get()).toArray();
+            return stream(require).map(context::get).map(Optional::get).toArray();
         }
     }
 
