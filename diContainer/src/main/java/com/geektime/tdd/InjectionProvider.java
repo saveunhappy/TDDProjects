@@ -15,14 +15,15 @@ import static java.util.stream.Stream.concat;
 
 class InjectionProvider<T> implements ComponentProvider<T> {
 
-    private Constructor<T> injectConstructor;
+    private final Constructor<T> injectConstructor;
 
-    private List<Field> injectFields;
+    private final List<Field> injectFields;
 
-    private List<Method> injectMethods;
+    private final List<Method> injectMethods;
 
-    private List<ComponentRef> dependencies;
+    private final List<ComponentRef> dependencies;
 
+    private Injectable<Constructor<T>> injectableConstructor;
     public InjectionProvider(Class<T> component) {
         if (Modifier.isAbstract(component.getModifiers())) throw new IllegalComponentException();
         this.injectConstructor = getInjectConstructor(component);
@@ -62,7 +63,9 @@ class InjectionProvider<T> implements ComponentProvider<T> {
                 .toList();
     }
 
+    record Injectable<Element extends AccessibleObject>(Element element,ComponentRef<?>[] require){
 
+    }
 
     private static Annotation getQualifier(AnnotatedElement field) {
         List<Annotation> qualifiers = stream(field.getAnnotations()).filter(a -> a.annotationType().isAnnotationPresent(Qualifier.class)).collect(Collectors.toList());
@@ -133,7 +136,6 @@ class InjectionProvider<T> implements ComponentProvider<T> {
                 .map(p -> toDependency(context, toComponentRef(p))
                 ).toArray();
     }
-
 
     private static Object toDependency(Context context, Field field) {
         return toDependency(context, toComponentRef(field));
