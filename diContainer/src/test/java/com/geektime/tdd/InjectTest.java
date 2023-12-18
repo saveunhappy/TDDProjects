@@ -3,8 +3,6 @@ package com.geektime.tdd;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.inject.Provider;
-import org.junit.Assert;
-import org.junit.Assert.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -163,6 +161,7 @@ public class InjectTest {
         @Nested
         public class WithQualifier {
             //TODO inject with qualifier
+
             @Test
             public void should_include_qualifier_with_dependency() {
                 InjectionProvider<InjectConstructor> provider = new InjectionProvider<>(InjectConstructor.class);
@@ -403,7 +402,20 @@ public class InjectTest {
         @Nested
         public class WithQualifier {
             //TODO inject with qualifier
-            //TODO include qualifier with dependency
+            @Test
+            public void should_include_qualifier_with_dependency() {
+                InjectionProvider<InjectMethod> provider = new InjectionProvider<>(InjectMethod.class);
+                assertArrayEquals(new ComponentRef<?>[]{
+                        ComponentRef.of(Dependency.class,new NamedLiteral("ChosenOne"))
+                }, provider.getDependencies().toArray());
+            }
+
+            static class InjectMethod {
+                @Inject
+                void InjectConstructor(@Named("ChosenOne") Dependency dependency){
+
+                }
+            }
             //TODO throw illegal component if illegal qualifier given to injection point
         }
 
