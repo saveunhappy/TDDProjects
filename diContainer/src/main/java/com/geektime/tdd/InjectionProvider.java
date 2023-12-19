@@ -14,7 +14,6 @@ import static java.util.stream.Stream.concat;
 
 class InjectionProvider<T> implements ComponentProvider<T> {
 
-    private final List<ComponentRef<?>> dependencies;
     private Injectable<Constructor<T>> injectConstructor;
     private List<Injectable<Method>> injectableMethods;
     private List<Injectable<Field>> injectableFields;
@@ -36,7 +35,6 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         //为什么需要这行代码？因为我们在创建对象的时候，有依赖，构造函数的依赖如果有俩注解，@Named("ChosenOne")@Skywalker
         //这个样子是不允许的，你可以bind多个，但是我们查找的时候只能有一个，所以在查找dependency的时候就会报错，这个就是冗余了
         //因为在创建对象的时候获取了一遍，然后在创建对象的时候又获取了一遍，这个是冗余的，所以才要建模
-        dependencies = getDependencies();
     }
 
 
