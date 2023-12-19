@@ -14,10 +14,7 @@ import static java.util.stream.Stream.concat;
 
 class InjectionProvider<T> implements ComponentProvider<T> {
 
-    private final List<Field> injectFields;
-
     private final List<ComponentRef<?>> dependencies;
-
     private Injectable<Constructor<T>> injectConstructor;
     private List<Injectable<Method>> injectableMethods;
     private List<Injectable<Field>> injectableFields;
@@ -30,7 +27,6 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         this.injectableMethods = getInjectMethods(component).stream().map(Injectable::of).toList();
         this.injectableFields = getInjectFields(component).stream().map(Injectable::of).toList();
 
-        this.injectFields = getInjectFields(component);
         if (injectableFields.stream().map(Injectable::element).anyMatch(f -> Modifier.isFinal(f.getModifiers())))
             throw new IllegalComponentException();
         //这里本来是injectMethods进行stream，就是看那个方法签名上有泛型，但是现在封装成对象了中的属性了，就是element,
