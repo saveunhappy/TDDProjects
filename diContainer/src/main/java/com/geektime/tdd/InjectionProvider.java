@@ -32,6 +32,8 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         this.injectFields = getInjectFields(component);
         if (injectFields.stream().anyMatch(f -> Modifier.isFinal(f.getModifiers())))
             throw new IllegalComponentException();
+        //这里本来是injectMethods进行stream，就是看那个方法签名上有泛型，但是现在封装成对象了中的属性了，就是element,
+        // element就是Constructor,Method,Field，那没关系，我们在经过map转换成原来的Constructor,Method,Field，就好了
         if (injectableMethods.stream().map(Injectable::element).anyMatch(m -> m.getTypeParameters().length != 0))
             throw new IllegalComponentException();
         //为什么需要这行代码？因为我们在创建对象的时候，有依赖，构造函数的依赖如果有俩注解，@Named("ChosenOne")@Skywalker
