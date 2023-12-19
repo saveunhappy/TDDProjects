@@ -24,7 +24,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         //因为方法和字段都是有多个的，方法有多个，但是getInjectable是接受一个Constructor或者是Method或者是Field，
         //所以是先获取方法，方法有多个，所以通过stream的方式去取，一个一个的获取到依赖
         this.injectMethods = getInjectMethods(component);
-        this.injectFields = getInjectFields(component).stream().map(Injectable::of).toList();
+        this.injectFields = getInjectField(component);
 
         if (injectFields.stream().map(Injectable::element).anyMatch(f -> Modifier.isFinal(f.getModifiers())))
             throw new IllegalComponentException();
@@ -36,27 +36,6 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         //这个样子是不允许的，你可以bind多个，但是我们查找的时候只能有一个，所以在查找dependency的时候就会报错，这个就是冗余了
         //因为在创建对象的时候获取了一遍，然后在创建对象的时候又获取了一遍，这个是冗余的，所以才要建模
     }
-
-    private static <T> Injectable<Constructor<T>> getInjectConstructor(Class<T> component) {
-        List<Constructor<?>> injectConstructors = injectable(component.getConstructors()).toList();
-        if (injectConstructors.size() > 1) throw new IllegalComponentException();
-        //找不到被@Inject标注的，并且找不到默认的构造函数
-        return Injectable.of((Constructor<T>) injectConstructors
-                .stream().findFirst().orElseGet(() -> defaultConstructor(component)));
-    }
-
-    private static List<Injectable<Method>> getInjectMethods(Class<?> component) {
-        List<Method> injectMethods = traverse(component, (methods, current) -> injectable(current.getDeclaredMethods())
-                .filter(m -> isOverrideByInjectMethod(methods, m))
-                //这个Component就是你去调用这个Component的方法，他的install方法没有标注@Inject，所以没有标注进来
-                //但是一直在网上找，如果没有这句代码，标注了@Inject的install方法就被放进来了，但是你不应该放进来
-                //所以如果你发现你的install方法标注了@Inject，你的子类没有标注，那就去掉它
-                .filter(m -> isOverrideByNoInjectMethod(component, m))
-                .toList());
-        Collections.reverse(injectMethods);
-        return injectMethods.stream().map(Injectable::of).toList();
-    }
-
 
     @Override
     public T get(Context context) {
@@ -79,10 +58,10 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     public List<ComponentRef<?>> getDependencies() {
         return concat(concat(stream(injectConstructor.require()),
                         //为什么Field要转换为ComponentRef?因为我们要根据这些字段啊，构造器啊，方法啊这些地方获取参数
-                //但是我们的字段上又是有东西的，比如@Qualifier，或者泛型，所以在Context调用get的时候，是获取components
-                //那个Map上面的key,那个key，就是我们现在创建的ComponentRef
+                        //但是我们的字段上又是有东西的，比如@Qualifier，或者泛型，所以在Context调用get的时候，是获取components
+                        //那个Map上面的key,那个key，就是我们现在创建的ComponentRef
 //                        injectFields.stream().map(InjectionProvider::toComponentRef)),
-                        injectFields.stream().flatMap(f->stream(f.require()))),
+                        injectFields.stream().flatMap(f -> stream(f.require()))),
 
                 //因为Constructor直接就是可以获取数组，所以不用flatMap,然后InjectMethod是List，所以要使用Stream
                 //那为什么Map不行呢？因为后面的m.getParameterTypes()返回的还是数组，你要把它变成一维的，所以要使用flatMap
@@ -98,11 +77,13 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
         //构造器，有多个参数，方法，有多个参数，但是你属性，你就只有你本身，所一就是一个
         static Injectable<Field> of(Field field) {
-            return new Injectable<>(field,new ComponentRef<?>[]{toComponentRef(field)});
+            return new Injectable<>(field, new ComponentRef<?>[]{toComponentRef(field)});
         }
+
         Object[] toDependencies(Context context) {
             return stream(require).map(context::get).map(Optional::get).toArray();
         }
+
         private static ComponentRef toComponentRef(Field field) {
             return ComponentRef.of(field.getGenericType(), getQualifier(field));
         }
@@ -110,6 +91,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         private static ComponentRef<?> toComponentRef(Parameter parameter) {
             return ComponentRef.of(parameter.getParameterizedType(), getQualifier(parameter));
         }
+
         private static Annotation getQualifier(AnnotatedElement field) {
             List<Annotation> qualifiers = stream(field.getAnnotations())
                     .filter(a -> a.annotationType().isAnnotationPresent(Qualifier.class)).toList();
@@ -119,10 +101,30 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     }
 
-    private static <T> List<Field> getInjectFields(Class<T> component) {
-        return traverse(component, (fields, current) -> injectable(current.getDeclaredFields()).toList());
+    private static <T> Injectable<Constructor<T>> getInjectConstructor(Class<T> component) {
+        List<Constructor<?>> injectConstructors = injectable(component.getConstructors()).toList();
+        if (injectConstructors.size() > 1) throw new IllegalComponentException();
+        //找不到被@Inject标注的，并且找不到默认的构造函数
+        return Injectable.of((Constructor<T>) injectConstructors
+                .stream().findFirst().orElseGet(() -> defaultConstructor(component)));
     }
 
+    private static List<Injectable<Field>> getInjectField(Class<?> component) {
+        List<Field> injectField = traverse(component, (fields, current) -> injectable(current.getDeclaredFields()).toList());
+        return injectField.stream().map(Injectable::of).toList();
+    }
+
+    private static List<Injectable<Method>> getInjectMethods(Class<?> component) {
+        List<Method> injectMethods = traverse(component, (methods, current) -> injectable(current.getDeclaredMethods())
+                .filter(m -> isOverrideByInjectMethod(methods, m))
+                //这个Component就是你去调用这个Component的方法，他的install方法没有标注@Inject，所以没有标注进来
+                //但是一直在网上找，如果没有这句代码，标注了@Inject的install方法就被放进来了，但是你不应该放进来
+                //所以如果你发现你的install方法标注了@Inject，你的子类没有标注，那就去掉它
+                .filter(m -> isOverrideByNoInjectMethod(component, m))
+                .toList());
+        Collections.reverse(injectMethods);
+        return injectMethods.stream().map(Injectable::of).toList();
+    }
     private static <T> List<T> traverse(Class<?> component, BiFunction<List<T>, Class<?>, List<T>> finder) {
         List<T> members = new ArrayList<>();
         Class<?> current = component;
