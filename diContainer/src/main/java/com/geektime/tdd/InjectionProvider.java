@@ -25,6 +25,8 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     public InjectionProvider(Class<T> component) {
         if (Modifier.isAbstract(component.getModifiers())) throw new IllegalComponentException();
         this.injectConstructor = Injectable.getInjectable(getInjectConstructor(component));
+        //因为方法和字段都是有多个的，方法有多个，但是getInjectable是接受一个Constructor或者是Method或者是Field，
+        //所以是先获取方法，方法有多个，所以通过stream的方式去取，一个一个的获取到依赖
         this.injectableMethods = getInjectMethods(component).stream().map(Injectable::getInjectable).toList();
 
         this.injectFields = getInjectFields(component);
@@ -58,6 +60,9 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     @Override
     public List<ComponentRef> getDependencies() {
         return concat(concat(stream(injectConstructor.require()),
+                        //为什么Field要转换为ComponentRef?因为我们要根据这些字段啊，构造器啊，方法啊这些地方获取参数
+                //但是我们的字段上又是有东西的，比如@Qualifier，或者泛型，所以在Context调用get的时候，是获取components
+                //那个Map上面的key,那个key，就是我们现在创建的ComponentRef
                         injectFields.stream().map(InjectionProvider::toComponentRef)),
                 //因为Constructor直接就是可以获取数组，所以不用flatMap,然后InjectMethod是List，所以要使用Stream
                 //那为什么Map不行呢？因为后面的m.getParameterTypes()返回的还是数组，你要把它变成一维的，所以要使用flatMap
