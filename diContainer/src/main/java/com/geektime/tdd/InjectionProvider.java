@@ -20,7 +20,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     public InjectionProvider(Class<T> component) {
         if (Modifier.isAbstract(component.getModifiers())) throw new IllegalComponentException();
-        this.injectConstructor = Injectable.of(getInjectConstructor(component));
+        this.injectConstructor = getInjectConstructor(component);
         //因为方法和字段都是有多个的，方法有多个，但是getInjectable是接受一个Constructor或者是Method或者是Field，
         //所以是先获取方法，方法有多个，所以通过stream的方式去取，一个一个的获取到依赖
         this.injectMethods = getInjectMethods(component);
@@ -35,6 +35,14 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         //为什么需要这行代码？因为我们在创建对象的时候，有依赖，构造函数的依赖如果有俩注解，@Named("ChosenOne")@Skywalker
         //这个样子是不允许的，你可以bind多个，但是我们查找的时候只能有一个，所以在查找dependency的时候就会报错，这个就是冗余了
         //因为在创建对象的时候获取了一遍，然后在创建对象的时候又获取了一遍，这个是冗余的，所以才要建模
+    }
+
+    private static <T> Injectable<Constructor<T>> getInjectConstructor(Class<T> component) {
+        List<Constructor<?>> injectConstructors = injectable(component.getConstructors()).toList();
+        if (injectConstructors.size() > 1) throw new IllegalComponentException();
+        //找不到被@Inject标注的，并且找不到默认的构造函数
+        return Injectable.of((Constructor<T>) injectConstructors
+                .stream().findFirst().orElseGet(() -> defaultConstructor(component)));
     }
 
     private static List<Injectable<Method>> getInjectMethods(Class<?> component) {
@@ -113,13 +121,6 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     private static <T> List<Field> getInjectFields(Class<T> component) {
         return traverse(component, (fields, current) -> injectable(current.getDeclaredFields()).toList());
-    }
-
-    private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {
-        List<Constructor<?>> injectConstructors = injectable(implementation.getConstructors()).toList();
-        if (injectConstructors.size() > 1) throw new IllegalComponentException();
-        //找不到被@Inject标注的，并且找不到默认的构造函数
-        return (Constructor<Type>) injectConstructors.stream().findFirst().orElseGet(() -> defaultConstructor(implementation));
     }
 
     private static <T> List<T> traverse(Class<?> component, BiFunction<List<T>, Class<?>, List<T>> finder) {
