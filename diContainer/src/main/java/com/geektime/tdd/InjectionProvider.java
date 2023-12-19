@@ -32,6 +32,9 @@ class InjectionProvider<T> implements ComponentProvider<T> {
             throw new IllegalComponentException();
         if (injectableMethods.stream().map(Injectable::element).anyMatch(m -> m.getTypeParameters().length != 0))
             throw new IllegalComponentException();
+        //为什么需要这行代码？因为我们在创建对象的时候，有依赖，构造函数的依赖如果有俩注解，@Named("ChosenOne")@Skywalker
+        //这个样子是不允许的，你可以bind多个，但是我们查找的时候只能有一个，所以在查找dependency的时候就会报错，这个就是冗余了
+        //因为在创建对象的时候获取了一遍，然后在创建对象的时候又获取了一遍，这个是冗余的，所以才要建模
         dependencies = getDependencies();
     }
 
@@ -64,10 +67,12 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     }
 
     record Injectable<Element extends AccessibleObject>(Element element, ComponentRef<?>[] require) {
-        private static <Element extends Executable> Injectable<Element> getInjectable(Element injectable) {
+        static <Element extends Executable> Injectable<Element> getInjectable(Element injectable) {
             return new Injectable<>(injectable, stream(injectable.getParameters()).map(InjectionProvider::toComponentRef).toArray(ComponentRef<?>[]::new));
         }
-
+        static Injectable<Field> getInjectable(Field field) {
+            return new Injectable<>(field,new ComponentRef<?>[]{toComponentRef(field)});
+        }
         Object[] toDependencies(Context context) {
             return stream(require).map(context::get).map(Optional::get).toArray();
         }
