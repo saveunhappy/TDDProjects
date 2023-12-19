@@ -23,7 +23,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         this.injectConstructor = Injectable.of(getInjectConstructor(component));
         //因为方法和字段都是有多个的，方法有多个，但是getInjectable是接受一个Constructor或者是Method或者是Field，
         //所以是先获取方法，方法有多个，所以通过stream的方式去取，一个一个的获取到依赖
-        this.injectMethods = getInjectMethods(component).stream().map(Injectable::of).toList();
+        this.injectMethods = getInjectMethods(component);
         this.injectFields = getInjectFields(component).stream().map(Injectable::of).toList();
 
         if (injectFields.stream().map(Injectable::element).anyMatch(f -> Modifier.isFinal(f.getModifiers())))
@@ -35,6 +35,18 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         //为什么需要这行代码？因为我们在创建对象的时候，有依赖，构造函数的依赖如果有俩注解，@Named("ChosenOne")@Skywalker
         //这个样子是不允许的，你可以bind多个，但是我们查找的时候只能有一个，所以在查找dependency的时候就会报错，这个就是冗余了
         //因为在创建对象的时候获取了一遍，然后在创建对象的时候又获取了一遍，这个是冗余的，所以才要建模
+    }
+
+    private static List<Injectable<Method>> getInjectMethods(Class<?> component) {
+        List<Method> injectMethods = traverse(component, (methods, current) -> injectable(current.getDeclaredMethods())
+                .filter(m -> isOverrideByInjectMethod(methods, m))
+                //这个Component就是你去调用这个Component的方法，他的install方法没有标注@Inject，所以没有标注进来
+                //但是一直在网上找，如果没有这句代码，标注了@Inject的install方法就被放进来了，但是你不应该放进来
+                //所以如果你发现你的install方法标注了@Inject，你的子类没有标注，那就去掉它
+                .filter(m -> isOverrideByNoInjectMethod(component, m))
+                .toList());
+        Collections.reverse(injectMethods);
+        return injectMethods.stream().map(Injectable::of).toList();
     }
 
 
@@ -97,25 +109,10 @@ class InjectionProvider<T> implements ComponentProvider<T> {
             return qualifiers.stream().findFirst().orElse(null);
         }
 
-
     }
 
     private static <T> List<Field> getInjectFields(Class<T> component) {
         return traverse(component, (fields, current) -> injectable(current.getDeclaredFields()).toList());
-    }
-
-
-    private static <T> List<Method> getInjectMethods(Class<T> component) {
-
-        List<Method> injectMethods = traverse(component, (methods, current) -> injectable(current.getDeclaredMethods())
-                .filter(m -> isOverrideByInjectMethod(methods, m))
-                //这个Component就是你去调用这个Component的方法，他的install方法没有标注@Inject，所以没有标注进来
-                //但是一直在网上找，如果没有这句代码，标注了@Inject的install方法就被放进来了，但是你不应该放进来
-                //所以如果你发现你的install方法标注了@Inject，你的子类没有标注，那就去掉它
-                .filter(m -> isOverrideByNoInjectMethod(component, m))
-                .toList());
-        Collections.reverse(injectMethods);
-        return injectMethods;
     }
 
     private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {
