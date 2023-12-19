@@ -51,6 +51,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
                 field.set(instance, toDependency(context, field));
             }
             for (Injectable<Method> method : injectableMethods) {
+                //和上面一样，既然变成对象了，那么就变成对象的属性调用，然后获取依赖，已经封装进对象中去了，所以这边可以这样改
                 method.element().invoke(instance, method.toDependencies(context));
             }
             return instance;
