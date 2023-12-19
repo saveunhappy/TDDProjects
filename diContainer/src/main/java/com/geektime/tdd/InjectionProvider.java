@@ -100,6 +100,9 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     }
 
+    private static <T> List<Field> getInjectFields(Class<T> component) {
+        return traverse(component, (fields, current) -> injectable(current.getDeclaredFields()).toList());
+    }
 
 
     private static <T> List<Method> getInjectMethods(Class<T> component) {
@@ -159,8 +162,5 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         return injectMethods.stream().noneMatch(o -> isOverride(m, o));
     }
 
-    private static <T> List<Field> getInjectFields(Class<T> component) {
-        return traverse(component, (fields, current) -> injectable(current.getDeclaredFields()).toList());
-    }
 
 }
