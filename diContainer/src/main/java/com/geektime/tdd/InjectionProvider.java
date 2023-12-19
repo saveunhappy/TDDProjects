@@ -15,22 +15,22 @@ import static java.util.stream.Stream.concat;
 class InjectionProvider<T> implements ComponentProvider<T> {
 
     private Injectable<Constructor<T>> injectConstructor;
-    private List<Injectable<Method>> injectableMethods;
-    private List<Injectable<Field>> injectableFields;
+    private List<Injectable<Method>> injectMethods;
+    private List<Injectable<Field>> injectFields;
 
     public InjectionProvider(Class<T> component) {
         if (Modifier.isAbstract(component.getModifiers())) throw new IllegalComponentException();
         this.injectConstructor = Injectable.of(getInjectConstructor(component));
         //因为方法和字段都是有多个的，方法有多个，但是getInjectable是接受一个Constructor或者是Method或者是Field，
         //所以是先获取方法，方法有多个，所以通过stream的方式去取，一个一个的获取到依赖
-        this.injectableMethods = getInjectMethods(component).stream().map(Injectable::of).toList();
-        this.injectableFields = getInjectFields(component).stream().map(Injectable::of).toList();
+        this.injectMethods = getInjectMethods(component).stream().map(Injectable::of).toList();
+        this.injectFields = getInjectFields(component).stream().map(Injectable::of).toList();
 
-        if (injectableFields.stream().map(Injectable::element).anyMatch(f -> Modifier.isFinal(f.getModifiers())))
+        if (injectFields.stream().map(Injectable::element).anyMatch(f -> Modifier.isFinal(f.getModifiers())))
             throw new IllegalComponentException();
         //这里本来是injectMethods进行stream，就是看那个方法签名上有泛型，但是现在封装成对象了中的属性了，就是element,
         // element就是Constructor,Method,Field，那没关系，我们在经过map转换成原来的Constructor,Method,Field，就好了
-        if (injectableMethods.stream().map(Injectable::element).anyMatch(m -> m.getTypeParameters().length != 0))
+        if (injectMethods.stream().map(Injectable::element).anyMatch(m -> m.getTypeParameters().length != 0))
             throw new IllegalComponentException();
         //为什么需要这行代码？因为我们在创建对象的时候，有依赖，构造函数的依赖如果有俩注解，@Named("ChosenOne")@Skywalker
         //这个样子是不允许的，你可以bind多个，但是我们查找的时候只能有一个，所以在查找dependency的时候就会报错，这个就是冗余了
@@ -42,10 +42,10 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     public T get(Context context) {
         try {
             T instance = injectConstructor.element().newInstance(injectConstructor.toDependencies(context));
-            for (Injectable<Field> field : injectableFields) {
+            for (Injectable<Field> field : injectFields) {
                 field.element().set(instance, field.toDependencies(context)[0]);
             }
-            for (Injectable<Method> method : injectableMethods) {
+            for (Injectable<Method> method : injectMethods) {
                 //和上面一样，既然变成对象了，那么就变成对象的属性调用，然后获取依赖，已经封装进对象中去了，所以这边可以这样改
                 method.element().invoke(instance, method.toDependencies(context));
             }
@@ -62,12 +62,12 @@ class InjectionProvider<T> implements ComponentProvider<T> {
                 //但是我们的字段上又是有东西的，比如@Qualifier，或者泛型，所以在Context调用get的时候，是获取components
                 //那个Map上面的key,那个key，就是我们现在创建的ComponentRef
 //                        injectFields.stream().map(InjectionProvider::toComponentRef)),
-                        injectableFields.stream().flatMap(f->stream(f.require()))),
+                        injectFields.stream().flatMap(f->stream(f.require()))),
 
                 //因为Constructor直接就是可以获取数组，所以不用flatMap,然后InjectMethod是List，所以要使用Stream
                 //那为什么Map不行呢？因为后面的m.getParameterTypes()返回的还是数组，你要把它变成一维的，所以要使用flatMap
 //                injectMethods.stream().flatMap(p -> stream(p.getParameters()).map(InjectionProvider::toComponentRef)))
-                injectableMethods.stream().flatMap(m -> stream(m.require())))
+                injectMethods.stream().flatMap(m -> stream(m.require())))
                 .toList();
     }
 
