@@ -73,7 +73,7 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     record Injectable<Element extends AccessibleObject>(Element element, ComponentRef<?>[] require) {
         static <Element extends Executable> Injectable<Element> of(Element injectable) {
-            return new Injectable<>(injectable, stream(injectable.getParameters()).map(InjectionProvider::toComponentRef).toArray(ComponentRef<?>[]::new));
+            return new Injectable<>(injectable, stream(injectable.getParameters()).map(Injectable::toComponentRef).toArray(ComponentRef<?>[]::new));
         }
 
         //构造器，有多个参数，方法，有多个参数，但是你属性，你就只有你本身，所一就是一个
@@ -83,14 +83,23 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         Object[] toDependencies(Context context) {
             return stream(require).map(context::get).map(Optional::get).toArray();
         }
+        private static ComponentRef toComponentRef(Field field) {
+            return ComponentRef.of(field.getGenericType(), getQualifier(field));
+        }
+
+        private static ComponentRef<?> toComponentRef(Parameter parameter) {
+            return ComponentRef.of(parameter.getParameterizedType(), getQualifier(parameter));
+        }
+        private static Annotation getQualifier(AnnotatedElement field) {
+            List<Annotation> qualifiers = stream(field.getAnnotations())
+                    .filter(a -> a.annotationType().isAnnotationPresent(Qualifier.class)).toList();
+            if (qualifiers.size() > 1) throw new IllegalComponentException();
+            return qualifiers.stream().findFirst().orElse(null);
+        }
+
+
     }
 
-    private static Annotation getQualifier(AnnotatedElement field) {
-        List<Annotation> qualifiers = stream(field.getAnnotations())
-                .filter(a -> a.annotationType().isAnnotationPresent(Qualifier.class)).toList();
-        if (qualifiers.size() > 1) throw new IllegalComponentException();
-        return qualifiers.stream().findFirst().orElse(null);
-    }
 
 
     private static <T> List<Method> getInjectMethods(Class<T> component) {
@@ -148,14 +157,6 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     private static boolean isOverrideByInjectMethod(List<Method> injectMethods, Method m) {
         return injectMethods.stream().noneMatch(o -> isOverride(m, o));
-    }
-
-    private static ComponentRef toComponentRef(Field field) {
-        return ComponentRef.of(field.getGenericType(), getQualifier(field));
-    }
-
-    private static ComponentRef<?> toComponentRef(Parameter parameter) {
-        return ComponentRef.of(parameter.getParameterizedType(), getQualifier(parameter));
     }
 
     private static <T> List<Field> getInjectFields(Class<T> component) {
