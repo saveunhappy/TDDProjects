@@ -150,14 +150,6 @@ class InjectionProvider<T> implements ComponentProvider<T> {
         return injectMethods.stream().noneMatch(o -> isOverride(m, o));
     }
 
-    private static Object toDependency(Context context, Field field) {
-        return toDependency(context, toComponentRef(field));
-    }
-
-    private static Object toDependency(Context context, ComponentRef of) {
-        return context.get(of).get();
-    }
-
     private static ComponentRef toComponentRef(Field field) {
         return ComponentRef.of(field.getGenericType(), getQualifier(field));
     }
