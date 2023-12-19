@@ -24,13 +24,14 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     public InjectionProvider(Class<T> component) {
         if (Modifier.isAbstract(component.getModifiers())) throw new IllegalComponentException();
-        this.injectConstructor = Injectable.getInjectable(getInjectConstructor(component));
+        this.injectConstructor = Injectable.of(getInjectConstructor(component));
         //因为方法和字段都是有多个的，方法有多个，但是getInjectable是接受一个Constructor或者是Method或者是Field，
         //所以是先获取方法，方法有多个，所以通过stream的方式去取，一个一个的获取到依赖
-        this.injectableMethods = getInjectMethods(component).stream().map(Injectable::getInjectable).toList();
+        this.injectableMethods = getInjectMethods(component).stream().map(Injectable::of).toList();
+        this.injectableFields = getInjectFields(component).stream().map(Injectable::of).toList();
 
         this.injectFields = getInjectFields(component);
-        if (injectFields.stream().anyMatch(f -> Modifier.isFinal(f.getModifiers())))
+        if (injectableFields.stream().map(Injectable::element).anyMatch(f -> Modifier.isFinal(f.getModifiers())))
             throw new IllegalComponentException();
         //这里本来是injectMethods进行stream，就是看那个方法签名上有泛型，但是现在封装成对象了中的属性了，就是element,
         // element就是Constructor,Method,Field，那没关系，我们在经过map转换成原来的Constructor,Method,Field，就好了
@@ -47,8 +48,8 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     public T get(Context context) {
         try {
             T instance = injectConstructor.element().newInstance(injectConstructor.toDependencies(context));
-            for (Field field : injectFields) {
-                field.set(instance, toDependency(context, field));
+            for (Injectable<Field> field : injectableFields) {
+                field.element().set(instance, field.toDependencies(context)[0]);
             }
             for (Injectable<Method> method : injectableMethods) {
                 //和上面一样，既然变成对象了，那么就变成对象的属性调用，然后获取依赖，已经封装进对象中去了，所以这边可以这样改
@@ -75,10 +76,12 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     }
 
     record Injectable<Element extends AccessibleObject>(Element element, ComponentRef<?>[] require) {
-        static <Element extends Executable> Injectable<Element> getInjectable(Element injectable) {
+        static <Element extends Executable> Injectable<Element> of(Element injectable) {
             return new Injectable<>(injectable, stream(injectable.getParameters()).map(InjectionProvider::toComponentRef).toArray(ComponentRef<?>[]::new));
         }
-        static Injectable<Field> getInjectable(Field field) {
+
+        //构造器，有多个参数，方法，有多个参数，但是你属性，你就只有你本身，所一就是一个
+        static Injectable<Field> of(Field field) {
             return new Injectable<>(field,new ComponentRef<?>[]{toComponentRef(field)});
         }
         Object[] toDependencies(Context context) {
@@ -150,7 +153,11 @@ class InjectionProvider<T> implements ComponentProvider<T> {
     private static boolean isOverrideByInjectMethod(List<Method> injectMethods, Method m) {
         return injectMethods.stream().noneMatch(o -> isOverride(m, o));
     }
-
+//    private static Object[] toDependencies(Context context, Executable executable) {
+//        return stream(executable.getParameters())
+//                .map(p -> toDependency(context, toComponentRef(p))
+//                ).toArray();
+//    }
     private static Object toDependency(Context context, Field field) {
         return toDependency(context, toComponentRef(field));
     }
