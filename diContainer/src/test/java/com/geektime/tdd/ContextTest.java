@@ -455,7 +455,7 @@ public class ContextTest {
                 });
 //            config.bind(Dependency.class,Dependency.class,new SkywalkerLiteral());
                 //bind的是TestComponent和@Named,那你取的时候也应该有TestComponent和@Named，
-                // 在构造器中，参数是@SkyWalker Dependency dependency,所以你应该bind一有注解的，这样才能找到
+                // 在构造器中，参数是@SkyWalker (Dependency dependency),所以你应该bind一有注解的，这样才能找到
                 //比如，config.bind(Dependency.class,Dependency.class,new SkywalkerLiteral());这样才能找到
                 config.bind(TestComponent.class, component, new NamedLiteral("Owner"));
                 DependencyNotFoundException exception = assertThrows(DependencyNotFoundException.class, () -> config.getContext());
@@ -509,7 +509,7 @@ public class ContextTest {
             }
             @ParameterizedTest(name = "{1} -> @SkyWalker({0}) -> @Named(\"ChoseOne\") not cyclic dependencies")
             @MethodSource
-            public void should_not_throw_cyclic_exception_if_component_with_same_type_taged_with_different_qualifier(Class<? extends Dependency> skywalker,
+            public void should_not_throw_cyclic_exception_if_component_with_same_type_tag_with_different_qualifier(Class<? extends Dependency> skywalker,
                                                                                                                      Class<? extends Dependency> notCyclic) {
                 Dependency instance = new Dependency() {
                 };
@@ -561,7 +561,7 @@ public class ContextTest {
             }
 
 
-            public static Stream<Arguments> should_not_throw_cyclic_exception_if_component_with_same_type_taged_with_different_qualifier() {
+            public static Stream<Arguments> should_not_throw_cyclic_exception_if_component_with_same_type_tag_with_different_qualifier() {
                 List<Arguments> arguments = new ArrayList<>();
                 for (Named skywalker : List.of(Named.of("Inject Constructor", SkywalkerInjectConstructor.class),
                         Named.of("Inject Field", SkywalkerInjectField.class),
