@@ -31,10 +31,13 @@ public class ComponentRef<ComponentType> {
     }
 
     protected ComponentRef() {
-        Type type = ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-        init(type, null);
+       this(null);
     }
 
+    protected ComponentRef(Annotation qualifier) {
+        Type type = ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        init(type, qualifier);
+    }
     private void init(Type type, Annotation qualifier) {
         if (type instanceof ParameterizedType container) {
             this.container = container.getRawType();

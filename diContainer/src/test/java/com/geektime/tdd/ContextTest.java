@@ -494,12 +494,12 @@ public class ContextTest {
         @ParameterizedTest
         @MethodSource
         public void should_throw_exception_if_dependency_with_qualifier_not_found(Class<? extends TestComponent> component) {
-//            config.bind(Dependency.class, new Dependency() {
-//            });
-            config.bind(Dependency.class,Dependency.class,new SkywalkerLiteral());
+            config.bind(Dependency.class, new Dependency() {
+            });
+//            config.bind(Dependency.class,Dependency.class,new SkywalkerLiteral());
             //bind的是TestComponent和@Named,那你取的时候也应该有TestComponent和@Named，
             // 在构造器中，参数是@SkyWalker Dependency dependency,所以你应该bind一有注解的，这样才能找到
-            //比如，config.bind(Dependency.class,Dependency.class,new SkywalkerLiteral()),这样才能找到
+            //比如，config.bind(Dependency.class,Dependency.class,new SkywalkerLiteral());这样才能找到
             config.bind(TestComponent.class, component, new NamedLiteral("Owner"));
             DependencyNotFoundException exception = assertThrows(DependencyNotFoundException.class, () -> config.getContext());
             assertEquals(new Component(TestComponent.class, new NamedLiteral("Owner")), exception.getComponent());
@@ -580,18 +580,18 @@ public class ContextTest {
             return arguments.stream();
         }
         // dependency missing if qualifier not match
-        static class InjectConstructor {
+        static class InjectConstructor implements TestComponent{
             @Inject
             public InjectConstructor(@SkyWalker Dependency dependency) {
             }
         }
-        static class InjectField {
+        static class InjectField  implements TestComponent{
             @Inject
             @SkyWalker
             Dependency dependency;
         }
 
-        static class InjectMethod {
+        static class InjectMethod  implements TestComponent{
             @Inject
             void install(@SkyWalker Dependency dependency) {
             }
