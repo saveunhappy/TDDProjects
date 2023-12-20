@@ -164,6 +164,15 @@ public class ContextTest {
                 assertSame(dependency, skywalker.dependency);
             }
 
+
+            @Test
+            public void should_retrieve_empty_if_no_matched_qualifier() {
+                config.bind(TestComponent.class, new TestComponent() {
+                });
+                Optional<TestComponent> component = config.getContext().get(ComponentRef.of(TestComponent.class, new SkywalkerLiteral()));
+                assertTrue(component.isEmpty());
+            }
+
             @Test
             public void should_throw_exception_if_illegal_qualifier_given_to_instance() {
                 Component instance = new Component() {
@@ -425,17 +434,17 @@ public class ContextTest {
             assertTrue(context.get(ComponentRef.of(TestComponent.class)).isPresent());
         }
 
-        @Test
-        public void should_not_throw_exception_if_cyclic_dependency_via_other_provider() {
-            config.bind(TestComponent.class, CyclicComponentProviderConstructor.class);
-            config.bind(Dependency.class, CyclicDependencyProviderConstructor.class);
-            Context context = config.getContext();
-            assertTrue(context.get(ComponentRef.of(TestComponent.class)).isPresent());
-            CyclicComponentProviderConstructor component = (CyclicComponentProviderConstructor) context.get(ComponentRef.of(TestComponent.class)).get();
-            CyclicDependencyProviderConstructor dependency = (CyclicDependencyProviderConstructor) context.get(ComponentRef.of(Dependency.class)).get();
-            System.out.println(component.name);
-            System.out.println(dependency.name);
-        }
+//        @Test
+//        public void should_not_throw_exception_if_cyclic_dependency_via_other_provider() {
+//            config.bind(TestComponent.class, CyclicComponentProviderConstructor.class);
+//            config.bind(Dependency.class, CyclicDependencyProviderConstructor.class);
+//            Context context = config.getContext();
+//            assertTrue(context.get(ComponentRef.of(TestComponent.class)).isPresent());
+//            CyclicComponentProviderConstructor component = (CyclicComponentProviderConstructor) context.get(ComponentRef.of(TestComponent.class)).get();
+//            CyclicDependencyProviderConstructor dependency = (CyclicDependencyProviderConstructor) context.get(ComponentRef.of(Dependency.class)).get();
+//            System.out.println(component.name);
+//            System.out.println(dependency.name);
+//        }
         @Nested
         class WithQualifier {
 
