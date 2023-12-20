@@ -516,7 +516,40 @@ public class ContextTest {
                     Named.of("Provider in Inject Method with Qualifier", InjectMethodProvider.class)
             ).map(Arguments::of);
         }
+        static class InjectConstructor implements TestComponent{
+            @Inject
+            public InjectConstructor(@SkyWalker Dependency dependency) {
+            }
+        }
+        static class InjectField  implements TestComponent{
+            @Inject
+            @SkyWalker
+            Dependency dependency;
+        }
 
+        static class InjectMethod  implements TestComponent{
+            @Inject
+            void install(@SkyWalker Dependency dependency) {
+            }
+        }
+
+        static class InjectConstructorProvider implements TestComponent {
+            @Inject
+            public InjectConstructorProvider(@SkyWalker Provider<Dependency> dependency) {
+            }
+        }
+
+        static class InjectFieldProvider {
+            @Inject
+            @SkyWalker
+            Provider<Dependency> dependency;
+        }
+
+        static class InjectMethodProvider {
+            @Inject
+            void install(@SkyWalker Provider<Dependency> dependency) {
+            }
+        }
         @ParameterizedTest(name = "{1} -> @SkyWalker({0}) -> @Named(\"ChoseOne\") not cyclic dependencies")
         @MethodSource
         public void should_not_throw_cyclic_exception_if_component_with_same_type_taged_with_different_qualifier(Class<? extends Dependency> skywalker,
@@ -580,40 +613,7 @@ public class ContextTest {
             return arguments.stream();
         }
         // dependency missing if qualifier not match
-        static class InjectConstructor implements TestComponent{
-            @Inject
-            public InjectConstructor(@SkyWalker Dependency dependency) {
-            }
-        }
-        static class InjectField  implements TestComponent{
-            @Inject
-            @SkyWalker
-            Dependency dependency;
-        }
 
-        static class InjectMethod  implements TestComponent{
-            @Inject
-            void install(@SkyWalker Dependency dependency) {
-            }
-        }
-
-        static class InjectConstructorProvider implements TestComponent {
-            @Inject
-            public InjectConstructorProvider(@SkyWalker Provider<Dependency> dependency) {
-            }
-        }
-
-        static class InjectFieldProvider {
-            @Inject
-            @SkyWalker
-            Provider<Dependency> dependency;
-        }
-
-        static class InjectMethodProvider {
-            @Inject
-            void install(@SkyWalker Provider<Dependency> dependency) {
-            }
-        }
     }
 
 }
