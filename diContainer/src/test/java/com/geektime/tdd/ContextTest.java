@@ -556,9 +556,12 @@ public class ContextTest {
                                                                                                                  Class<? extends Dependency> notCyclic) {
             Dependency instance = new Dependency() {
             };
-            config.bind(Dependency.class, instance, new NamedLiteral("ChoseOne"));
-            config.bind(Dependency.class, skywalker, new SkywalkerLiteral());
+            //A->B->C(instance) 这个时候就不该有循环依赖，这个是正确的
+            //A找B，B找C,C找到了，返回了，B完备了，然后A找B也找到了，A也完整了
             config.bind(Dependency.class, notCyclic);
+            config.bind(Dependency.class, skywalker, new SkywalkerLiteral());
+            config.bind(Dependency.class, instance, new NamedLiteral("ChoseOne"));
+
             assertDoesNotThrow(() -> config.getContext());
         }
 
