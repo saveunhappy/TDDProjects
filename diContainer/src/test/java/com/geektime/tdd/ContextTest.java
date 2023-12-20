@@ -434,7 +434,7 @@ public class ContextTest {
             assertTrue(context.get(ComponentRef.of(TestComponent.class)).isPresent());
         }
 
-//        @Test
+        //        @Test
 //        public void should_not_throw_exception_if_cyclic_dependency_via_other_provider() {
 //            config.bind(TestComponent.class, CyclicComponentProviderConstructor.class);
 //            config.bind(Dependency.class, CyclicDependencyProviderConstructor.class);
@@ -473,18 +473,20 @@ public class ContextTest {
                         Named.of("Provider in Inject Method with Qualifier", InjectMethodProvider.class)
                 ).map(Arguments::of);
             }
-            static class InjectConstructor implements TestComponent{
+
+            static class InjectConstructor implements TestComponent {
                 @Inject
                 public InjectConstructor(@SkyWalker Dependency dependency) {
                 }
             }
-            static class InjectField  implements TestComponent{
+
+            static class InjectField implements TestComponent {
                 @Inject
                 @SkyWalker
                 Dependency dependency;
             }
 
-            static class InjectMethod  implements TestComponent{
+            static class InjectMethod implements TestComponent {
                 @Inject
                 void install(@SkyWalker Dependency dependency) {
                 }
@@ -507,10 +509,11 @@ public class ContextTest {
                 void install(@SkyWalker Provider<Dependency> dependency) {
                 }
             }
+
             @ParameterizedTest(name = "{1} -> @SkyWalker({0}) -> @Named(\"ChoseOne\") not cyclic dependencies")
             @MethodSource
             public void should_not_throw_cyclic_exception_if_component_with_same_type_tag_with_different_qualifier(Class<? extends Dependency> skywalker,
-                                                                                                                     Class<? extends Dependency> notCyclic) {
+                                                                                                                   Class<? extends Dependency> notCyclic) {
                 Dependency instance = new Dependency() {
                 };
                 //A->B->C(instance) 这个时候就不该有循环依赖，这个是正确的
@@ -576,8 +579,17 @@ public class ContextTest {
 
         }
 
-    }
+        @Nested
+        public class WithScope {
+            //TODO default scope should not be singleton
+            //TODO bind component as singleton scoped
+            //TODO bind component with qualifiers as singleton scoped
+            //TODO get scope from component class
+            //TODO get scope from component with qualifier
+            //TODO bind component with customize scope annotation
+        }
 
+    }
 
 
 }
@@ -593,8 +605,9 @@ record NamedLiteral(String value) implements jakarta.inject.Named {
         if (o instanceof jakarta.inject.Named named) return Objects.equals(value, named.value());
         return false;
     }
+
     @Override
-    public int hashCode(){
+    public int hashCode() {
         return "value".hashCode() * 127 ^ value.hashCode();
     }
 
