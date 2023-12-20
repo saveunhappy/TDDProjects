@@ -312,15 +312,17 @@ public class InjectTest {
                 @Named("ChosenOne")
                 @SkyWalker
                 Dependency dependency;
-
+            }
             @Test
             public void should_throw_exception_if_multi_qualifiers_given() {
                 assertThrows(IllegalComponentException.class, () -> new InjectionProvider<>(MultiQualifierInjectField.class));
 
             }
-        }
     }
 
+
+
+    }
     @Nested
     public class MethodInjection {
 
@@ -508,8 +510,5 @@ public class InjectTest {
             }
         }
 
-        }
-
     }
-
 }

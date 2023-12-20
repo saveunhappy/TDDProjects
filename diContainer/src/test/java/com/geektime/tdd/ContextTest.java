@@ -436,188 +436,140 @@ public class ContextTest {
             System.out.println(component.name);
             System.out.println(dependency.name);
         }
-
         @Nested
-        public class WithQualifier {
-            @Test
-            public void should_throw_exception_if_dependency_not_found() {
-                Dependency dependency = new Dependency() {
-                };
-                config.bind(Dependency.class, dependency);
-                config.bind(InjectConstructor.class, InjectConstructor.class, new NamedLiteral("Owner"));
+        class WithQualifier {
+
+            @ParameterizedTest
+            @MethodSource
+            public void should_throw_exception_if_dependency_with_qualifier_not_found(Class<? extends TestComponent> component) {
+                config.bind(Dependency.class, new Dependency() {
+                });
+//            config.bind(Dependency.class,Dependency.class,new SkywalkerLiteral());
+                //bind的是TestComponent和@Named,那你取的时候也应该有TestComponent和@Named，
+                // 在构造器中，参数是@SkyWalker Dependency dependency,所以你应该bind一有注解的，这样才能找到
+                //比如，config.bind(Dependency.class,Dependency.class,new SkywalkerLiteral());这样才能找到
+                config.bind(TestComponent.class, component, new NamedLiteral("Owner"));
                 DependencyNotFoundException exception = assertThrows(DependencyNotFoundException.class, () -> config.getContext());
-                assertEquals(new Component(InjectConstructor.class, new NamedLiteral("Owner")), exception.getComponent());
+                assertEquals(new Component(TestComponent.class, new NamedLiteral("Owner")), exception.getComponent());
                 assertEquals(new Component(Dependency.class, new SkywalkerLiteral()), exception.getDependency());
             }
 
-            static class InjectConstructor {
+            public static Stream<Arguments> should_throw_exception_if_dependency_with_qualifier_not_found() {
+                return Stream.of(
+                        Named.of("Inject Constructor with Qualifier", InjectConstructor.class),
+                        Named.of("Inject Field with Qualifier", InjectField.class),
+                        Named.of("Inject Method with Qualifier", InjectMethod.class),
+                        Named.of("Provider in Inject Constructor with Qualifier", InjectConstructorProvider.class),
+                        Named.of("Provider in Inject Field with Qualifier", InjectFieldProvider.class),
+                        Named.of("Provider in Inject Method with Qualifier", InjectMethodProvider.class)
+                ).map(Arguments::of);
+            }
+            static class InjectConstructor implements TestComponent{
                 @Inject
                 public InjectConstructor(@SkyWalker Dependency dependency) {
                 }
-
             }
-            //  check cyclic dependencies with qualifier
-            // A -> A 这个是循环依赖，但是A -> @SkyWalker A就不是循环依赖了，因为现在注解也是bind的一部分，
-            // 就是说现在注解和这个类一起组合作为key，那么你就不应该找到
-
-            // A -> @SkyWalker A -> @Named A   传递依赖比较多，直接用这个
-            static class SkywalkerDependency implements Dependency {
+            static class InjectField  implements TestComponent{
                 @Inject
-                public SkywalkerDependency(@jakarta.inject.Named("ChosenOne") Dependency dependency) {
+                @SkyWalker
+                Dependency dependency;
+            }
+
+            static class InjectMethod  implements TestComponent{
+                @Inject
+                void install(@SkyWalker Dependency dependency) {
                 }
             }
 
-            static class NotCyclicDependency implements Dependency {
+            static class InjectConstructorProvider implements TestComponent {
                 @Inject
-                public NotCyclicDependency(@SkyWalker Dependency dependency) {
-
+                public InjectConstructorProvider(@SkyWalker Provider<Dependency> dependency) {
                 }
             }
 
-            @Test
-            public void should_not_throw_cyclic_exception_if_component_with_same_type_tag_with_different_qualifier() {
+            static class InjectFieldProvider {
+                @Inject
+                @SkyWalker
+                Provider<Dependency> dependency;
+            }
+
+            static class InjectMethodProvider {
+                @Inject
+                void install(@SkyWalker Provider<Dependency> dependency) {
+                }
+            }
+            @ParameterizedTest(name = "{1} -> @SkyWalker({0}) -> @Named(\"ChoseOne\") not cyclic dependencies")
+            @MethodSource
+            public void should_not_throw_cyclic_exception_if_component_with_same_type_taged_with_different_qualifier(Class<? extends Dependency> skywalker,
+                                                                                                                     Class<? extends Dependency> notCyclic) {
                 Dependency instance = new Dependency() {
                 };
                 //A->B->C(instance) 这个时候就不该有循环依赖，这个是正确的
-                config.bind(Dependency.class, NotCyclicDependency.class);
-                config.bind(Dependency.class, SkywalkerDependency.class, new SkywalkerLiteral());
-                config.bind(Dependency.class, instance, new NamedLiteral("ChosenOne"));
+                //A找B，B找C,C找到了，返回了，B完备了，然后A找B也找到了，A也完整了
+                config.bind(Dependency.class, notCyclic);
+                config.bind(Dependency.class, skywalker, new SkywalkerLiteral());
+                config.bind(Dependency.class, instance, new NamedLiteral("ChoseOne"));
+
                 assertDoesNotThrow(() -> config.getContext());
-
             }
+
+            static class SkywalkerInjectConstructor implements Dependency {
+                @Inject
+                public SkywalkerInjectConstructor(@jakarta.inject.Named("ChoseOne") Dependency dependency) {
+                }
+            }
+
+            static class SkywalkerInjectField implements Dependency {
+                @Inject
+                @jakarta.inject.Named("ChoseOne")
+                Dependency dependency;
+            }
+
+            static class SkywalkerInjectMethod implements Dependency {
+                @Inject
+                void install(@jakarta.inject.Named("ChoseOne") Dependency dependency) {
+                }
+            }
+
+            static class NotCyclicInjectConstructor implements Dependency {
+                @Inject
+                public NotCyclicInjectConstructor(@SkyWalker Dependency dependency) {
+                }
+            }
+
+
+            static class NotCyclicInjectField implements Dependency {
+                @Inject
+                @SkyWalker
+                Dependency dependency;
+            }
+
+
+            static class NotCyclicInjectMethod implements Dependency {
+                @Inject
+                public void install(@SkyWalker Dependency dependency) {
+                }
+            }
+
+
+            public static Stream<Arguments> should_not_throw_cyclic_exception_if_component_with_same_type_taged_with_different_qualifier() {
+                List<Arguments> arguments = new ArrayList<>();
+                for (Named skywalker : List.of(Named.of("Inject Constructor", SkywalkerInjectConstructor.class),
+                        Named.of("Inject Field", SkywalkerInjectField.class),
+                        Named.of("Inject Method", SkywalkerInjectMethod.class)))
+                    for (Named notCyclic : List.of(Named.of("Inject Constructor", NotCyclicInjectConstructor.class),
+                            Named.of("Inject Constructor", NotCyclicInjectField.class),
+                            Named.of("Inject Constructor", NotCyclicInjectMethod.class)))
+                        arguments.add(Arguments.of(skywalker, notCyclic));
+                return arguments.stream();
+            }
+            // dependency missing if qualifier not match
+
         }
+
     }
 
-    @Nested
-    class WithQualifier {
 
-        @ParameterizedTest
-        @MethodSource
-        public void should_throw_exception_if_dependency_with_qualifier_not_found(Class<? extends TestComponent> component) {
-            config.bind(Dependency.class, new Dependency() {
-            });
-//            config.bind(Dependency.class,Dependency.class,new SkywalkerLiteral());
-            //bind的是TestComponent和@Named,那你取的时候也应该有TestComponent和@Named，
-            // 在构造器中，参数是@SkyWalker Dependency dependency,所以你应该bind一有注解的，这样才能找到
-            //比如，config.bind(Dependency.class,Dependency.class,new SkywalkerLiteral());这样才能找到
-            config.bind(TestComponent.class, component, new NamedLiteral("Owner"));
-            DependencyNotFoundException exception = assertThrows(DependencyNotFoundException.class, () -> config.getContext());
-            assertEquals(new Component(TestComponent.class, new NamedLiteral("Owner")), exception.getComponent());
-            assertEquals(new Component(Dependency.class, new SkywalkerLiteral()), exception.getDependency());
-        }
-
-        public static Stream<Arguments> should_throw_exception_if_dependency_with_qualifier_not_found() {
-            return Stream.of(
-                    Named.of("Inject Constructor with Qualifier", InjectConstructor.class),
-                    Named.of("Inject Field with Qualifier", InjectField.class),
-                    Named.of("Inject Method with Qualifier", InjectMethod.class),
-                    Named.of("Provider in Inject Constructor with Qualifier", InjectConstructorProvider.class),
-                    Named.of("Provider in Inject Field with Qualifier", InjectFieldProvider.class),
-                    Named.of("Provider in Inject Method with Qualifier", InjectMethodProvider.class)
-            ).map(Arguments::of);
-        }
-        static class InjectConstructor implements TestComponent{
-            @Inject
-            public InjectConstructor(@SkyWalker Dependency dependency) {
-            }
-        }
-        static class InjectField  implements TestComponent{
-            @Inject
-            @SkyWalker
-            Dependency dependency;
-        }
-
-        static class InjectMethod  implements TestComponent{
-            @Inject
-            void install(@SkyWalker Dependency dependency) {
-            }
-        }
-
-        static class InjectConstructorProvider implements TestComponent {
-            @Inject
-            public InjectConstructorProvider(@SkyWalker Provider<Dependency> dependency) {
-            }
-        }
-
-        static class InjectFieldProvider {
-            @Inject
-            @SkyWalker
-            Provider<Dependency> dependency;
-        }
-
-        static class InjectMethodProvider {
-            @Inject
-            void install(@SkyWalker Provider<Dependency> dependency) {
-            }
-        }
-        @ParameterizedTest(name = "{1} -> @SkyWalker({0}) -> @Named(\"ChoseOne\") not cyclic dependencies")
-        @MethodSource
-        public void should_not_throw_cyclic_exception_if_component_with_same_type_taged_with_different_qualifier(Class<? extends Dependency> skywalker,
-                                                                                                                 Class<? extends Dependency> notCyclic) {
-            Dependency instance = new Dependency() {
-            };
-            //A->B->C(instance) 这个时候就不该有循环依赖，这个是正确的
-            //A找B，B找C,C找到了，返回了，B完备了，然后A找B也找到了，A也完整了
-            config.bind(Dependency.class, notCyclic);
-            config.bind(Dependency.class, skywalker, new SkywalkerLiteral());
-            config.bind(Dependency.class, instance, new NamedLiteral("ChoseOne"));
-
-            assertDoesNotThrow(() -> config.getContext());
-        }
-
-        static class SkywalkerInjectConstructor implements Dependency {
-            @Inject
-            public SkywalkerInjectConstructor(@jakarta.inject.Named("ChoseOne") Dependency dependency) {
-            }
-        }
-
-        static class SkywalkerInjectField implements Dependency {
-            @Inject
-            @jakarta.inject.Named("ChoseOne")
-            Dependency dependency;
-        }
-
-        static class SkywalkerInjectMethod implements Dependency {
-            @Inject
-            void install(@jakarta.inject.Named("ChoseOne") Dependency dependency) {
-            }
-        }
-
-        static class NotCyclicInjectConstructor implements Dependency {
-            @Inject
-            public NotCyclicInjectConstructor(@SkyWalker Dependency dependency) {
-            }
-        }
-
-
-        static class NotCyclicInjectField implements Dependency {
-            @Inject
-            @SkyWalker
-            Dependency dependency;
-        }
-
-
-        static class NotCyclicInjectMethod implements Dependency {
-            @Inject
-            public void install(@SkyWalker Dependency dependency) {
-            }
-        }
-
-
-        public static Stream<Arguments> should_not_throw_cyclic_exception_if_component_with_same_type_taged_with_different_qualifier() {
-            List<Arguments> arguments = new ArrayList<>();
-            for (Named skywalker : List.of(Named.of("Inject Constructor", SkywalkerInjectConstructor.class),
-                    Named.of("Inject Field", SkywalkerInjectField.class),
-                    Named.of("Inject Method", SkywalkerInjectMethod.class)))
-                for (Named notCyclic : List.of(Named.of("Inject Constructor", NotCyclicInjectConstructor.class),
-                        Named.of("Inject Constructor", NotCyclicInjectField.class),
-                        Named.of("Inject Constructor", NotCyclicInjectMethod.class)))
-                    arguments.add(Arguments.of(skywalker, notCyclic));
-            return arguments.stream();
-        }
-        // dependency missing if qualifier not match
-
-    }
 
 }
 
