@@ -27,7 +27,9 @@ public class ContextConfig {
 
     public <Type, Implementation extends Type>
     void bind(Class<Type> type, Class<Implementation> implementation) {
-        components.put(new Component(type, null), new InjectionProvider<>(implementation));
+        //components.put(new Component(type, null), new InjectionProvider<>(implementation));
+        //可以使用delegate的方式，既然是类上面有注解，那么就获取这个类上的注解，getAnnotations();
+        bind(type,implementation,type.getAnnotations());
     }
 
     public <Type, Implementation extends Type>
