@@ -599,14 +599,14 @@ public class ContextTest {
             }
             //TODO get scope from component class
             @Singleton
-            static class SingletonAnnotated{
+            static class SingletonAnnotated implements Dependency{
 
             }
             @Test
             public void should_retrieve_scope_annotation_from_component() {
-                config.bind(SingletonAnnotated.class,SingletonAnnotated.class);
+                config.bind(Dependency.class,SingletonAnnotated.class);
                 Context context = config.getContext();
-                assertSame(context.get(ComponentRef.of(SingletonAnnotated.class)).get(),context.get(ComponentRef.of(SingletonAnnotated.class)).get());
+                assertSame(context.get(ComponentRef.of(Dependency.class)).get(),context.get(ComponentRef.of(Dependency.class)).get());
             }
             //TODO get scope from component with qualifier
             //TODO bind component with customize scope annotation
@@ -626,9 +626,9 @@ public class ContextTest {
                 }
                 @Test
                 public void should_retrieve_scope_annotation_from_component() {
-                    config.bind(SingletonAnnotated.class,SingletonAnnotated.class,new SkywalkerLiteral());
+                    config.bind(Dependency.class,SingletonAnnotated.class,new SkywalkerLiteral());
                     Context context = config.getContext();
-                    assertSame(context.get(ComponentRef.of(SingletonAnnotated.class,new SkywalkerLiteral())).get(),context.get(ComponentRef.of(SingletonAnnotated.class,new SkywalkerLiteral())).get());
+                    assertSame(context.get(ComponentRef.of(Dependency.class,new SkywalkerLiteral())).get(),context.get(ComponentRef.of(Dependency.class,new SkywalkerLiteral())).get());
                 }
             }
         }

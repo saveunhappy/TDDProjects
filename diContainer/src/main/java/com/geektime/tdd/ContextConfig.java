@@ -29,7 +29,7 @@ public class ContextConfig {
     void bind(Class<Type> type, Class<Implementation> implementation) {
         //components.put(new Component(type, null), new InjectionProvider<>(implementation));
         //可以使用delegate的方式，既然是类上面有注解，那么就获取这个类上的注解，getAnnotations();
-        bind(type, implementation, type.getAnnotations());
+        bind(type, implementation, implementation.getAnnotations());
     }
 
     public <Type, Implementation extends Type>
@@ -40,7 +40,7 @@ public class ContextConfig {
         }
         //这种写法不可以，会限定成Class，并且上边界限定成Annotation，但是这边要求本身就是Annotation。
 //        List<? extends Class<? extends Annotation>> qualifiers = stream(annotations).map(Annotation::annotationType).filter(a -> a.isAnnotationPresent(Qualifier.class)).toList();
-        Optional<Annotation> scopeFromType = stream(type.getAnnotations()).filter(a -> a.annotationType().isAnnotationPresent(Scope.class)).findFirst();
+        Optional<Annotation> scopeFromType = stream(implementation.getAnnotations()).filter(a -> a.annotationType().isAnnotationPresent(Scope.class)).findFirst();
 
         List<Annotation> qualifiers = stream(annotations)
                 .filter(a -> a.annotationType().isAnnotationPresent(Qualifier.class)).toList();
