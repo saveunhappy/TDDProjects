@@ -57,7 +57,7 @@ public class ContextConfig {
 
         ComponentProvider<?> injectionProvider = new InjectionProvider<>(implementation);
         ComponentProvider<?> provider = scope
-        .<ComponentProvider<?>>map(s -> new SingletonProvider(injectionProvider))
+        .<ComponentProvider<?>>map(s -> getScopeProvider(s,injectionProvider))
                 .orElse(injectionProvider);
         if (qualifiers.isEmpty()) {
             components.put(new Component(type, null), provider);
@@ -65,6 +65,10 @@ public class ContextConfig {
         for (Annotation qualifier : qualifiers) {
             components.put(new Component(type, qualifier), provider);
         }
+    }
+
+    private ComponentProvider<?> getScopeProvider(Annotation scope, ComponentProvider<?> provider) {
+        return scopes.get(scope.annotationType()).apply(provider);
     }
 
     public <ScopeType extends Annotation> void scope(Class<ScopeType> scope,

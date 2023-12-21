@@ -755,9 +755,10 @@ class PooledProvider<T> implements ComponentProvider<T> {
         if (pool.size() < MAX) {
             pool.add(provider.get(context));
         }
+        //最多添加两个，以后就是每次都循环获取，第0个，第1个，第0个，第1个，目前不知道有啥用
         return pool.get(current++ % MAX);
     }
-
+// 2297 2301
     @Override
     public List<ComponentRef<?>> getDependencies() {
         return provider.getDependencies();
