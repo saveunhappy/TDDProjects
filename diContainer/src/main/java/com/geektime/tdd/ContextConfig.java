@@ -55,9 +55,9 @@ public class ContextConfig {
                 .filter(a -> a.annotationType().isAnnotationPresent(Scope.class)).findFirst()
                 .or(() -> scopeFromType);
 
-        ComponentProvider<Implementation> injectionProvider = new InjectionProvider<>(implementation);
-        ComponentProvider<Implementation> provider = scope
-                .map(s -> (ComponentProvider<Implementation>) new SingletonProvider(injectionProvider))
+        ComponentProvider<?> injectionProvider = new InjectionProvider<>(implementation);
+        ComponentProvider<?> provider = scope
+        .<ComponentProvider<?>>map(s -> new SingletonProvider(injectionProvider))
                 .orElse(injectionProvider);
         if (qualifiers.isEmpty()) {
             components.put(new Component(type, null), provider);
