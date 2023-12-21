@@ -2,6 +2,7 @@ package com.geektime.tdd;
 
 import jakarta.inject.Provider;
 import jakarta.inject.Qualifier;
+import jakarta.inject.Scope;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -30,11 +31,12 @@ public class ContextConfig {
     }
 
     public <Type, Implementation extends Type>
-    void bind(Class<Type> type, Class<Implementation> implementation, Annotation... qualifiers) {
-        if (stream(qualifiers).anyMatch(q -> !q.annotationType().isAnnotationPresent(Qualifier.class))) {
+    void bind(Class<Type> type, Class<Implementation> implementation, Annotation... annotations) {
+        if (stream(annotations).map(Annotation::annotationType)
+                .anyMatch(t -> !t.isAnnotationPresent(Qualifier.class)&& !t.isAnnotationPresent(Scope.class))){
             throw new IllegalComponentException();
         }
-        for (Annotation qualifier : qualifiers) {
+        for (Annotation qualifier : annotations) {
             components.put(new Component(type, qualifier), new InjectionProvider<>(implementation));
         }
     }
@@ -72,7 +74,7 @@ public class ContextConfig {
         for (ComponentRef dependency : components.get(component).getDependencies()) {
             //这个dependency.component()就是指的Dependency，其实就是dependency本身，但是有其他的属性，所以就
             //把属性封装到了component()这个方法中去，
-            if (!components.containsKey(dependency.component())){
+            if (!components.containsKey(dependency.component())) {
                 throw new DependencyNotFoundException(component, dependency.component());
             }
             if (!dependency.isContainer()) {
