@@ -591,11 +591,19 @@ public class ContextTest {
                 assertNotSame(context.get(ComponentRef.of(NoSingleton.class)).get(),context.get(ComponentRef.of(NoSingleton.class)).get());
             }
             //TODO bind component as singleton scoped
-
             //TODO bind component with qualifiers as singleton scoped
             //TODO get scope from component class
             //TODO get scope from component with qualifier
             //TODO bind component with customize scope annotation
+            @Nested
+            public class WithQualifier {
+                @Test
+                public void should_not_be_singleton_scope_by_default() {
+                    config.bind(NoSingleton.class,NoSingleton.class,new SkywalkerLiteral());
+                    Context context = config.getContext();
+                    assertNotSame(context.get(ComponentRef.of(NoSingleton.class,new SkywalkerLiteral())).get(),context.get(ComponentRef.of(NoSingleton.class,new SkywalkerLiteral())).get());
+                }
+            }
         }
 
     }
