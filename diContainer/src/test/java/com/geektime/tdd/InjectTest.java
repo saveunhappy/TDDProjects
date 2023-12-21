@@ -69,7 +69,7 @@ public class InjectTest {
             }
 
             @Test
-            public void should_inject_dependency_via_inject_constructor() {
+            public void  should_inject_dependency_via_inject_constructor() {
 
                 InjectionConstructor instance = new InjectionProvider<>(InjectionConstructor.class).get(context);
                 assertNotNull(instance);

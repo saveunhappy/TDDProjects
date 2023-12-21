@@ -581,8 +581,17 @@ public class ContextTest {
 
         @Nested
         public class WithScope {
-            //TODO default scope should not be singleton
+            static class NoSingleton {
+
+            }
+            @Test
+            public void should_not_be_singleton_scope_by_default() {
+                config.bind(NoSingleton.class,NoSingleton.class);
+                Context context = config.getContext();
+                assertNotSame(context.get(ComponentRef.of(NoSingleton.class)).get(),context.get(ComponentRef.of(NoSingleton.class)).get());
+            }
             //TODO bind component as singleton scoped
+
             //TODO bind component with qualifiers as singleton scoped
             //TODO get scope from component class
             //TODO get scope from component with qualifier
