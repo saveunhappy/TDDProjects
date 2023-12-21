@@ -13,6 +13,7 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -632,6 +633,12 @@ public class ContextTest {
             //TODO bind component with customize scope annotation
             @Test
             public void should_bind_component_as_customize_scope() {
+                config.scope(Pooled.class, new Function<ComponentProvider<?>, ComponentProvider<?>>() {
+                    @Override
+                    public ComponentProvider<?> apply(ComponentProvider<?> provider) {
+                        return new PooledProvider<>(provider);
+                    }
+                });
                 config.bind(NoSingleton.class, NoSingleton.class, new PooledLiteral());
                 Context context = config.getContext();
                 List<NoSingleton> instances = IntStream.range(0, 5).mapToObj(i -> context.get(ComponentRef.of(NoSingleton.class)).get()).toList();
@@ -735,7 +742,7 @@ record PooledLiteral() implements Pooled {
 
 class PooledProvider<T> implements ComponentProvider<T> {
     static int MAX = 2;
-    private List<T> pool;
+    private List<T> pool = new ArrayList<>();
     int current;
     private ComponentProvider<T> provider;
 

@@ -3,14 +3,21 @@ package com.geektime.tdd;
 import jakarta.inject.Provider;
 import jakarta.inject.Qualifier;
 import jakarta.inject.Scope;
+import jakarta.inject.Singleton;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.function.Function;
 
 import static java.util.Arrays.stream;
 
 public class ContextConfig {
-    private final Map<Component, ComponentProvider<?>> components = new HashMap<>();
+    private Map<Component, ComponentProvider<?>> components = new HashMap<>();
+    private Map<Class<?>, Function<ComponentProvider<?>, ComponentProvider<?>>> scopes = new HashMap<>();
+
+    public ContextConfig() {
+        scope(Singleton.class, SingletonProvider::new);
+    }
 
     public <Type> void bind(Class<Type> type, Type instance) {
         components.put(new Component(type, null), context -> instance);
@@ -58,6 +65,11 @@ public class ContextConfig {
         for (Annotation qualifier : qualifiers) {
             components.put(new Component(type, qualifier), provider);
         }
+    }
+
+    public <ScopeType extends Annotation> void scope(Class<ScopeType> scope,
+                                                     Function<ComponentProvider<?>, ComponentProvider<?>> provider) {
+        scopes.put(scope, provider);
     }
 
     static class SingletonProvider<T> implements ComponentProvider<T> {
