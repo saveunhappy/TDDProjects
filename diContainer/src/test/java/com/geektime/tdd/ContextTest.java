@@ -591,7 +591,6 @@ public class ContextTest {
                 Context context = config.getContext();
                 assertNotSame(context.get(ComponentRef.of(NoSingleton.class)).get(),context.get(ComponentRef.of(NoSingleton.class)).get());
             }
-            //TODO bind component as singleton scoped
             @Test
             public void should_bind_component_as_singleton() {
                 config.bind(NoSingleton.class,NoSingleton.class,new SingletonLiteral());
@@ -609,6 +608,12 @@ public class ContextTest {
                     config.bind(NoSingleton.class,NoSingleton.class,new SkywalkerLiteral());
                     Context context = config.getContext();
                     assertNotSame(context.get(ComponentRef.of(NoSingleton.class,new SkywalkerLiteral())).get(),context.get(ComponentRef.of(NoSingleton.class,new SkywalkerLiteral())).get());
+                }
+                @Test
+                public void should_bind_component_as_singleton() {
+                    config.bind(NoSingleton.class,NoSingleton.class,new SingletonLiteral(),new SkywalkerLiteral());
+                    Context context = config.getContext();
+                    assertSame(context.get(ComponentRef.of(NoSingleton.class,new SkywalkerLiteral())).get(),context.get(ComponentRef.of(NoSingleton.class,new SkywalkerLiteral())).get());
                 }
             }
         }
