@@ -38,7 +38,8 @@ public class ContextConfig {
         }
 //        List<? extends Class<? extends Annotation>> qualifiers = stream(annotations).map(Annotation::annotationType).filter(a -> a.isAnnotationPresent(Qualifier.class)).toList();
         List<Annotation> qualifiers = stream(annotations).filter(a -> a.annotationType().isAnnotationPresent(Qualifier.class)).toList();
-
+        if (qualifiers.isEmpty())
+            components.put(new Component(type, null), new InjectionProvider<>(implementation));
         for (Annotation qualifier : qualifiers) {
             components.put(new Component(type, qualifier), new InjectionProvider<>(implementation));
         }
