@@ -2,6 +2,7 @@ package com.geektime.tdd;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
+import jakarta.inject.Singleton;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -591,6 +592,12 @@ public class ContextTest {
                 assertNotSame(context.get(ComponentRef.of(NoSingleton.class)).get(),context.get(ComponentRef.of(NoSingleton.class)).get());
             }
             //TODO bind component as singleton scoped
+            @Test
+            public void should_bind_component_as_singleton() {
+                config.bind(NoSingleton.class,NoSingleton.class,new SingletonLiteral());
+                Context context = config.getContext();
+                assertSame(context.get(ComponentRef.of(NoSingleton.class)).get(),context.get(ComponentRef.of(NoSingleton.class)).get());
+            }
             //TODO bind component with qualifiers as singleton scoped
             //TODO get scope from component class
             //TODO get scope from component with qualifier
@@ -629,7 +636,6 @@ record NamedLiteral(String value) implements jakarta.inject.Named {
     }
 
 }
-
 @java.lang.annotation.Documented
 @java.lang.annotation.Retention(RUNTIME)
 @jakarta.inject.Qualifier
@@ -652,6 +658,13 @@ record TestLiteral() implements Test {
     @Override
     public Class<? extends Annotation> annotationType() {
         return Test.class;
+    }
+}
+
+record SingletonLiteral() implements Singleton {
+    @Override
+    public Class<? extends Annotation> annotationType() {
+        return Singleton.class;
     }
 }
 
