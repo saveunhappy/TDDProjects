@@ -36,12 +36,39 @@ public class ContextConfig {
                 .anyMatch(t -> !t.isAnnotationPresent(Qualifier.class) && !t.isAnnotationPresent(Scope.class))) {
             throw new IllegalComponentException();
         }
+        //这种写法不可以，会限定成Class，并且上边界限定成Annotation，但是这边要求本身就是Annotation。
 //        List<? extends Class<? extends Annotation>> qualifiers = stream(annotations).map(Annotation::annotationType).filter(a -> a.isAnnotationPresent(Qualifier.class)).toList();
+
         List<Annotation> qualifiers = stream(annotations).filter(a -> a.annotationType().isAnnotationPresent(Qualifier.class)).toList();
-        if (qualifiers.isEmpty())
-            components.put(new Component(type, null), new InjectionProvider<>(implementation));
+        Optional<Annotation> scope = stream(annotations).filter(a -> a.annotationType().isAnnotationPresent(Scope.class)).findFirst();
+
+        ComponentProvider<Implementation> injectionProvider = new InjectionProvider<>(implementation);
+        ComponentProvider<Implementation> provider = scope
+                .map(s -> (ComponentProvider<Implementation>) new SingletonProvider(injectionProvider))
+                .orElse(injectionProvider);
+        if (qualifiers.isEmpty()) {
+            components.put(new Component(type, null), provider);
+        }
         for (Annotation qualifier : qualifiers) {
-            components.put(new Component(type, qualifier), new InjectionProvider<>(implementation));
+            components.put(new Component(type, qualifier), provider);
+        }
+    }
+
+    static class SingletonProvider<T> implements ComponentProvider<T> {
+        private T singleton;
+        private ComponentProvider<T> provider;
+
+        public SingletonProvider(ComponentProvider<T> provider) {
+            this.provider = provider;
+        }
+
+        @Override
+        public T get(Context context) {
+            //第一次进入这里肯定是null，还是反射去创建，第二次进入就有值了，那么就取出来，就相当于是singleton了
+            if (singleton == null){
+                singleton = provider.get(context);
+            }
+            return singleton;
         }
     }
 
