@@ -76,6 +76,11 @@ public class ContextConfig {
             }
             return singleton;
         }
+
+        @Override
+        public List<ComponentRef<?>> getDependencies() {
+            return provider.getDependencies();
+        }
     }
 
     public Context getContext() {
