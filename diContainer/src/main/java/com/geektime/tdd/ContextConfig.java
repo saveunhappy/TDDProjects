@@ -91,6 +91,7 @@ public class ContextConfig {
     }
 
     private ComponentProvider<?> createScopeProvider(Annotation scope, ComponentProvider provider) {
+        if(!scopes.containsKey(scope.annotationType())) throw new IllegalComponentException();
         return scopes.get(scope.annotationType()).create(provider);
     }
 
