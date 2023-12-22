@@ -52,12 +52,12 @@ public class ContextConfig {
         }
         //Java8有的新的方法，map如果获取不到，那么就可以给他一个默认值，如果获取不到Qualifier，那就给个空的List就好了
         //和之前的逻辑是一样的
-        ComponentProvider<?> injectionProvider = new InjectionProvider<>(implementation);
         //根据Scope来获取到对应ScopeProvider，如果是Scope，那就是缓存一个，如果是Pool，那么就是缓存多个，在getScopeProvider
         //的时候就是去获取Pool的Provider，只有调用scope方法的时候，会添加一个scope到map中去，默认是Scope。如果bind了，获取到了
         //那么就用那个新的
         Optional<Annotation> scope = scopes(annotationGroups).stream().findFirst()
                 .or(() -> scopeFrom(implementation));
+        ComponentProvider<?> injectionProvider = new InjectionProvider<>(implementation);
 
         ComponentProvider<?> provider = scope
                 .<ComponentProvider<?>>map(s -> getScopeProvider(s, injectionProvider))
