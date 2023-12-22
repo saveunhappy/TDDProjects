@@ -62,10 +62,10 @@ public class ContextConfig {
                 .orElse(injectionProvider);
         List<Annotation> qualifiers = annotationGroups.getOrDefault(Qualifier.class,List.of());
 
-        bind(type, provider, qualifiers);
+        bind(type, qualifiers, provider);
     }
 
-    private <Type> void bind(Class<Type> type, ComponentProvider<?> provider, List<Annotation> qualifiers) {
+    private <Type> void bind(Class<Type> type, List<Annotation> qualifiers, ComponentProvider<?> provider) {
         if (qualifiers.isEmpty()) {
             components.put(new Component(type, null), provider);
         }
