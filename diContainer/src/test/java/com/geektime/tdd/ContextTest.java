@@ -656,6 +656,13 @@ public class ContextTest {
 
             }
             //TODO undefined scope
+            @Test
+            public void should_throw_exception_if_scope_undefined() {
+                //如果没有调用scope去添加一个池化的注解，那么scopes的map中就没有，没有的话就没法处理
+                assertThrows(IllegalComponentException.class, () -> config.bind(NoSingleton.class, NoSingleton.class, new PooledLiteral()));
+
+            }
+
             @Nested
             public class WithQualifier {
                 @Test
