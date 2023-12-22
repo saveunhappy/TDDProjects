@@ -7,7 +7,6 @@ import jakarta.inject.Singleton;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.function.Function;
 
 import static java.util.Arrays.stream;
 
@@ -121,10 +120,6 @@ public class ContextConfig {
             }
 
         }
-    }
-    
-    interface ScopeProvider {
-        ComponentProvider<?> create(ComponentProvider<?> componentProvider);
     }
 
 }
