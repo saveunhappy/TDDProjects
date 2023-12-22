@@ -56,18 +56,18 @@ public class ContextConfig {
         //的时候就是去获取Pool的Provider，只有调用scope方法的时候，会添加一个scope到map中去，默认是Scope。如果bind了，获取到了
         //那么就用那个新的
         List<Annotation> scopes = annotationGroups.getOrDefault(Scope.class, List.of());
-        ComponentProvider<?> provider = getScopeProvider(implementation, scopes);
+        ComponentProvider<?> provider = createScopeProvider(implementation, scopes);
 
         bind(type, annotationGroups.getOrDefault(Qualifier.class,List.of()), provider);
     }
 
-    private <Type, Implementation extends Type> ComponentProvider<?> getScopeProvider(Class<Implementation> implementation, List<Annotation> scopes) {
+    private <Type, Implementation extends Type> ComponentProvider<?> createScopeProvider(Class<Implementation> implementation, List<Annotation> scopes) {
         ComponentProvider<?> injectionProvider = new InjectionProvider<>(implementation);
         Optional<Annotation> scope = scopes.stream().findFirst()
                 .or(() -> scopeFrom(implementation));
 
         ComponentProvider<?> provider = scope
-                .<ComponentProvider<?>>map(s -> getScopeProvider(s, injectionProvider))
+                .<ComponentProvider<?>>map(s -> createScopeProvider(s, injectionProvider))
                 .orElse(injectionProvider);
         return provider;
     }
@@ -94,7 +94,7 @@ public class ContextConfig {
 
     }
 
-    private ComponentProvider<?> getScopeProvider(Annotation scope, ComponentProvider provider) {
+    private ComponentProvider<?> createScopeProvider(Annotation scope, ComponentProvider provider) {
         return scopes.get(scope.annotationType()).create(provider);
     }
 
