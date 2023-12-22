@@ -71,13 +71,4 @@ public class ComponentRef<ComponentType> {
     public int hashCode() {
         return Objects.hash(container, component);
     }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ComponentRef{");
-        sb.append("container=").append(container);
-        sb.append(", component=").append(component);
-        sb.append('}');
-        return sb.toString();
-    }
 }
