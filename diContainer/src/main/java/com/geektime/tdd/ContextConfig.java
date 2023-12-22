@@ -50,7 +50,7 @@ public class ContextConfig {
         if (annotationGroups.containsKey(Illegal.class)) {
             throw new IllegalComponentException();
         }
-        Optional<Annotation> scopeFromType = stream(implementation.getAnnotations()).filter(a -> a.annotationType().isAnnotationPresent(Scope.class)).findFirst();
+        Optional<Annotation> scopeFromType = scopeFrom(implementation);
         //Java8有的新的方法，map如果获取不到，那么就可以给他一个默认值，如果获取不到Qualifier，那就给个空的List就好了
         //和之前的逻辑是一样的
         List<Annotation> qualifiers = annotationGroups.getOrDefault(Qualifier.class,List.of());
@@ -67,6 +67,10 @@ public class ContextConfig {
         for (Annotation qualifier : qualifiers) {
             components.put(new Component(type, qualifier), provider);
         }
+    }
+
+    private static <Type> Optional<Annotation> scopeFrom(Class<Type> implementation) {
+        return stream(implementation.getAnnotations()).filter(a -> a.annotationType().isAnnotationPresent(Scope.class)).findFirst();
     }
 
     private Class<?> typeof(Annotation annotation) {
