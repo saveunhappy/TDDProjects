@@ -7,6 +7,7 @@ import jakarta.inject.Singleton;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.stream;
 
@@ -60,7 +61,7 @@ public class ContextConfig {
 
         ComponentProvider<?> injectionProvider = new InjectionProvider<>(implementation);
         ComponentProvider<?> provider = scope
-        .<ComponentProvider<?>>map(s -> getScopeProvider(s,injectionProvider))
+                .<ComponentProvider<?>>map(s -> getScopeProvider(s, injectionProvider))
                 .orElse(injectionProvider);
         if (qualifiers.isEmpty()) {
             components.put(new Component(type, null), provider);
@@ -68,6 +69,15 @@ public class ContextConfig {
         for (Annotation qualifier : qualifiers) {
             components.put(new Component(type, qualifier), provider);
         }
+    }
+
+    private Class<?> typeof(Annotation annotation) {
+        Class<? extends Annotation> type = annotation.annotationType();
+        return Stream.of(Qualifier.class, Scope.class).filter(type::isAnnotationPresent).findFirst().orElse(Illegal.class);
+    }
+
+    private @interface Illegal {
+
     }
 
     private ComponentProvider<?> getScopeProvider(Annotation scope, ComponentProvider provider) {
