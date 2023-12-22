@@ -645,8 +645,16 @@ public class ContextTest {
                 assertThrows(IllegalComponentException.class, () -> config.bind(NoSingleton.class, NoSingleton.class, new SingletonLiteral(), new PooledLiteral()));
 
             }
+            @Singleton @Pooled
+            static class MultiScopeAnnotated{
 
-            //TODO multi scope annotated
+            }
+            @Test
+            public void should_throw_exception_if_multi_scope_annotated() {
+                //@Singleton和@Pool这俩注解本身还被@Scope标注，所以直接就通过了，就是在@Qualifier，@Scope和@Illegal的地方
+                assertThrows(IllegalComponentException.class, () -> config.bind(MultiScopeAnnotated.class, MultiScopeAnnotated.class));
+
+            }
             //TODO undefined scope
             @Nested
             public class WithQualifier {
