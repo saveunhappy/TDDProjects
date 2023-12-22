@@ -59,6 +59,7 @@ public class ContextConfig {
     }
 
     private <Type> ComponentProvider<?> createScopeProvider(Class<Type> implementation, List<Annotation> scopes) {
+
         ComponentProvider<?> injectionProvider = new InjectionProvider<>(implementation);
 
         return scopes.stream().findFirst()

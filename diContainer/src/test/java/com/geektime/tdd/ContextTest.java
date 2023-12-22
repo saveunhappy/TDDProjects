@@ -630,17 +630,25 @@ public class ContextTest {
                 assertSame(context.get(ComponentRef.of(Dependency.class)).get(), context.get(ComponentRef.of(Dependency.class)).get());
             }
 
-            //TODO bind component with customize scope annotation
             @Test
             public void should_bind_component_as_customize_scope() {
                 config.scope(Pooled.class, PooledProvider::new);
                 config.bind(NoSingleton.class, NoSingleton.class, new PooledLiteral());
                 Context context = config.getContext();
                 List<NoSingleton> instances = IntStream.range(0, 5).mapToObj(i -> context.get(ComponentRef.of(NoSingleton.class)).get()).toList();
-                assertEquals(PooledProvider.MAX,new HashSet<>(instances).size());
+                assertEquals(PooledProvider.MAX, new HashSet<>(instances).size());
             }
 
+            //TODO multi scope provided
+            @Test
+            public void should_throw_exception_if_multi_scope_provided() {
+                //这个就应该报错，因为你不能既是单例的又是池化的，只能选一个，否则Provider都不知道怎么选
+                assertThrows(IllegalComponentException.class, () -> config.bind(NoSingleton.class, NoSingleton.class, new SingletonLiteral(), new PooledLiteral()));
 
+            }
+
+            //TODO multi scope annotated
+            //TODO undefined scope
             @Nested
             public class WithQualifier {
                 @Test
@@ -753,7 +761,8 @@ class PooledProvider<T> implements ComponentProvider<T> {
         //最多添加两个，以后就是每次都循环获取，第0个，第1个，第0个，第1个，目前不知道有啥用
         return pool.get(current++ % MAX);
     }
-// 2297 2301
+
+    // 2297 2301
     @Override
     public List<ComponentRef<?>> getDependencies() {
         return provider.getDependencies();
