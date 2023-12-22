@@ -54,8 +54,7 @@ public class ContextConfig {
         //Java8有的新的方法，map如果获取不到，那么就可以给他一个默认值，如果获取不到Qualifier，那就给个空的List就好了
         //和之前的逻辑是一样的
         List<Annotation> qualifiers = annotationGroups.getOrDefault(Qualifier.class,List.of());
-        Optional<Annotation> scope = stream(annotations)
-                .filter(a -> a.annotationType().isAnnotationPresent(Scope.class)).findFirst()
+        Optional<Annotation> scope = annotationGroups.getOrDefault(Scope.class,List.of()).stream().findFirst()
                 .or(() -> scopeFromType);
 
         ComponentProvider<?> injectionProvider = new InjectionProvider<>(implementation);
