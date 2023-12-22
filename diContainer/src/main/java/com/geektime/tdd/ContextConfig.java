@@ -46,7 +46,7 @@ public class ContextConfig {
         //qualifier
         //illegal
         Map<Class<?>, List<Annotation>> annotationGroups = stream(annotations).collect(Collectors.groupingBy(this::typeof, Collectors.toList()));
-
+        //TestLiteral就是不合规的，那么就是把TestLiteral放到了那个List中去了。
         if (annotationGroups.containsKey(Illegal.class)) {
             throw new IllegalComponentException();
         }
