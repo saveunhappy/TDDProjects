@@ -47,8 +47,7 @@ public class ContextConfig {
         //illegal
         Map<Class<?>, List<Annotation>> annotationGroups = stream(annotations).collect(Collectors.groupingBy(this::typeof, Collectors.toList()));
 
-        if (stream(annotations).map(Annotation::annotationType)
-                .anyMatch(t -> !t.isAnnotationPresent(Qualifier.class) && !t.isAnnotationPresent(Scope.class))) {
+        if (annotationGroups.containsKey(Illegal.class)) {
             throw new IllegalComponentException();
         }
         //这种写法不可以，会限定成Class，并且上边界限定成Annotation，但是这边要求本身就是Annotation。
