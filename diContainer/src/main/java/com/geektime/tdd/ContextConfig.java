@@ -122,5 +122,9 @@ public class ContextConfig {
 
         }
     }
+    
+    interface ScopeProvider {
+        ComponentProvider create(ComponentProvider componentProvider);
+    }
 
 }
