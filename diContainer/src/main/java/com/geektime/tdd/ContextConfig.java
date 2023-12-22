@@ -40,6 +40,10 @@ public class ContextConfig {
 
     public <Type, Implementation extends Type>
     void bind(Class<Type> type, Class<Implementation> implementation, Annotation... annotations) {
+        //scope
+        //qualifier
+        //illegal
+
         if (stream(annotations).map(Annotation::annotationType)
                 .anyMatch(t -> !t.isAnnotationPresent(Qualifier.class) && !t.isAnnotationPresent(Scope.class))) {
             throw new IllegalComponentException();
