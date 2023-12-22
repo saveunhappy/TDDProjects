@@ -633,12 +633,15 @@ public class ContextTest {
             //TODO bind component with customize scope annotation
             @Test
             public void should_bind_component_as_customize_scope() {
-                config.scope(Pooled.class, new Function<ComponentProvider<?>, ComponentProvider<?>>() {
+                //
+                config.scope(Pooled.class, new ContextConfig.ScopeProvider() {
                     @Override
-                    public ComponentProvider<?> apply(ComponentProvider<?> provider) {
-                        return new PooledProvider<>(provider);
+                    public ComponentProvider<?> create(ComponentProvider<?> provider) {
+                        PooledProvider<?> pooledProvider = new PooledProvider<>(provider);
+                        return pooledProvider;
                     }
                 });
+                config.scope(Pooled.class, PooledProvider::new);
                 config.bind(NoSingleton.class, NoSingleton.class, new PooledLiteral());
                 Context context = config.getContext();
                 List<NoSingleton> instances = IntStream.range(0, 5).mapToObj(i -> context.get(ComponentRef.of(NoSingleton.class)).get()).toList();
