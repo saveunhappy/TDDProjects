@@ -58,7 +58,7 @@ public class ContextConfig {
         bind(type, annotationGroups.getOrDefault(Qualifier.class,List.of()), createScopeProvider(implementation, annotationGroups.getOrDefault(Scope.class, List.of())));
     }
 
-    private <Type, Implementation extends Type> ComponentProvider<?> createScopeProvider(Class<Implementation> implementation, List<Annotation> scopes) {
+    private <Type> ComponentProvider<?> createScopeProvider(Class<Type> implementation, List<Annotation> scopes) {
         ComponentProvider<?> injectionProvider = new InjectionProvider<>(implementation);
 
         return scopes.stream().findFirst()
