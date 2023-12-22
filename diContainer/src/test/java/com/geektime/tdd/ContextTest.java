@@ -639,7 +639,6 @@ public class ContextTest {
                 assertEquals(PooledProvider.MAX, new HashSet<>(instances).size());
             }
 
-            //TODO multi scope provided
             @Test
             public void should_throw_exception_if_multi_scope_provided() {
                 //这个就应该报错，因为你不能既是单例的又是池化的，只能选一个，否则Provider都不知道怎么选
