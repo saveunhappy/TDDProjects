@@ -56,7 +56,7 @@ public class ContextConfig {
         //根据Scope来获取到对应ScopeProvider，如果是Scope，那就是缓存一个，如果是Pool，那么就是缓存多个，在getScopeProvider
         //的时候就是去获取Pool的Provider，只有调用scope方法的时候，会添加一个scope到map中去，默认是Scope。如果bind了，获取到了
         //那么就用那个新的
-        Optional<Annotation> scope = annotationGroups.getOrDefault(Scope.class,List.of()).stream().findFirst()
+        Optional<Annotation> scope = scopes(annotationGroups).stream().findFirst()
                 .or(() -> scopeFrom(implementation));
 
         ComponentProvider<?> provider = scope
@@ -64,6 +64,10 @@ public class ContextConfig {
                 .orElse(injectionProvider);
 
         bind(type, annotationGroups.getOrDefault(Qualifier.class,List.of()), provider);
+    }
+
+    private static List<Annotation> scopes(Map<Class<?>, List<Annotation>> annotationGroups) {
+        return annotationGroups.getOrDefault(Scope.class, List.of());
     }
 
     private <Type> void bind(Class<Type> type, List<Annotation> qualifiers, ComponentProvider<?> provider) {
