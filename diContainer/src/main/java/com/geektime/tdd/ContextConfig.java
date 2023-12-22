@@ -60,9 +60,8 @@ public class ContextConfig {
         ComponentProvider<?> provider = scope
                 .<ComponentProvider<?>>map(s -> getScopeProvider(s, injectionProvider))
                 .orElse(injectionProvider);
-        List<Annotation> qualifiers = annotationGroups.getOrDefault(Qualifier.class,List.of());
 
-        bind(type, qualifiers, provider);
+        bind(type, annotationGroups.getOrDefault(Qualifier.class,List.of()), provider);
     }
 
     private <Type> void bind(Class<Type> type, List<Annotation> qualifiers, ComponentProvider<?> provider) {
