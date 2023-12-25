@@ -111,10 +111,10 @@ public class ContextConfig {
             public <ComponentType> Optional<ComponentType> get(ComponentRef<ComponentType> ref) {
                 if (ref.isContainer()) {
                     if (ref.getContainer() != Provider.class) return Optional.empty();
-                    return (Optional<ComponentType>) Optional.ofNullable(getComponent(ref))
+                    return (Optional<ComponentType>) Optional.ofNullable(components.get(ref.component()))
                             .map(provider -> (Provider<Object>) () -> provider.get(this));
                 }
-                return Optional.ofNullable(getComponent(ref)).
+                return Optional.ofNullable(components.get(ref.component())).
                         map(provider -> (ComponentType) provider.get(this));
             }
 
