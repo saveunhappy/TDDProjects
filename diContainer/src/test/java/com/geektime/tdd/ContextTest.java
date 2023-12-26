@@ -310,7 +310,7 @@ public class ContextTest {
         }
 
         static class CyclicComponentInjectConstructor implements TestComponent {
-            String name = "111";
+//            String name = "111";
 
             @Inject
             public CyclicComponentInjectConstructor(Dependency dependency) {
@@ -426,7 +426,7 @@ public class ContextTest {
         }
 
         static class CyclicDependencyProviderConstructor implements Dependency {
-            String name = "dependency";
+//            String name = "dependency";
             Provider<TestComponent> component;
 
             @Inject
@@ -436,7 +436,7 @@ public class ContextTest {
         }
 
         static class CyclicComponentProviderConstructor implements TestComponent {
-            String name = "component";
+//            String name = "component";
             Provider<Dependency> dependency;
 
             @Inject
