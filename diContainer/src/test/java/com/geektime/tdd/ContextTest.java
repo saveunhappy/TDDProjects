@@ -162,7 +162,8 @@ public class ContextTest {
                 Dependency dependency = new Dependency() {
                 };
                 config.bind(Dependency.class, dependency);
-                config.bind(ConstructorInjection.class, ConstructorInjection.class, new NamedLiteral("ChosenOne"), new SkywalkerLiteral());
+                config.bind(ConstructorInjection.class, ConstructorInjection.class,
+                        new NamedLiteral("ChosenOne"), new SkywalkerLiteral());
                 Context context = config.getContext();
                 ConstructorInjection choseOne = context.get(ComponentRef.of(ConstructorInjection.class, new NamedLiteral("ChosenOne"))).get();
                 ConstructorInjection skywalker = context.get(ComponentRef.of(ConstructorInjection.class, new SkywalkerLiteral())).get();
