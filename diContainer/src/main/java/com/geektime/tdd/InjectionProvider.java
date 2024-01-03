@@ -64,7 +64,9 @@ class InjectionProvider<T> implements ComponentProvider<T> {
 
     record Injectable<Element extends AccessibleObject>(Element element, ComponentRef<?>[] require) {
         static <Element extends Executable> Injectable<Element> of(Element injectable) {
-            return new Injectable<>(injectable, stream(injectable.getParameters()).map(Injectable::toComponentRef).toArray(ComponentRef<?>[]::new));
+            return new Injectable<>(injectable, stream(injectable.getParameters())
+                    .map(Injectable::toComponentRef)
+                    .toArray(ComponentRef<?>[]::new));
         }
 
         //构造器，有多个参数，方法，有多个参数，但是你属性，你就只有你本身，所一就是一个
