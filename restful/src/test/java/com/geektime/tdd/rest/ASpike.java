@@ -4,6 +4,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -35,9 +37,9 @@ public class ASpike {
         handler.addServlet(new ServletHolder(new HttpServlet() {
             @Override
             protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-                System.out.println("in servlet");
-
-                resp.getWriter().write("test");
+                //目前测试通过，和@Path没关系呢，就是简单的返回String字符串
+                String result = new TestResource().get();
+                resp.getWriter().write(result);
                 resp.getWriter().flush();
             }
         }),"/");
@@ -56,6 +58,14 @@ public class ASpike {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         System.out.println(response.body());
         assertEquals("test",response.body());
+    }
+
+    @Path("/test")
+    static class TestResource{
+        @GET
+        public String get(){
+            return "test";
+        }
     }
 
 }
