@@ -6,145 +6,255 @@ import jakarta.inject.Scope;
 import jakarta.inject.Singleton;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.text.MessageFormat;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.geektime.tdd.ContextConfig.ContextConfigError.circularDependencies;
+import static com.geektime.tdd.ContextConfig.ContextConfigError.unsatisfiedResolution;
+import static com.geektime.tdd.ContextConfig.ContextConfigException.illegalAnnotation;
 import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.joining;
 
 public class ContextConfig {
-    private Map<Component, ComponentProvider<?>> components = new HashMap<>();
-    private Map<Class<?>, ScopeProvider> scopes = new HashMap<>();
+    private final Map<Component, ComponentProvider<?>> components = new HashMap<>();
+    private final Map<Class<?>, ScopeProvider> scopes = new HashMap<>();
+    private final List<Component> staticsComponents = new ArrayList<>();
 
     public ContextConfig() {
         scope(Singleton.class, SingletonProvider::new);
     }
 
-    public <Type> void bind(Class<Type> type, Type instance) {
-        components.put(new Component(type, null), context -> instance);
+    public <Type> void instance(Class<Type> type, Type instance) {
+        bind(new Component(type, null), (ComponentProvider<Object>) context -> instance, false);
     }
 
-    public <Type> void bind(Class<Type> type, Type instance, Annotation... qualifiers) {
-        if (stream(qualifiers).anyMatch(q -> !q.annotationType().isAnnotationPresent(Qualifier.class))) {
-            throw new IllegalComponentException();
+    public <Type> void instance(Class<Type> type, Type instance, Annotation... annotations) {
+        bindInstance(type, instance, annotations, false);
+    }
+
+    private void bindInstance(Class<?> type, Object instance, Annotation[] annotations, boolean statics) {
+        Bindings bindings = new Bindings(type, annotations);
+        bind(type, bindings.qualifiers(), context -> instance, statics);
+    }
+
+    public <Type, Implementation extends Type> void component(Class<Type> type, Class<Implementation> implementation, Annotation... annotations) {
+        bindComponent(type, implementation, annotations, false);
+    }
+
+    private void bindComponent(Class<?> type, Class<?> implementation, Annotation[] annotations, boolean statics) {
+        Bindings bindings = new Bindings(implementation, annotations);
+        bind(type, bindings.qualifiers(), bindings.provider(this::scopeProvider), statics);
+    }
+
+    private <Type> void bind(final Class<Type> type, List<Annotation> qualifiers, final ComponentProvider<?> provider, boolean statics) {
+        if (qualifiers.isEmpty()) bind(new Component(type, null), provider, statics);
+        for (Annotation qualifier : qualifiers) bind(new Component(type, qualifier), provider, statics);
+    }
+
+    static class Bindings {
+        private Class<?> type;
+        private Map<Class<?>, List<Annotation>> group;
+
+        public Bindings(Class<?> type, Annotation... annotations) {
+            this.type = type;
+            group = parse(annotations);
         }
-        for (Annotation qualifier : qualifiers) {
-            components.put(new Component(type, qualifier), context -> instance);
+
+
+        private Map<Class<?>, List<Annotation>> parse(Annotation[] annotations) {
+            Map<Class<?>, List<Annotation>> annotationGroup = stream(annotations).collect(Collectors.groupingBy(Bindings::typeOf));
+            if (annotationGroup.containsKey(Illegal.class))
+                throw illegalAnnotation(type, annotationGroup.get(Illegal.class));
+            return annotationGroup;
+        }
+
+        private static Class<? extends Annotation> typeOf(final Annotation annotation) {
+            return Stream.of(Qualifier.class, Scope.class).filter(a -> annotation.annotationType().isAnnotationPresent(a)).findFirst().orElse(Illegal.class);
+        }
+
+        List<Annotation> qualifiers() {
+            return group.getOrDefault(Qualifier.class, List.of());
+        }
+
+        private Optional<Annotation> scope() {
+            List<Annotation> scopes = group.getOrDefault(Scope.class, scopeFrom(type));
+            if (scopes.size() > 1) throw illegalAnnotation(type, scopes);
+            return scopes.stream().findFirst();
+        }
+
+        private static <Type> List<Annotation> scopeFrom(final Class<Type> implementation) {
+            return stream(implementation.getAnnotations()).filter(a -> a.annotationType().isAnnotationPresent(Scope.class)).toList();
+        }
+
+        private ComponentProvider<?> provider(BiFunction<Annotation, ComponentProvider<?>, ComponentProvider<?>> scoped) {
+            ComponentProvider<?> injectProvider = new InjectionProvider<>(type);
+            return scope().<ComponentProvider<?>>map(s -> scoped.apply(s, injectProvider)).orElse(injectProvider);
         }
     }
 
-    public <Type, Implementation extends Type>
-    void bind(Class<Type> type, Class<Implementation> implementation) {
-        //components.put(new Component(type, null), new InjectionProvider<>(implementation));
-        //可以使用delegate的方式，既然是类上面有注解，那么就获取这个类上的注解，getAnnotations();
-        bind(type, implementation, implementation.getAnnotations());
-    }
-
-    public <Type, Implementation extends Type>
-    void bind(Class<Type> type, Class<Implementation> implementation, Annotation... annotations) {
-        //scope
-        //qualifier
-        //illegal
-        Map<Class<?>, List<Annotation>> annotationGroups = stream(annotations).collect(Collectors.groupingBy(this::typeof, Collectors.toList()));
-        //TestLiteral就是不合规的，那么就是把TestLiteral放到了那个List中去了。
-        if (annotationGroups.containsKey(Illegal.class)) {
-            throw new IllegalComponentException();
-        }
-        //Java8有的新的方法，map如果获取不到，那么就可以给他一个默认值，如果获取不到Qualifier，那就给个空的List就好了
-        //和之前的逻辑是一样的
-        //根据Scope来获取到对应ScopeProvider，如果是Scope，那就是缓存一个，如果是Pool，那么就是缓存多个，在getScopeProvider
-        //的时候就是去获取Pool的Provider，只有调用scope方法的时候，会添加一个scope到map中去，默认是Scope。如果bind了，获取到了
-        //那么就用那个新的
-        bind(type, annotationGroups.getOrDefault(Qualifier.class,List.of()), createScopeProvider(implementation, annotationGroups.getOrDefault(Scope.class, List.of())));
-    }
-
-    private <Type> ComponentProvider<?> createScopeProvider(Class<Type> implementation, List<Annotation> scopes) {
-        if(scopes.size() > 1) throw new IllegalComponentException();
-        ComponentProvider<?> injectionProvider = new InjectionProvider<>(implementation);
-
-        return scopes.stream().findFirst()
-                .or(() -> scopeFrom(implementation))
-                .<ComponentProvider<?>>map(s -> createScopeProvider(s, injectionProvider))
-                .orElse(injectionProvider);
-    }
-
-    private <Type> void bind(Class<Type> type, List<Annotation> qualifiers, ComponentProvider<?> provider) {
-        if (qualifiers.isEmpty()) {
-            components.put(new Component(type, null), provider);
-        }
-        for (Annotation qualifier : qualifiers) {
-            components.put(new Component(type, qualifier), provider);
-        }
-    }
-
-    private static <Type> Optional<Annotation> scopeFrom(Class<Type> implementation) {
-        return stream(implementation.getAnnotations()).filter(a -> a.annotationType().isAnnotationPresent(Scope.class)).findFirst();
-    }
-
-    private Class<?> typeof(Annotation annotation) {
-        Class<? extends Annotation> type = annotation.annotationType();
-        return Stream.of(Qualifier.class, Scope.class).filter(type::isAnnotationPresent).findFirst().orElse(Illegal.class);
+    public void from(final Config config) {
+        new DSL(config).bind();
     }
 
     private @interface Illegal {
-
     }
 
-    private ComponentProvider<?> createScopeProvider(Annotation scope, ComponentProvider provider) {
-        if(!scopes.containsKey(scope.annotationType())) throw new IllegalComponentException();
-        return scopes.get(scope.annotationType()).create(provider);
+    private ComponentProvider<?> scopeProvider(Annotation scope, final ComponentProvider<?> injectProvider) {
+        if (!scopes.containsKey(scope.annotationType()))
+            throw ContextConfigException.unknownScope(scope.annotationType());
+        return scopes.get(scope.annotationType()).create(injectProvider);
     }
 
-    public <ScopeType extends Annotation> void scope(Class<ScopeType> scope,
-                                                     ScopeProvider provider) {
+    private <Type, Implementation extends Type> void bind(Component component, final ComponentProvider<Implementation> provider, boolean statics) {
+        if (components.containsKey(component)) throw ContextConfigException.duplicated(component);
+        if (statics) staticsComponents.add(component);
+        components.put(component, provider);
+    }
+
+    public <Type> void scope(final Class<Type> scope, final ScopeProvider provider) {
         scopes.put(scope, provider);
     }
 
+
     public Context getContext() {
-        //这个dependencies中就是记录了所有的，还有你的参数中有的依赖，也去给你put进去，
 
-        for (Component component : components.keySet()) {
-            checkDependencies(component, new Stack<>());
-        }
-        return new Context() {
+        Context context = new Context() {
+
             @Override
-            public <ComponentType> Optional<ComponentType> get(ComponentRef<ComponentType> ref) {
-                if (ref.isContainer()) {
-                    if (ref.getContainer() != Provider.class) return Optional.empty();
-                    return (Optional<ComponentType>) Optional.ofNullable(components.get(ref.component()))
-                            .map(provider -> (Provider<Object>) () -> provider.get(this));
+            public <ComponentType> Optional<ComponentType> get(ComponentRef<ComponentType> componentRef) {
+                if (componentRef.isContainer()) {
+                    if (componentRef.getContainer() != Provider.class) return Optional.empty();
+                    return (Optional<ComponentType>) Optional.ofNullable(components.get(componentRef.component()))
+                            .map(p -> (Provider<Object>) () -> p.get(this));
                 }
-                return Optional.ofNullable(components.get(ref.component())).
-                        map(provider -> (ComponentType) provider.get(this));
-            }
+                return Optional.ofNullable(components.get(componentRef.component())).map(p -> ((ComponentType) p.get(this)));
 
+            }
         };
+
+        components.keySet().forEach(component -> checkDependencies(component, new Stack<>()));
+        injectStaticMembers(context);
+        return context;
     }
 
-    private <ComponentType> ComponentProvider<?> getComponent(ComponentRef<ComponentType> ref) {
-        return components.get(ref.component());
-    }
-
-    private void checkDependencies(Component component, Stack<Component> visiting) {
-        /*注意原来的实现，dependencies.get(component)获取的是什么？是一个List，就是所有的依赖，然后接下来就是去判断
-         * containsKey,如果没有Bind过，那么当然没有啊*/
-        //这个是去找的所有bind过的依赖，然后把所有的key的依赖都放到一个栈中去，这里是找的所有的依赖，如果之前有添加过
-        //那就说明有环了，就是有循环依赖
-        for (ComponentRef dependency : components.get(component).getDependencies()) {
-            //这个dependency.component()就是指的Dependency，其实就是dependency本身，但是有其他的属性，所以就
-            //把属性封装到了component()这个方法中去，
-            if (!components.containsKey(dependency.component())) {
-                throw new DependencyNotFoundException(component, dependency.component());
-            }
-            if (!dependency.isContainer()) {
-                if (visiting.contains(dependency.component())) throw new CyclicDependenciesFoundException(visiting);
-                visiting.push(dependency.component());
-                checkDependencies(dependency.component(), visiting);
-//                checkDependencies(dependency.getComponent(), visiting);
-                visiting.pop();
-            }
-
+    private void injectStaticMembers(Context context) {
+        for (final Component component : staticsComponents) {
+            Optional.ofNullable(components.get(component))
+                    .ifPresent(p -> p.statics(context));
         }
     }
 
+    public void checkDependencies(Component component, Stack<Component> visiting) {
+        components.get(component).getDependencies().forEach(dependency -> checkDependency(component, visiting, dependency));
+    }
+
+    private void checkDependency(Component component, Stack<Component> visiting, ComponentRef dependency) {
+        if (!components.containsKey(dependency.component()))
+            throw unsatisfiedResolution(component, dependency.component());
+        if (!dependency.isContainer()) {
+            if (visiting.contains(dependency.component()))
+                throw circularDependencies(visiting, dependency.component());
+            visiting.push(dependency.component());
+            checkDependencies(dependency.component(), visiting);
+            visiting.pop();
+        }
+    }
+
+    interface ScopeProvider {
+        ComponentProvider<?> create(ComponentProvider<?> provider);
+    }
+
+    static class ContextConfigError extends Error {
+        public static ContextConfigError unsatisfiedResolution(Component component, Component dependency) {
+            return new ContextConfigError(MessageFormat.format("Unsatisfied resolution: {1} for {0} ", component, dependency));
+        }
+
+        public static ContextConfigError circularDependencies(Collection<Component> path, Component circular) {
+            return new ContextConfigError(MessageFormat.format("Circular dependencies: {0} -> [{1}]",
+                    path.stream().map(Objects::toString).collect(joining(" -> ")), circular));
+        }
+
+        ContextConfigError(String message) {
+            super(message);
+        }
+    }
+
+    static class ContextConfigException extends RuntimeException {
+        static ContextConfigException illegalAnnotation(Class<?> type, List<Annotation> annotations) {
+            return new ContextConfigException(MessageFormat.format("Unqualified annotations: {0} of {1}",
+                    String.join(" , ", annotations.stream().map(Object::toString).toList()), type));
+        }
+
+        static ContextConfigException unknownScope(Class<? extends Annotation> annotationType) {
+            return new ContextConfigException(MessageFormat.format("Unknown scope: {0}", annotationType));
+        }
+
+        static ContextConfigException duplicated(Component component) {
+            return new ContextConfigException(MessageFormat.format("Duplicated: {0}", component));
+        }
+
+        ContextConfigException(String message) {
+            super(message);
+        }
+    }
+
+    private class DSL {
+        private final Config config;
+
+        public DSL(final Config config) {
+            this.config = config;
+        }
+
+        public void bind() {
+            for (Declaration declaration : declarations()) {
+                declaration.value().ifPresentOrElse(declaration::bindInstance, declaration::bindComponent);
+            }
+        }
+
+        private List<Declaration> declarations() {
+            return stream(config.getClass().getDeclaredFields()).filter(f -> !f.isSynthetic()).map(Declaration::new).toList();
+        }
+
+        private class Declaration {
+            private Field field;
+
+            Declaration(Field field) {
+                this.field = field;
+            }
+
+            void bindInstance(Object instance) {
+                ContextConfig.this.bindInstance(type(), instance, annotations(), statics());
+            }
+
+            void bindComponent() {
+                ContextConfig.this.bindComponent(type(), field.getType(), annotations(), statics());
+            }
+
+            private Optional<Object> value() {
+                try {
+                    field.setAccessible(true);
+                    return Optional.ofNullable(field.get(config));
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            private Class<?> type() {
+                Config.Export export = field.getAnnotation(Config.Export.class);
+                return export != null ? export.value() : field.getType();
+            }
+            private boolean statics() {
+                Config.Static aStatic = field.getAnnotation(Config.Static.class);
+                return aStatic != null;
+            }
+
+            private Annotation[] annotations() {
+                return stream(field.getAnnotations()).filter(a -> a.annotationType() != Config.Export.class && a.annotationType() != Config.Static.class).toArray(Annotation[]::new);
+            }
+        }
+    }
 }
