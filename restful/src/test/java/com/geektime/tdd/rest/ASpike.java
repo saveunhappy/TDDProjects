@@ -17,17 +17,23 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ASpike {
     Server server;
+
     @BeforeEach
     public void start() throws Exception {
 
@@ -35,11 +41,12 @@ public class ASpike {
         Connector connector = new ServerConnector(server);
         server.addConnector(connector);
 
-        ServletContextHandler handler = new ServletContextHandler(server,"/");
-        handler.addServlet(new ServletHolder(new ResourceServlet(new TestApplication())),"/");
+        ServletContextHandler handler = new ServletContextHandler(server, "/");
+        handler.addServlet(new ServletHolder(new ResourceServlet(new TestApplication())), "/");
         server.setHandler(handler);
         server.start();
     }
+
     @AfterEach
     public void stop() throws Exception {
         server.stop();
@@ -51,10 +58,10 @@ public class ASpike {
         HttpRequest request = HttpRequest.newBuilder(new URI("http://localhost:8080/")).GET().build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         System.out.println(response.body());
-        assertEquals("test",response.body());
+        assertEquals("test", response.body());
     }
 
-    static class ResourceServlet extends HttpServlet{
+    static class ResourceServlet extends HttpServlet {
         private Application application;
 
         public ResourceServlet(Application application) {
@@ -63,13 +70,30 @@ public class ASpike {
 
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-            String result = new TestResource().get();
-            resp.getWriter().write(result);
+            Stream<Class<?>> classStream = application.getClasses().stream().filter(c -> c.isAnnotationPresent(Path.class));
+            Object result = dispatch(req, classStream);
+//            String result = new TestResource().get();
+            resp.getWriter().write(result.toString());
             resp.getWriter().flush();
+        }
+
+        Object dispatch(HttpServletRequest req, Stream<Class<?>> classStream) {
+            try {
+                //获取到刚才的Controller，就是TestResource
+                Class<?> rootClass = classStream.findFirst().get();
+                //创建对象
+                Object rootResource = rootClass.getConstructor().newInstance();
+                //找到要执行的方法，就是@GetMapping
+                Method method = Arrays.stream(rootClass.getMethods()).filter(m -> m.isAnnotationPresent(GET.class)).findFirst().get();
+                //执行方法，那有返回值，就是返回的String
+                return method.invoke(rootResource);
+            }  catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
-    static class TestApplication extends Application{
+    static class TestApplication extends Application {
         @Override
         public Set<Class<?>> getClasses() {
             return Set.of(TestResource.class);
@@ -77,9 +101,12 @@ public class ASpike {
     }
 
     @Path("/test")
-    static class TestResource{
+    static class TestResource {
+        public TestResource() {
+        }
+
         @GET
-        public String get(){
+        public String get() {
             return "test";
         }
     }
