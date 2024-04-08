@@ -1,5 +1,8 @@
 package com.geektime.tdd.rest;
 
+import com.geektime.tdd.ComponentRef;
+import com.geektime.tdd.Context;
+import com.geektime.tdd.ContextConfig;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -32,6 +35,7 @@ import java.net.http.HttpResponse;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -124,16 +128,20 @@ public class ASpike {
 
         public TestProviders(Application application) {
             this.application = application;
+
+            ContextConfig config = new ContextConfig();
+
             //表示判断类是否是 MessageBodyWriter 接口的子类或实现类,如果是，则保留在流中。
             //注意，这里是要强转的，比如规定泛型是MessageBodyWriter，否则泛型就是?没有泛型，下面就调用不了w.isWriteable方法
-            writers = (List<MessageBodyWriter>) this.application.getClasses().stream().filter(MessageBodyWriter.class::isAssignableFrom)
-                    .map(c -> {
-                        try {
-                            return c.getConstructor().newInstance();
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    }).toList();
+            List<Class<?>> writerClasses = this.application.getClasses().stream().filter(MessageBodyWriter.class::isAssignableFrom).toList();
+            for (Class writerClass : writerClasses) {
+                //component是newinstance,instance就是绑定实例，from就是要有Qualifier了
+                config.component(writerClass,writerClass);
+            }
+            Context context = config.getContext();
+
+            writers = (List<MessageBodyWriter>) writerClasses.stream().map(c -> context.get(ComponentRef.of(c)).get()).collect(Collectors.toList());
+
         }
 
         @Override

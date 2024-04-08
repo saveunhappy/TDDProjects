@@ -27,7 +27,9 @@ dependencies {
 tasks.withType(Test) {
     useJUnitPlatform()
 }
-
+jar {
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+}
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17

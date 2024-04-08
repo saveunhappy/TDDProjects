@@ -669,7 +669,7 @@ class ContextTest {
         void should_bind_instance_as_its_declaration_type() {
             Implementation instance = new Implementation();
             config.from(new Config() {
-                Implementation implementation = instance;
+                final Implementation implementation = instance;
             });
             Context context = config.getContext();
             Implementation implementation = context.get(ComponentRef.of(Implementation.class)).get();
