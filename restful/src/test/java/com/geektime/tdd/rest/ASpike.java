@@ -135,11 +135,11 @@ public class ASpike {
             //注意，这里是要强转的，比如规定泛型是MessageBodyWriter，否则泛型就是?没有泛型，下面就调用不了w.isWriteable方法
             List<Class<?>> writerClasses = this.application.getClasses().stream().filter(MessageBodyWriter.class::isAssignableFrom).toList();
             for (Class writerClass : writerClasses) {
-                //component是newinstance,instance就是绑定实例，from就是要有Qualifier了
+                //component是newInstance,instance就是绑定实例，from就是要有Qualifier了
                 config.component(writerClass,writerClass);
             }
             Context context = config.getContext();
-
+            //bind了，然后要获取，获取的时候肯定也是context.get(xxx.class),然后这里要的是list，那就通过Stream的方式
             writers = (List<MessageBodyWriter>) writerClasses.stream().map(c -> context.get(ComponentRef.of(c)).get()).collect(Collectors.toList());
 
         }
