@@ -86,6 +86,7 @@ public class ASpike {
 
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            //目前Application里面存储了所有我们目前需要的Class，然后我们要去根据Class去创建对象，放到容器里面去。
             Stream<Class<?>> classStream = application.getClasses().stream().filter(c -> c.isAnnotationPresent(Path.class));
             Object result = dispatch(req, classStream);
 //            String result = new TestResource().get();
@@ -139,7 +140,8 @@ public class ASpike {
                 config.component(writerClass,writerClass);
             }
             Context context = config.getContext();
-            //bind了，然后要获取，获取的时候肯定也是context.get(xxx.class),然后这里要的是list，那就通过Stream的方式
+            //bind了，然后要获取，获取的时候肯定也是context.get(xxx.class),然后这里要的是list，那就通过Stream的方式去
+            //获取到bind到容器中的对象，这个writers就是在getMessageBodyWriter里面有用
             writers = (List<MessageBodyWriter>) writerClasses.stream().map(c -> context.get(ComponentRef.of(c)).get()).collect(Collectors.toList());
 
         }
