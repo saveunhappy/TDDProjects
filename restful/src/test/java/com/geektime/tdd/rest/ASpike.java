@@ -1,6 +1,7 @@
 package com.geektime.tdd.rest;
 
 import com.geektime.tdd.ComponentRef;
+import com.geektime.tdd.Config;
 import com.geektime.tdd.Context;
 import com.geektime.tdd.ContextConfig;
 import jakarta.inject.Inject;
@@ -123,16 +124,26 @@ public class ASpike {
         public Set<Class<?>> getClasses() {
             return Set.of(TestResource.class, StringMessageBodyWriter.class);
         }
+
+        public Config getConfig(){
+            return new Config() {
+                @Named("prefix")
+                public String name = "prefix";
+            };
+        }
     }
 
     static class TestProviders implements Providers {
         private List<MessageBodyWriter> writers;
-        private Application application;
+        private TestApplication application;
 
-        public TestProviders(Application application) {
+        public TestProviders(TestApplication application) {
             this.application = application;
 
             ContextConfig config = new ContextConfig();
+            //getConfig()只是说换了一种方式，可以不用去实现一个注解的方式去定义一个要注入的类了，注意，是定义，
+            //这里这个from就是要去进行bind了，简而言之，这个from就是之前的bind，它配合Config，使用DSL的方式方便bind
+            config.from(application.getConfig());
 
             //表示判断类是否是 MessageBodyWriter 接口的子类或实现类,如果是，则保留在流中。
             //注意，这里是要强转的，比如规定泛型是MessageBodyWriter，否则泛型就是?没有泛型，下面就调用不了w.isWriteable方法
