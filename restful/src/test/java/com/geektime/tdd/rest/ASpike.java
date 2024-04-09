@@ -3,6 +3,8 @@ package com.geektime.tdd.rest;
 import com.geektime.tdd.ComponentRef;
 import com.geektime.tdd.Context;
 import com.geektime.tdd.ContextConfig;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -169,6 +171,10 @@ public class ASpike {
     }
 
     static class StringMessageBodyWriter implements MessageBodyWriter<String> {
+        @Inject
+        @Named("prefix")
+        String prefix;
+
         public StringMessageBodyWriter() {
         }
 
