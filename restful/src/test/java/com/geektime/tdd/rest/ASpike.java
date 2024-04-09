@@ -74,7 +74,7 @@ public class ASpike {
         HttpRequest request = HttpRequest.newBuilder(new URI("http://localhost:8080/")).GET().build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         System.out.println(response.body());
-        assertEquals("prefixtest", response.body());
+        assertEquals("prefixprefixtest", response.body());
     }
 
     static class ResourceServlet extends HttpServlet {
@@ -217,12 +217,15 @@ public class ASpike {
 
     @Path("/test")
     static class TestResource {
+        @Inject
+        @Named("prefix")
+        String prefix;
         public TestResource() {
         }
 
         @GET
         public String get() {
-            return "test";
+            return prefix + "test";
         }
     }
 
