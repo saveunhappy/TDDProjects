@@ -78,13 +78,22 @@ public class ASpike {
     }
 
     static class ResourceServlet extends HttpServlet {
-        private Application application;
+        private final Context context;
+        private TestApplication application;
 
         private Providers providers;
 
-        public ResourceServlet(Application application, Providers providers) {
+        public ResourceServlet(TestApplication application, Providers providers) {
             this.application = application;
             this.providers = providers;
+            ContextConfig config = new ContextConfig();
+            config.from(application.getConfig());
+            List<Class<?>> rootResources = application.getClasses().stream().filter(c -> c.isAnnotationPresent(Path.class)).toList();
+            for (Class rootResource : rootResources) {
+                config.component(rootResource,rootResource);
+            }
+            context = config.getContext();
+
         }
 
         @Override
@@ -108,7 +117,8 @@ public class ASpike {
                 //获取到刚才的Controller，就是TestResource
                 Class<?> rootClass = classStream.findFirst().get();
                 //创建对象
-                Object rootResource = rootClass.getConstructor().newInstance();
+                Object rootResource = context.get(ComponentRef.of(rootClass)).get();
+//                Object rootResource = rootClass.getConstructor().newInstance();
                 //找到要执行的方法，就是@GetMapping
                 Method method = Arrays.stream(rootClass.getMethods()).filter(m -> m.isAnnotationPresent(GET.class)).findFirst().get();
                 //执行方法，那有返回值，就是返回的String
