@@ -74,7 +74,7 @@ public class ASpike {
         HttpRequest request = HttpRequest.newBuilder(new URI("http://localhost:8080/")).GET().build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         System.out.println(response.body());
-        assertEquals("test", response.body());
+        assertEquals("prefixtest", response.body());
     }
 
     static class ResourceServlet extends HttpServlet {
@@ -199,6 +199,7 @@ public class ASpike {
             //entityStream: 用于写入消息体的输出流。
             PrintWriter writer = new PrintWriter(entityStream);
             //s: 要写入响应消息体的对象实例。
+            writer.write(prefix);
             writer.write(s);
             writer.flush();
         }
