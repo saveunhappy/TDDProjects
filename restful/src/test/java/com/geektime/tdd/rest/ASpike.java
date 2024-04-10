@@ -32,9 +32,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -99,12 +97,11 @@ public class ASpike {
             //第一个参数就是要写的对象
             MessageBodyWriter<Object> writer = (MessageBodyWriter<Object>) providers.getMessageBodyWriter(result.getClass(), null, null, null);
             writer.writeTo(result, null, null, null, null, null, resp.getOutputStream());
-
 //            resp.getWriter().write(result.toString());
 //            resp.getWriter().flush();
         }
 
-        Object dispatch(HttpServletRequest req, Stream<Class<?>> classStream, ResourceContext rc) {
+        Response dispatch(HttpServletRequest req, Stream<Class<?>> classStream, ResourceContext rc) {
             try {
                 //获取到刚才的Controller，就是TestResource
                 Class<?> rootClass = classStream.findFirst().get();
@@ -118,7 +115,139 @@ public class ASpike {
                 Object result = method.invoke(rootResource);
                 //Response- code,header,media type,body
                 //pojo,void,GenericType
-                return result;
+
+                //如果是Response，直接返回，如果是那三种情况，那么封装成Response返回
+                return new Response() {
+                    @Override
+                    public int getStatus() {
+                        return 0;
+                    }
+
+                    @Override
+                    public StatusType getStatusInfo() {
+                        return null;
+                    }
+
+                    @Override
+                    public Object getEntity() {
+                        return result;
+                    }
+
+                    @Override
+                    public <T> T readEntity(Class<T> entityType) {
+                        return null;
+                    }
+
+                    @Override
+                    public <T> T readEntity(GenericType<T> entityType) {
+                        return null;
+                    }
+
+                    @Override
+                    public <T> T readEntity(Class<T> entityType, Annotation[] annotations) {
+                        return null;
+                    }
+
+                    @Override
+                    public <T> T readEntity(GenericType<T> entityType, Annotation[] annotations) {
+                        return null;
+                    }
+
+                    @Override
+                    public boolean hasEntity() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean bufferEntity() {
+                        return false;
+                    }
+
+                    @Override
+                    public void close() {
+
+                    }
+
+                    @Override
+                    public MediaType getMediaType() {
+                        return null;
+                    }
+
+                    @Override
+                    public Locale getLanguage() {
+                        return null;
+                    }
+
+                    @Override
+                    public int getLength() {
+                        return 0;
+                    }
+
+                    @Override
+                    public Set<String> getAllowedMethods() {
+                        return null;
+                    }
+
+                    @Override
+                    public Map<String, NewCookie> getCookies() {
+                        return null;
+                    }
+
+                    @Override
+                    public EntityTag getEntityTag() {
+                        return null;
+                    }
+
+                    @Override
+                    public Date getDate() {
+                        return null;
+                    }
+
+                    @Override
+                    public Date getLastModified() {
+                        return null;
+                    }
+
+                    @Override
+                    public URI getLocation() {
+                        return null;
+                    }
+
+                    @Override
+                    public Set<Link> getLinks() {
+                        return null;
+                    }
+
+                    @Override
+                    public boolean hasLink(String relation) {
+                        return false;
+                    }
+
+                    @Override
+                    public Link getLink(String relation) {
+                        return null;
+                    }
+
+                    @Override
+                    public Link.Builder getLinkBuilder(String relation) {
+                        return null;
+                    }
+
+                    @Override
+                    public MultivaluedMap<String, Object> getMetadata() {
+                        return null;
+                    }
+
+                    @Override
+                    public MultivaluedMap<String, String> getStringHeaders() {
+                        return null;
+                    }
+
+                    @Override
+                    public String getHeaderString(String name) {
+                        return null;
+                    }
+                };
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
