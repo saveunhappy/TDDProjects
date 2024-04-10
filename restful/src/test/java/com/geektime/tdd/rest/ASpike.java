@@ -9,13 +9,9 @@ import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ResourceContext;
-import jakarta.ws.rs.core.Application;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.*;
 import jakarta.ws.rs.ext.*;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -119,7 +115,10 @@ public class ASpike {
                 //找到要执行的方法，就是@GetMapping
                 Method method = Arrays.stream(rootClass.getMethods()).filter(m -> m.isAnnotationPresent(GET.class)).findFirst().get();
                 //执行方法，那有返回值，就是返回的String
-                return method.invoke(rootResource);
+                Object result = method.invoke(rootResource);
+                //Response- code,header,media type,body
+                //pojo,void,GenericType
+                return result;
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -227,7 +226,7 @@ public class ASpike {
             return type == String.class;
         }
 
-        @Override
+        @Override//List<Person>,List<Order>，得知道选哪个MessageBodyWriter,肯定不能选一个
         public void writeTo(String s, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
             //entityStream: 用于写入消息体的输出流。
             PrintWriter writer = new PrintWriter(entityStream);
@@ -245,10 +244,46 @@ public class ASpike {
         String prefix;
         public TestResource() {
         }
-
+        //现在我们是通过反射创建对象，然后调用这个方法，返回，但是最终要写回到Response中去的，所以在Response中我们还是需要
+        //有其他的东西的，status code,media type,headers(content-type,...),body
         @GET
+        @Produces(MediaType.TEXT_PLAIN)//这个就是返回文本信息
         public String get() {
             return prefix + "test";
+        }
+        @GET
+        @Path("/with-headers")
+        public Response withHeaders(){
+            return Response.ok().header("Set-Cookie",new NewCookie.Builder("SESSION_ID").value("SID").build())
+                    //这个Annotation就是public void writeTo(String s, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
+                    //这个方法，就是你要write的时候传过去的
+                    .entity("string",new Annotation[0])
+                    .build();
+        }
+
+        @GET
+        @Path("/generic")
+        public GenericEntity<List<String>> generic(){
+            //这个就是要提取泛型类型，之前的ParameterizedType里面有学过，这个GenericEntity是protected,
+            //没法直接new，还是得写成这种形式
+            return new GenericEntity<>(List.of("abc","def")){
+
+            };
+        }
+
+
+
+        @GET
+        @Path("/pojo-generic")
+        public List<String> pojoGeneric(){
+            //这个就是要提取泛型类型，之前的ParameterizedType里面有学过，这个GenericEntity是protected,
+            //没法直接new，还是得写成这种形式
+            return List.of("abc","def");
+        }
+
+        @PUT//204
+        public void update(){
+
         }
     }
 
