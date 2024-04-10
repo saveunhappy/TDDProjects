@@ -132,6 +132,9 @@ public class ASpike {
     }
 
     static class TestApplication extends Application {
+
+        private final Context context;
+
         @Override
         public Set<Class<?>> getClasses() {
             return Set.of(TestResource.class, StringMessageBodyWriter.class);
@@ -142,6 +145,25 @@ public class ASpike {
                 @Named("prefix")
                 public String name = "prefix";
             };
+        }
+
+        public Context getContext(){
+            return context;
+        }
+
+        public TestApplication() {
+            ContextConfig config = new ContextConfig();
+            config.from(getConfig());
+            List<Class<?>> writerClasses = this.getClasses().stream().filter(MessageBodyWriter.class::isAssignableFrom).toList();
+            for (Class writerClass : writerClasses) {
+                //component是newInstance,instance就是绑定实例，from就是要有Qualifier了
+                config.component(writerClass,writerClass);
+            }
+            List<Class<?>> rootResources = this.getClasses().stream().filter(c -> c.isAnnotationPresent(Path.class)).toList();
+            for (Class rootResource : rootResources) {
+                config.component(rootResource,rootResource);
+            }
+            context = config.getContext();
         }
     }
 
