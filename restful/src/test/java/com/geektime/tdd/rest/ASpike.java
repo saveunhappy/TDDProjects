@@ -86,6 +86,8 @@ public class ASpike {
         public ResourceServlet(TestApplication application, Providers providers) {
             this.application = application;
             this.providers = providers;
+            //为什么要注入ContextConfig呢？看下面这行代码，她去找Path了，Path中需要@Inject一个String，
+            //注入了就需要检查依赖，所以要注入这个
             ContextConfig config = new ContextConfig();
             config.from(application.getConfig());
             List<Class<?>> rootResources = application.getClasses().stream().filter(c -> c.isAnnotationPresent(Path.class)).toList();
