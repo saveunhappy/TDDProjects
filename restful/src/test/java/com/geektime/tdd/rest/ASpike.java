@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.Application;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.MultivaluedMap;
@@ -94,7 +95,8 @@ public class ASpike {
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
             //目前Application里面存储了所有我们目前需要的Class，然后我们要去根据Class去创建对象，放到容器里面去。
             Stream<Class<?>> classStream = application.getClasses().stream().filter(c -> c.isAnnotationPresent(Path.class));
-            Object result = dispatch(req, classStream);
+            ResourceContext rc = application.createResourceContext(req,resp);
+            Object result = dispatch(req, classStream,rc);
 //            String result = new TestResource().get();
             //这个providers里面已经通过application取出来所有的符合MessageBodyWriter，目前就只有一个
             // StringMessageBodyWriter，然后getMessageBodyReader是获取，现在其实也就是获取到只有的那一个
@@ -106,12 +108,13 @@ public class ASpike {
 //            resp.getWriter().flush();
         }
 
-        Object dispatch(HttpServletRequest req, Stream<Class<?>> classStream) {
+        Object dispatch(HttpServletRequest req, Stream<Class<?>> classStream, ResourceContext rc) {
             try {
                 //获取到刚才的Controller，就是TestResource
                 Class<?> rootClass = classStream.findFirst().get();
-                //创建对象
-                Object rootResource = context.get(ComponentRef.of(rootClass)).get();
+                //每次请求进来就把这个Controller给获取到，因为之前已经bind了啊，所以这里拿到，注册到
+                //这个ResourceContext中去，每次初始化一个，其他地方也就能拿到
+                Object rootResource = rc.initResource(context.get(ComponentRef.of(rootClass)).get());
 //                Object rootResource = rootClass.getConstructor().newInstance();
                 //找到要执行的方法，就是@GetMapping
                 Method method = Arrays.stream(rootClass.getMethods()).filter(m -> m.isAnnotationPresent(GET.class)).findFirst().get();
@@ -156,6 +159,20 @@ public class ASpike {
                 config.component(rootResource,rootResource);
             }
             context = config.getContext();
+        }
+        //因为你每次一个请求都是新的，所以每次dispatch的时候都要创建一个新的ResourceContext
+        public ResourceContext createResourceContext(HttpServletRequest request,HttpServletResponse response){
+            return new ResourceContext() {
+                @Override
+                public <T> T getResource(Class<T> resourceClass) {
+                    return null;
+                }
+                //先返回自己，测试是通过的，这里就相当于传了个东西，又返回回来了，就是相当于啥都没干，测试能通过
+                @Override
+                public <T> T initResource(T resource) {
+                    return resource;
+                }
+            };
         }
     }
 
