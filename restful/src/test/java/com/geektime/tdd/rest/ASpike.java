@@ -89,8 +89,8 @@ public class ASpike {
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
             //目前Application里面存储了所有我们目前需要的Class，然后我们要去根据Class去创建对象，放到容器里面去。
             Stream<Class<?>> classStream = application.getClasses().stream().filter(c -> c.isAnnotationPresent(Path.class));
-            ResourceContext rc = application.createResourceContext(req,resp);
-            OutboundResponse result = dispatch(req, classStream,rc);
+            ResourceContext rc = application.createResourceContext(req, resp);
+            OutboundResponse result = dispatch(req, classStream, rc);
             GenericEntity entity = result.getGenericEntity();
 //            String result = new TestResource().get();
             //这个providers里面已经通过application取出来所有的符合MessageBodyWriter，目前就只有一个
@@ -116,7 +116,7 @@ public class ASpike {
                 Object result = method.invoke(rootResource);
                 //Response- code,header,media type,body
                 //pojo,void,GenericType
-                GenericEntity entity = new GenericEntity(result,method.getGenericReturnType());
+                GenericEntity entity = new GenericEntity(result, method.getGenericReturnType());
 
                 //如果是Response，直接返回，如果是那三种情况，那么封装成Response返回
                 return new OutboundResponse() {
@@ -271,6 +271,12 @@ public class ASpike {
 
         abstract Annotation[] getAnnotations();
     }
+
+    interface ResourceRouter {
+        //这个就是根据这个请求的url，然后去ResourceContext中取得Controller。
+        OutboundResponse dispatch(HttpServletRequest request, ResourceContext resourceContext);
+    }
+
     static class TestApplication extends Application {
 
         private final Context context;
@@ -280,14 +286,14 @@ public class ASpike {
             return Set.of(TestResource.class, StringMessageBodyWriter.class);
         }
 
-        public Config getConfig(){
+        public Config getConfig() {
             return new Config() {
                 @Named("prefix")
                 public String name = "prefix";
             };
         }
 
-        public Context getContext(){
+        public Context getContext() {
             return context;
         }
 
@@ -297,21 +303,23 @@ public class ASpike {
             List<Class<?>> writerClasses = this.getClasses().stream().filter(MessageBodyWriter.class::isAssignableFrom).toList();
             for (Class writerClass : writerClasses) {
                 //component是newInstance,instance就是绑定实例，from就是要有Qualifier了
-                config.component(writerClass,writerClass);
+                config.component(writerClass, writerClass);
             }
             List<Class<?>> rootResources = this.getClasses().stream().filter(c -> c.isAnnotationPresent(Path.class)).toList();
             for (Class rootResource : rootResources) {
-                config.component(rootResource,rootResource);
+                config.component(rootResource, rootResource);
             }
             context = config.getContext();
         }
+
         //因为你每次一个请求都是新的，所以每次dispatch的时候都要创建一个新的ResourceContext
-        public ResourceContext createResourceContext(HttpServletRequest request,HttpServletResponse response){
+        public ResourceContext createResourceContext(HttpServletRequest request, HttpServletResponse response) {
             return new ResourceContext() {
                 @Override
                 public <T> T getResource(Class<T> resourceClass) {
                     return null;
                 }
+
                 //先返回自己，测试是通过的，这里就相当于传了个东西，又返回回来了，就是相当于啥都没干，测试能通过
                 @Override
                 public <T> T initResource(T resource) {
@@ -388,8 +396,10 @@ public class ASpike {
         @Inject
         @Named("prefix")
         String prefix;
+
         public TestResource() {
         }
+
         //现在我们是通过反射创建对象，然后调用这个方法，返回，但是最终要写回到Response中去的，所以在Response中我们还是需要
         //有其他的东西的，status code,media type,headers(content-type,...),body
         @GET
@@ -397,38 +407,38 @@ public class ASpike {
         public String get() {
             return prefix + "test";
         }
+
         @GET
         @Path("/with-headers")
-        public Response withHeaders(){
-            return Response.ok().header("Set-Cookie",new NewCookie.Builder("SESSION_ID").value("SID").build())
+        public Response withHeaders() {
+            return Response.ok().header("Set-Cookie", new NewCookie.Builder("SESSION_ID").value("SID").build())
                     //这个Annotation就是public void writeTo(String s, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
                     //这个方法，就是你要write的时候传过去的
-                    .entity("string",new Annotation[0])
+                    .entity("string", new Annotation[0])
                     .build();
         }
 
         @GET
         @Path("/generic")
-        public GenericEntity<List<String>> generic(){
+        public GenericEntity<List<String>> generic() {
             //这个就是要提取泛型类型，之前的ParameterizedType里面有学过，这个GenericEntity是protected,
             //没法直接new，还是得写成这种形式
-            return new GenericEntity<>(List.of("abc","def")){
+            return new GenericEntity<>(List.of("abc", "def")) {
 
             };
         }
 
 
-
         @GET
         @Path("/pojo-generic")
-        public List<String> pojoGeneric(){
+        public List<String> pojoGeneric() {
             //这个就是要提取泛型类型，之前的ParameterizedType里面有学过，这个GenericEntity是protected,
             //没法直接new，还是得写成这种形式
-            return List.of("abc","def");
+            return List.of("abc", "def");
         }
 
         @PUT//204
-        public void update(){
+        public void update() {
 
         }
     }
