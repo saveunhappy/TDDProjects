@@ -90,19 +90,19 @@ public class ASpike {
             //目前Application里面存储了所有我们目前需要的Class，然后我们要去根据Class去创建对象，放到容器里面去。
             Stream<Class<?>> classStream = application.getClasses().stream().filter(c -> c.isAnnotationPresent(Path.class));
             ResourceContext rc = application.createResourceContext(req,resp);
-            Response result = dispatch(req, classStream,rc);
-            GenericEntity entity = (GenericEntity) result.getEntity();
+            OutboundResponse result = dispatch(req, classStream,rc);
+            GenericEntity entity = result.getGenericEntity();
 //            String result = new TestResource().get();
             //这个providers里面已经通过application取出来所有的符合MessageBodyWriter，目前就只有一个
             // StringMessageBodyWriter，然后getMessageBodyReader是获取，现在其实也就是获取到只有的那一个
             //第一个参数就是要写的对象
-            MessageBodyWriter<Object> writer = (MessageBodyWriter<Object>) providers.getMessageBodyWriter(entity.getRawType(), entity.getType(), null, result.getMediaType());
+            MessageBodyWriter<Object> writer = (MessageBodyWriter<Object>) providers.getMessageBodyWriter(entity.getRawType(), entity.getType(), result.getAnnotations(), result.getMediaType());
             writer.writeTo(result, null, null, null, null, null, resp.getOutputStream());
 //            resp.getWriter().write(result.toString());
 //            resp.getWriter().flush();
         }
 
-        Response dispatch(HttpServletRequest req, Stream<Class<?>> classStream, ResourceContext rc) {
+        OutboundResponse dispatch(HttpServletRequest req, Stream<Class<?>> classStream, ResourceContext rc) {
             try {
                 //获取到刚才的Controller，就是TestResource
                 Class<?> rootClass = classStream.findFirst().get();
@@ -119,7 +119,17 @@ public class ASpike {
                 GenericEntity entity = new GenericEntity(result,method.getGenericReturnType());
 
                 //如果是Response，直接返回，如果是那三种情况，那么封装成Response返回
-                return new Response() {
+                return new OutboundResponse() {
+                    @Override
+                    GenericEntity getGenericEntity() {
+                        return entity;
+                    }
+
+                    @Override
+                    Annotation[] getAnnotations() {
+                        return new Annotation[0];
+                    }
+
                     @Override
                     public int getStatus() {
                         return 0;
@@ -257,7 +267,7 @@ public class ASpike {
     }
 
     static abstract class OutboundResponse extends Response {
-        abstract GenericEntity genericEntity();
+        abstract GenericEntity getGenericEntity();
 
         abstract Annotation[] getAnnotations();
     }
