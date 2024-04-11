@@ -90,12 +90,14 @@ public class ASpike {
             //目前Application里面存储了所有我们目前需要的Class，然后我们要去根据Class去创建对象，放到容器里面去。
             Stream<Class<?>> classStream = application.getClasses().stream().filter(c -> c.isAnnotationPresent(Path.class));
             ResourceContext rc = application.createResourceContext(req,resp);
-            Object result = dispatch(req, classStream,rc);
+            Response result = dispatch(req, classStream,rc);
+            Object entity = result.getEntity();
+            Response.ok().entity(entity,new Annotation[0]);
 //            String result = new TestResource().get();
             //这个providers里面已经通过application取出来所有的符合MessageBodyWriter，目前就只有一个
             // StringMessageBodyWriter，然后getMessageBodyReader是获取，现在其实也就是获取到只有的那一个
             //第一个参数就是要写的对象
-            MessageBodyWriter<Object> writer = (MessageBodyWriter<Object>) providers.getMessageBodyWriter(result.getClass(), null, null, null);
+            MessageBodyWriter<Object> writer = (MessageBodyWriter<Object>) providers.getMessageBodyWriter(entity.getClass(), null, null, result.getMediaType());
             writer.writeTo(result, null, null, null, null, null, resp.getOutputStream());
 //            resp.getWriter().write(result.toString());
 //            resp.getWriter().flush();
