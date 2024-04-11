@@ -91,13 +91,12 @@ public class ASpike {
             Stream<Class<?>> classStream = application.getClasses().stream().filter(c -> c.isAnnotationPresent(Path.class));
             ResourceContext rc = application.createResourceContext(req,resp);
             Response result = dispatch(req, classStream,rc);
-            Object entity = result.getEntity();
-            Response.ok().entity(entity,new Annotation[0]);
+            GenericEntity entity = (GenericEntity) result.getEntity();
 //            String result = new TestResource().get();
             //这个providers里面已经通过application取出来所有的符合MessageBodyWriter，目前就只有一个
             // StringMessageBodyWriter，然后getMessageBodyReader是获取，现在其实也就是获取到只有的那一个
             //第一个参数就是要写的对象
-            MessageBodyWriter<Object> writer = (MessageBodyWriter<Object>) providers.getMessageBodyWriter(entity.getClass(), null, null, result.getMediaType());
+            MessageBodyWriter<Object> writer = (MessageBodyWriter<Object>) providers.getMessageBodyWriter(entity.getRawType(), entity.getType(), null, result.getMediaType());
             writer.writeTo(result, null, null, null, null, null, resp.getOutputStream());
 //            resp.getWriter().write(result.toString());
 //            resp.getWriter().flush();
@@ -117,6 +116,7 @@ public class ASpike {
                 Object result = method.invoke(rootResource);
                 //Response- code,header,media type,body
                 //pojo,void,GenericType
+                GenericEntity entity = new GenericEntity(result,method.getGenericReturnType());
 
                 //如果是Response，直接返回，如果是那三种情况，那么封装成Response返回
                 return new Response() {
@@ -132,7 +132,7 @@ public class ASpike {
 
                     @Override
                     public Object getEntity() {
-                        return result;
+                        return entity;
                     }
 
                     @Override
