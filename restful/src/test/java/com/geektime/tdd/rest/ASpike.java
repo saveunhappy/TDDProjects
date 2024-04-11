@@ -29,7 +29,10 @@ import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -65,13 +68,14 @@ public abstract class ASpike {
 
     protected abstract Servlet getServlet();
 
-    @Test
-    public void should() throws Exception {
+    protected URI path(String path) throws Exception {
+        return new URL(new URL("http://localhost:8080/"), path).toURI();
+    }
+
+    protected HttpResponse<String> get(String path) throws Exception {
         HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder(new URI("http://localhost:8080/")).GET().build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        System.out.println(response.body());
-        assertEquals("prefixprefixtest", response.body());
+        HttpRequest request = HttpRequest.newBuilder(path(path)).GET().build();
+        return client.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
 
