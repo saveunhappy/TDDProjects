@@ -256,6 +256,11 @@ public class ASpike {
         }
     }
 
+    static abstract class OutboundResponse extends Response {
+        abstract GenericEntity genericEntity();
+
+        abstract Annotation[] getAnnotations();
+    }
     static class TestApplication extends Application {
 
         private final Context context;
