@@ -97,7 +97,7 @@ public class ASpike {
             // StringMessageBodyWriter，然后getMessageBodyReader是获取，现在其实也就是获取到只有的那一个
             //第一个参数就是要写的对象
             MessageBodyWriter<Object> writer = (MessageBodyWriter<Object>) providers.getMessageBodyWriter(entity.getRawType(), entity.getType(), result.getAnnotations(), result.getMediaType());
-            writer.writeTo(result, null, null, null, null, null, resp.getOutputStream());
+            writer.writeTo(result, entity.getRawType(), entity.getType(), result.getAnnotations(), result.getMediaType(), result.getHeaders(), resp.getOutputStream());
 //            resp.getWriter().write(result.toString());
 //            resp.getWriter().flush();
         }
