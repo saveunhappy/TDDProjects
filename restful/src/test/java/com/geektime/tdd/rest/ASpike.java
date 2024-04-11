@@ -266,17 +266,6 @@ public class ASpike {
         }
     }
 
-    static abstract class OutboundResponse extends Response {
-        abstract GenericEntity getGenericEntity();
-
-        abstract Annotation[] getAnnotations();
-    }
-
-    interface ResourceRouter {
-        //这个就是根据这个请求的url，然后去ResourceContext中取得Controller。
-        OutboundResponse dispatch(HttpServletRequest request, ResourceContext resourceContext);
-    }
-
     static class TestApplication extends Application {
 
         private final Context context;
