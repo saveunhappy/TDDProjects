@@ -1,19 +1,6 @@
 package com.geektime.tdd.rest;
 
-import com.geektime.tdd.ComponentRef;
-import com.geektime.tdd.Config;
-import com.geektime.tdd.Context;
-import com.geektime.tdd.ContextConfig;
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
 import jakarta.servlet.Servlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.container.ResourceContext;
-import jakarta.ws.rs.core.*;
-import jakarta.ws.rs.ext.*;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -21,28 +8,16 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public abstract class ASpike {
+public abstract class ServletTest {
     private Server server;
 
     @BeforeEach
