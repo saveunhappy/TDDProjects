@@ -30,7 +30,7 @@ public class ResourceServlet extends HttpServlet {
         for (String name : headers.keySet()) {
             //这个value就是NewCookie的SESSION_ID和USERID，所以放的时候就是用NewCookie.class
             for (Object value : headers.get(name)) {
-                RuntimeDelegate.HeaderDelegate<?> headerDelegate = RuntimeDelegate.getInstance().createHeaderDelegate(value.getClass());
+                RuntimeDelegate.HeaderDelegate headerDelegate = RuntimeDelegate.getInstance().createHeaderDelegate(value.getClass());
                 resp.addHeader(name,headerDelegate.toString(value));
             }
         }
