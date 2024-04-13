@@ -47,6 +47,8 @@ public class ResourceServletTest extends ServletTest {
         //当返回的时候就返回30x的状态码，200正常，500是失败，但是这种状态码你不知道到底是成功了还是失败了。
         //所以30x状态不容易冲突，那么就用这个状态码
         when(response.getStatus()).thenReturn(Response.Status.NOT_MODIFIED.getStatusCode());
+        when(response.getHeaders()).thenReturn(new MultivaluedHashMap<>());
+
         when(router.dispatch(any(), eq(resourceContext))).thenReturn(response);
         // 这个get就是HttpRequest 发送的，然后得到HttpResponse
         HttpResponse<String> httpResponse = get("/test");
