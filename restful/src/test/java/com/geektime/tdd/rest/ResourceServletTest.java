@@ -6,6 +6,7 @@ import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.RuntimeDelegate;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -62,6 +63,23 @@ public class ResourceServletTest extends ServletTest {
          * */
         NewCookie sessionId = new NewCookie.Builder("SESSION_ID").value("session").build();
         NewCookie userId = new NewCookie.Builder("USER_ID").value("user").build();
+        //先是mock掉，其实和创建一个子类没啥区别
+        RuntimeDelegate delegate = mock(RuntimeDelegate.class);
+        //然后设置全局的
+        RuntimeDelegate.setInstance(delegate);
+        //这个时候就是使用mock的对象，设置他对应的行为。
+        when(delegate.createHeaderDelegate(NewCookie.class)).thenReturn(new RuntimeDelegate.HeaderDelegate<>() {
+            //这个相当于set，如果这个value是个json的字符串呢，你是可以设置转换成对象的，不再是之前的只能是String
+            @Override
+            public NewCookie fromString(String value) {
+                return null;
+            }
+            //这个就是get
+            @Override
+            public String toString(NewCookie value) {
+                return value.getName() + "=" + value.getValue();
+            }
+        });
 
         OutboundResponse response = mock(OutboundResponse.class);
         MultivaluedMap<String,Object> headers = new MultivaluedHashMap<>();
@@ -73,7 +91,7 @@ public class ResourceServletTest extends ServletTest {
         // 这个get就是HttpRequest 发送的，然后得到HttpResponse
         HttpResponse<String> httpResponse = get("/test");
 
-        assertArrayEquals(new String[]{sessionId.toString(),userId.toString()},httpResponse.headers().allValues("Set-Cookie").toArray(String[]::new));
+        assertArrayEquals(new String[]{"SESSION_ID=session","USER_ID=user"},httpResponse.headers().allValues("Set-Cookie").toArray(String[]::new));
     }
 
     //TODO: writer body using MessageBodyWriter
