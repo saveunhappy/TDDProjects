@@ -86,6 +86,7 @@ public class ResourceServletTest extends ServletTest {
     @Test
     public void should_use_status_from_response() throws Exception {
         response(Response.Status.NOT_MODIFIED, new MultivaluedHashMap<>(), new GenericEntity<>("entity", String.class), new Annotation[0], MediaType.TEXT_PLAIN_TYPE);
+        new OutboundResponseBuilder().status(Response.Status.NOT_MODIFIED).build(router);
         // 这个get就是HttpRequest 发送的，然后得到HttpResponse
         HttpResponse<String> httpResponse = get("/test");
 
@@ -98,13 +99,7 @@ public class ResourceServletTest extends ServletTest {
 
         NewCookie sessionId = new NewCookie.Builder("SESSION_ID").value("session").build();
         NewCookie userId = new NewCookie.Builder("USER_ID").value("user").build();
-        MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
-        // key是Set-Cookie，value是一个list,就是SESSION_ID和USER_ID
-
-        headers.addAll("Set-Cookie", sessionId, userId);
-        Response.Status status = Response.Status.NOT_MODIFIED;
-
-        response(status, headers, new GenericEntity<>("entity", String.class), new Annotation[0], MediaType.TEXT_PLAIN_TYPE);
+        new OutboundResponseBuilder().headers("Set-Cookie",sessionId,userId).build(router);
         // 这个get就是HttpRequest 发送的，然后得到HttpResponse
         HttpResponse<String> httpResponse = get("/test");
 
@@ -116,11 +111,7 @@ public class ResourceServletTest extends ServletTest {
     //TODO: writer body using MessageBodyWriter
     @Test
     public void should_write_entity_to_http_response_using_message_body_writer() throws Exception {
-        GenericEntity<Object> entity = new GenericEntity<>("entity", String.class);
-        Annotation[] annotations = new Annotation[0];
-        MediaType mediaType = MediaType.TEXT_PLAIN_TYPE;
-        //为什么这里就不能用304了？因为现在要使用MessageBodyWriter写东西了，30x状态码没办法携带Body啊，所以，要使用200
-        response(Response.Status.OK, new MultivaluedHashMap<>(), entity, annotations, mediaType);
+        new OutboundResponseBuilder().build(router);
         HttpResponse<String> httpResponse = get("/test");
         assertEquals("entity", httpResponse.body());
     }
@@ -138,4 +129,38 @@ public class ResourceServletTest extends ServletTest {
         when(response.getMediaType()).thenReturn(mediaType);
         when(router.dispatch(any(), eq(resourceContext))).thenReturn(response);
     }
+
+    class OutboundResponseBuilder {
+        Response.Status status = Response.Status.OK;
+        MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+        GenericEntity<Object> entity = new GenericEntity<>("entity", String.class);
+        Annotation[] annotations = new Annotation[0];
+        MediaType mediaType = MediaType.TEXT_PLAIN_TYPE;
+
+        public OutboundResponseBuilder status(Response.Status status) {
+            this.status = status;
+            return this;
+        }
+
+        public OutboundResponseBuilder headers(String name, Object... values) {
+            headers.addAll(name, values);
+            return this;
+        }
+
+        public OutboundResponseBuilder entity(GenericEntity<Object> entity, Annotation[] annotations) {
+            this.entity = entity;
+            this.annotations = annotations;
+            return this;
+        }
+        void build(ResourceRouter router){
+            OutboundResponse response = mock(OutboundResponse.class);
+            when(response.getStatus()).thenReturn(status.getStatusCode());
+            when(response.getHeaders()).thenReturn(headers);
+            when(response.getGenericEntity()).thenReturn(entity);
+            when(response.getAnnotations()).thenReturn(annotations);
+            when(response.getMediaType()).thenReturn(mediaType);
+            when(router.dispatch(any(), eq(resourceContext))).thenReturn(response);
+        }
+    }
+
 }
