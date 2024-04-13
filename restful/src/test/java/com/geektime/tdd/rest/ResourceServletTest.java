@@ -8,7 +8,6 @@ import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.RuntimeDelegate;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.net.http.HttpResponse;
 
@@ -42,7 +41,7 @@ public class ResourceServletTest extends ServletTest {
 
     @Test
     public void should_use_status_from_response() throws Exception {
-        response(new MultivaluedHashMap<>(), Response.Status.NOT_MODIFIED);
+        response(Response.Status.NOT_MODIFIED, new MultivaluedHashMap<>());
         // 这个get就是HttpRequest 发送的，然后得到HttpResponse
         HttpResponse<String> httpResponse = get("/test");
         assertEquals(Response.Status.NOT_MODIFIED.getStatusCode(), httpResponse.statusCode());
@@ -82,7 +81,7 @@ public class ResourceServletTest extends ServletTest {
         headers.addAll("Set-Cookie", sessionId, userId);
         Response.Status status = Response.Status.NOT_MODIFIED;
 
-        response(headers, status);
+        response(status, headers);
         // 这个get就是HttpRequest 发送的，然后得到HttpResponse
         HttpResponse<String> httpResponse = get("/test");
 
@@ -90,7 +89,7 @@ public class ResourceServletTest extends ServletTest {
                 httpResponse.headers().allValues("Set-Cookie").toArray(String[]::new));
     }
 
-    private void response(MultivaluedMap<String, Object> headers, Response.Status status) {
+    private void response(Response.Status status, MultivaluedMap<String, Object> headers) {
         OutboundResponse response = mock(OutboundResponse.class);
         //不设置这个，那么status默认就是0，那么就不合规范
         when(response.getStatus()).thenReturn(status.getStatusCode());
