@@ -40,7 +40,6 @@ public class ResourceServletTest extends ServletTest {
         return new ResourceServlet(runtime);
     }
 
-    //TODO: use status code as http status
     @Test
     public void should_use_status_from_response() throws Exception {
         OutboundResponse response = mock(OutboundResponse.class);
@@ -56,7 +55,6 @@ public class ResourceServletTest extends ServletTest {
 
     }
 
-    //TODO: use headers as http header
     @Test
     public void should_use_http_headers_from_response() throws Exception {
         /*
