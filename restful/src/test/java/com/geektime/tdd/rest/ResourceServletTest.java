@@ -19,8 +19,7 @@ import java.net.http.HttpResponse;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -70,20 +69,7 @@ public class ResourceServletTest extends ServletTest {
             }
         });
 
-        when(providers.getMessageBodyWriter(eq(String.class), eq(String.class), eq(new Annotation[0]), eq(MediaType.TEXT_PLAIN_TYPE))).thenReturn(
-                new MessageBodyWriter<>() {
-                    @Override
-                    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-                        return false;
-                    }
 
-                    @Override
-                    public void writeTo(String s, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
-                        PrintWriter writer = new PrintWriter(entityStream);
-                        writer.write(s);
-                        writer.flush();
-                    }
-                });
     }
 
     @Test
@@ -91,7 +77,6 @@ public class ResourceServletTest extends ServletTest {
         builder.status(Response.Status.NOT_MODIFIED).build(router);
         // 这个get就是HttpRequest 发送的，然后得到HttpResponse
         HttpResponse<String> httpResponse = get("/test");
-
         assertEquals(Response.Status.NOT_MODIFIED.getStatusCode(), httpResponse.statusCode());
 
     }
@@ -162,6 +147,21 @@ public class ResourceServletTest extends ServletTest {
             when(response.getAnnotations()).thenReturn(annotations);
             when(response.getMediaType()).thenReturn(mediaType);
             when(router.dispatch(any(), eq(resourceContext))).thenReturn(response);
+
+            when(providers.getMessageBodyWriter(eq(String.class), eq(String.class), same(annotations), eq(mediaType))).thenReturn(
+                    new MessageBodyWriter<>() {
+                        @Override
+                        public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+                            return false;
+                        }
+
+                        @Override
+                        public void writeTo(String s, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
+                            PrintWriter writer = new PrintWriter(entityStream);
+                            writer.write(s);
+                            writer.flush();
+                        }
+                    });
         }
     }
 
