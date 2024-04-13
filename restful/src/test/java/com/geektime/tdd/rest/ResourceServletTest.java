@@ -87,7 +87,8 @@ public class ResourceServletTest extends ServletTest {
         // key是Set-Cookie，value是一个list,就是SESSION_ID和USER_ID
 
         headers.addAll("Set-Cookie", sessionId, userId);
-//        when(response.getStatus()).thenReturn(Response.Status.NOT_MODIFIED.getStatusCode());
+        //不设置这个，那么status默认就是0，那么就不合规范
+        when(response.getStatus()).thenReturn(Response.Status.NOT_MODIFIED.getStatusCode());
         when(response.getHeaders()).thenReturn(headers);
         when(router.dispatch(any(), eq(resourceContext))).thenReturn(response);
         // 这个get就是HttpRequest 发送的，然后得到HttpResponse
