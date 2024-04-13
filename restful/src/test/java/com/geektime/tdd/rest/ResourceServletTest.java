@@ -7,6 +7,7 @@ import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.RuntimeDelegate;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.net.http.HttpResponse;
@@ -39,22 +40,8 @@ public class ResourceServletTest extends ServletTest {
         return new ResourceServlet(runtime);
     }
 
-    @Test
-    public void should_use_status_from_response() throws Exception {
-        response(Response.Status.NOT_MODIFIED, new MultivaluedHashMap<>());
-        // 这个get就是HttpRequest 发送的，然后得到HttpResponse
-        HttpResponse<String> httpResponse = get("/test");
-        assertEquals(Response.Status.NOT_MODIFIED.getStatusCode(), httpResponse.statusCode());
-
-    }
-
-    @Test
-    public void should_use_http_headers_from_response() throws Exception {
-        /*
-         * 这个时候在build的时候报错：Provider for jakarta.ws.rs.ext.RuntimeDelegate cannot be found
-         * 因为构建的时候是用RuntimeDelegate这个类的，那么我们也给stub掉
-         * */
-
+    @BeforeEach
+    public void before(){
         //先是mock掉，其实和创建一个子类没啥区别
         RuntimeDelegate delegate = mock(RuntimeDelegate.class);
         //然后设置全局的
@@ -72,6 +59,19 @@ public class ResourceServletTest extends ServletTest {
                 return value.getName() + "=" + value.getValue();
             }
         });
+    }
+    @Test
+    public void should_use_status_from_response() throws Exception {
+        response(Response.Status.NOT_MODIFIED, new MultivaluedHashMap<>());
+        // 这个get就是HttpRequest 发送的，然后得到HttpResponse
+        HttpResponse<String> httpResponse = get("/test");
+        assertEquals(Response.Status.NOT_MODIFIED.getStatusCode(), httpResponse.statusCode());
+
+    }
+
+    @Test
+    public void should_use_http_headers_from_response() throws Exception {
+
 
         NewCookie sessionId = new NewCookie.Builder("SESSION_ID").value("session").build();
         NewCookie userId = new NewCookie.Builder("USER_ID").value("user").build();
@@ -89,6 +89,13 @@ public class ResourceServletTest extends ServletTest {
                 httpResponse.headers().allValues("Set-Cookie").toArray(String[]::new));
     }
 
+
+
+    //TODO: writer body using MessageBodyWriter
+    //TODO: 500 if MessageBodyWriter not found
+    //TODO: throw WebApplicationException with response,use response
+    //TODO: throw WebApplicationException with response,use ExceptionMapper build response
+    //TODO: throw other exception,use ExceptionMapper build response
     private void response(Response.Status status, MultivaluedMap<String, Object> headers) {
         OutboundResponse response = mock(OutboundResponse.class);
         //不设置这个，那么status默认就是0，那么就不合规范
@@ -96,10 +103,4 @@ public class ResourceServletTest extends ServletTest {
         when(response.getHeaders()).thenReturn(headers);
         when(router.dispatch(any(), eq(resourceContext))).thenReturn(response);
     }
-
-    //TODO: writer body using MessageBodyWriter
-    //TODO: 500 if MessageBodyWriter not found
-    //TODO: throw WebApplicationException with response,use response
-    //TODO: throw WebApplicationException with response,use ExceptionMapper build response
-    //TODO: throw other exception,use ExceptionMapper build response
 }
