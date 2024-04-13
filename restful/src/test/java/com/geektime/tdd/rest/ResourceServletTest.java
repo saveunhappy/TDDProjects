@@ -32,6 +32,7 @@ public class ResourceServletTest extends ServletTest {
     //@Path，@Controller
     private ResourceContext resourceContext;
     private Providers providers;
+    private OutboundResponseBuilder builder;
 
     @Override
     protected Servlet getServlet() {
@@ -48,6 +49,8 @@ public class ResourceServletTest extends ServletTest {
 
     @BeforeEach
     public void before() {
+        builder = new OutboundResponseBuilder();
+
         //先是mock掉，其实和创建一个子类没啥区别
         RuntimeDelegate delegate = mock(RuntimeDelegate.class);
         //然后设置全局的
@@ -85,8 +88,7 @@ public class ResourceServletTest extends ServletTest {
 
     @Test
     public void should_use_status_from_response() throws Exception {
-        response(Response.Status.NOT_MODIFIED, new MultivaluedHashMap<>(), new GenericEntity<>("entity", String.class), new Annotation[0], MediaType.TEXT_PLAIN_TYPE);
-        new OutboundResponseBuilder().status(Response.Status.NOT_MODIFIED).build(router);
+        builder.status(Response.Status.NOT_MODIFIED).build(router);
         // 这个get就是HttpRequest 发送的，然后得到HttpResponse
         HttpResponse<String> httpResponse = get("/test");
 
@@ -99,7 +101,7 @@ public class ResourceServletTest extends ServletTest {
 
         NewCookie sessionId = new NewCookie.Builder("SESSION_ID").value("session").build();
         NewCookie userId = new NewCookie.Builder("USER_ID").value("user").build();
-        new OutboundResponseBuilder().headers("Set-Cookie",sessionId,userId).build(router);
+        builder.headers("Set-Cookie",sessionId,userId).build(router);
         // 这个get就是HttpRequest 发送的，然后得到HttpResponse
         HttpResponse<String> httpResponse = get("/test");
 
@@ -111,7 +113,7 @@ public class ResourceServletTest extends ServletTest {
     //TODO: writer body using MessageBodyWriter
     @Test
     public void should_write_entity_to_http_response_using_message_body_writer() throws Exception {
-        new OutboundResponseBuilder().build(router);
+        builder.entity(new GenericEntity<>("entity", String.class), new Annotation[0]).build(router);
         HttpResponse<String> httpResponse = get("/test");
         assertEquals("entity", httpResponse.body());
     }
