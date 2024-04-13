@@ -73,6 +73,7 @@ public class ResourceServletTest extends ServletTest {
         response(Response.Status.NOT_MODIFIED, new MultivaluedHashMap<>(), new GenericEntity<>("entity", String.class), new Annotation[0], MediaType.TEXT_PLAIN_TYPE);
         // 这个get就是HttpRequest 发送的，然后得到HttpResponse
         HttpResponse<String> httpResponse = get("/test");
+
         assertEquals(Response.Status.NOT_MODIFIED.getStatusCode(), httpResponse.statusCode());
 
     }
