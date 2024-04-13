@@ -42,13 +42,7 @@ public class ResourceServletTest extends ServletTest {
 
     @Test
     public void should_use_status_from_response() throws Exception {
-        OutboundResponse response = mock(OutboundResponse.class);
-        //当返回的时候就返回30x的状态码，200正常，500是失败，但是这种状态码你不知道到底是成功了还是失败了。
-        //所以30x状态不容易冲突，那么就用这个状态码
-        when(response.getStatus()).thenReturn(Response.Status.NOT_MODIFIED.getStatusCode());
-        when(response.getHeaders()).thenReturn(new MultivaluedHashMap<>());
-
-        when(router.dispatch(any(), eq(resourceContext))).thenReturn(response);
+        response(new MultivaluedHashMap<>(), Response.Status.NOT_MODIFIED);
         // 这个get就是HttpRequest 发送的，然后得到HttpResponse
         HttpResponse<String> httpResponse = get("/test");
         assertEquals(Response.Status.NOT_MODIFIED.getStatusCode(), httpResponse.statusCode());
@@ -82,20 +76,26 @@ public class ResourceServletTest extends ServletTest {
 
         NewCookie sessionId = new NewCookie.Builder("SESSION_ID").value("session").build();
         NewCookie userId = new NewCookie.Builder("USER_ID").value("user").build();
-        OutboundResponse response = mock(OutboundResponse.class);
         MultivaluedMap<String,Object> headers = new MultivaluedHashMap<>();
         // key是Set-Cookie，value是一个list,就是SESSION_ID和USER_ID
 
         headers.addAll("Set-Cookie", sessionId, userId);
-        //不设置这个，那么status默认就是0，那么就不合规范
-        when(response.getStatus()).thenReturn(Response.Status.NOT_MODIFIED.getStatusCode());
-        when(response.getHeaders()).thenReturn(headers);
-        when(router.dispatch(any(), eq(resourceContext))).thenReturn(response);
+        Response.Status status = Response.Status.NOT_MODIFIED;
+
+        response(headers, status);
         // 这个get就是HttpRequest 发送的，然后得到HttpResponse
         HttpResponse<String> httpResponse = get("/test");
 
         assertArrayEquals(new String[]{"SESSION_ID=session","USER_ID=user"},
                 httpResponse.headers().allValues("Set-Cookie").toArray(String[]::new));
+    }
+
+    private void response(MultivaluedMap<String, Object> headers, Response.Status status) {
+        OutboundResponse response = mock(OutboundResponse.class);
+        //不设置这个，那么status默认就是0，那么就不合规范
+        when(response.getStatus()).thenReturn(status.getStatusCode());
+        when(response.getHeaders()).thenReturn(headers);
+        when(router.dispatch(any(), eq(resourceContext))).thenReturn(response);
     }
 
     //TODO: writer body using MessageBodyWriter
