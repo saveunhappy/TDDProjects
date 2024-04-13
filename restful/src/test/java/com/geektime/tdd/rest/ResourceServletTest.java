@@ -1,14 +1,20 @@
 package com.geektime.tdd.rest;
 
 import jakarta.servlet.Servlet;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.*;
+import jakarta.ws.rs.ext.MessageBodyWriter;
 import jakarta.ws.rs.ext.Providers;
 import jakarta.ws.rs.ext.RuntimeDelegate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.net.http.HttpResponse;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -74,7 +80,6 @@ public class ResourceServletTest extends ServletTest {
     @Test
     public void should_use_http_headers_from_response() throws Exception {
 
-
         NewCookie sessionId = new NewCookie.Builder("SESSION_ID").value("session").build();
         NewCookie userId = new NewCookie.Builder("USER_ID").value("user").build();
         MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
@@ -94,12 +99,28 @@ public class ResourceServletTest extends ServletTest {
 
     //TODO: writer body using MessageBodyWriter
     @Test
-    public void should_write_entity_to_http_response_using_message_body_writer() {
+    public void should_write_entity_to_http_response_using_message_body_writer() throws Exception {
         GenericEntity<Object> entity = new GenericEntity<>("entity", String.class);
         Annotation[] annotations = new Annotation[0];
         MediaType mediaType = MediaType.TEXT_PLAIN_TYPE;
         //为什么这里就不能用304了？因为现在要使用MessageBodyWriter写东西了，30x状态码没办法携带Body啊，所以，要使用200
-        response(Response.Status.OK,new MultivaluedHashMap<>(),entity,annotations,mediaType);
+        response(Response.Status.OK, new MultivaluedHashMap<>(), entity, annotations, mediaType);
+        when(providers.getMessageBodyWriter(eq(String.class), eq(String.class), eq(annotations), eq(mediaType))).thenReturn(
+                new MessageBodyWriter<>() {
+                    @Override
+                    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+                        return false;
+                    }
+
+                    @Override
+                    public void writeTo(String s, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
+                        PrintWriter writer = new PrintWriter(entityStream);
+                        writer.write(s);
+                        writer.flush();
+                    }
+                });
+        HttpResponse<String> httpResponse = get("/test");
+        assertEquals("entity", httpResponse.body());
     }
 
     //TODO: 500 if MessageBodyWriter not found
@@ -108,9 +129,11 @@ public class ResourceServletTest extends ServletTest {
     //TODO: throw other exception,use ExceptionMapper build response
     private void response(Response.Status status, MultivaluedMap<String, Object> headers, GenericEntity<Object> entity, Annotation[] annotations, MediaType mediaType) {
         OutboundResponse response = mock(OutboundResponse.class);
-        //不设置这个，那么status默认就是0，那么就不合规范
         when(response.getStatus()).thenReturn(status.getStatusCode());
         when(response.getHeaders()).thenReturn(headers);
+        when(response.getGenericEntity()).thenReturn(entity);
+        when(response.getAnnotations()).thenReturn(annotations);
+        when(response.getMediaType()).thenReturn(mediaType);
         when(router.dispatch(any(), eq(resourceContext))).thenReturn(response);
     }
 }
