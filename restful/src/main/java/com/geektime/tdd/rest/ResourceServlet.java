@@ -12,7 +12,6 @@ import jakarta.ws.rs.ext.Providers;
 import jakarta.ws.rs.ext.RuntimeDelegate;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 
 public class ResourceServlet extends HttpServlet {
     private Runtime runtime;
@@ -41,7 +40,7 @@ public class ResourceServlet extends HttpServlet {
             }
         }
         GenericEntity entity = response.getGenericEntity();
-        MessageBodyWriter writer = providers.getMessageBodyWriter(entity.getRawType(), entity.getType(), new Annotation[0], response.getMediaType());
+        MessageBodyWriter writer = providers.getMessageBodyWriter(entity.getRawType(), entity.getType(), response.getAnnotations(), response.getMediaType());
         writer.writeTo(entity.getEntity(),entity.getRawType(),entity.getType(), response.getAnnotations(), response.getMediaType(),
                 response.getHeaders(),resp.getOutputStream());
 
