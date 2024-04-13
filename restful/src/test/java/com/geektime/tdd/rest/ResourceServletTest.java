@@ -66,6 +66,21 @@ public class ResourceServletTest extends ServletTest {
                 return value.getName() + "=" + value.getValue();
             }
         });
+
+        when(providers.getMessageBodyWriter(eq(String.class), eq(String.class), eq(new Annotation[0]), eq(MediaType.TEXT_PLAIN_TYPE))).thenReturn(
+                new MessageBodyWriter<>() {
+                    @Override
+                    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+                        return false;
+                    }
+
+                    @Override
+                    public void writeTo(String s, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
+                        PrintWriter writer = new PrintWriter(entityStream);
+                        writer.write(s);
+                        writer.flush();
+                    }
+                });
     }
 
     @Test
@@ -106,20 +121,6 @@ public class ResourceServletTest extends ServletTest {
         MediaType mediaType = MediaType.TEXT_PLAIN_TYPE;
         //为什么这里就不能用304了？因为现在要使用MessageBodyWriter写东西了，30x状态码没办法携带Body啊，所以，要使用200
         response(Response.Status.OK, new MultivaluedHashMap<>(), entity, annotations, mediaType);
-        when(providers.getMessageBodyWriter(eq(String.class), eq(String.class), eq(annotations), eq(mediaType))).thenReturn(
-                new MessageBodyWriter<>() {
-                    @Override
-                    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-                        return false;
-                    }
-
-                    @Override
-                    public void writeTo(String s, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
-                        PrintWriter writer = new PrintWriter(entityStream);
-                        writer.write(s);
-                        writer.flush();
-                    }
-                });
         HttpResponse<String> httpResponse = get("/test");
         assertEquals("entity", httpResponse.body());
     }
