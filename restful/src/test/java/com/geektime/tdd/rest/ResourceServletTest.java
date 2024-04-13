@@ -86,7 +86,7 @@ public class ResourceServletTest extends ServletTest {
     @Test
     public void should_use_status_from_response() throws Exception {
         response(Response.Status.NOT_MODIFIED, new MultivaluedHashMap<>(), new GenericEntity<>("entity", String.class), new Annotation[0], MediaType.TEXT_PLAIN_TYPE);
-        new OutboundResponseBuilder().status(Response.Status.NOT_MODIFIED).build(router);
+        new OutboundResponseBuilder().status(Response.Status.NOT_MODIFIED).build();
         // 这个get就是HttpRequest 发送的，然后得到HttpResponse
         HttpResponse<String> httpResponse = get("/test");
 
@@ -99,7 +99,7 @@ public class ResourceServletTest extends ServletTest {
 
         NewCookie sessionId = new NewCookie.Builder("SESSION_ID").value("session").build();
         NewCookie userId = new NewCookie.Builder("USER_ID").value("user").build();
-        new OutboundResponseBuilder().headers("Set-Cookie",sessionId,userId).build(router);
+        new OutboundResponseBuilder().headers("Set-Cookie",sessionId,userId).build();
         // 这个get就是HttpRequest 发送的，然后得到HttpResponse
         HttpResponse<String> httpResponse = get("/test");
 
@@ -111,7 +111,7 @@ public class ResourceServletTest extends ServletTest {
     //TODO: writer body using MessageBodyWriter
     @Test
     public void should_write_entity_to_http_response_using_message_body_writer() throws Exception {
-        new OutboundResponseBuilder().build(router);
+        new OutboundResponseBuilder().build();
         HttpResponse<String> httpResponse = get("/test");
         assertEquals("entity", httpResponse.body());
     }
@@ -152,7 +152,7 @@ public class ResourceServletTest extends ServletTest {
             this.annotations = annotations;
             return this;
         }
-        void build(ResourceRouter router){
+        void build(){
             OutboundResponse response = mock(OutboundResponse.class);
             when(response.getStatus()).thenReturn(status.getStatusCode());
             when(response.getHeaders()).thenReturn(headers);
