@@ -192,6 +192,22 @@ public class ResourceServletTest extends ServletTest {
             consumer.accept(response);
 //            when(router.dispatch(any(), eq(resourceContext))).thenReturn(response);
 
+
+        }
+
+        OutboundResponse build() {
+            OutboundResponse response = mock(OutboundResponse.class);
+            when(response.getStatus()).thenReturn(status.getStatusCode());
+            when(response.getStatusInfo()).thenReturn(status);
+            when(response.getHeaders()).thenReturn(headers);
+            when(response.getGenericEntity()).thenReturn(entity);
+            when(response.getAnnotations()).thenReturn(annotations);
+            when(response.getMediaType()).thenReturn(mediaType);
+            stubMessageBodyWriter();
+            return response;
+        }
+
+        private void stubMessageBodyWriter() {
             when(providers.getMessageBodyWriter(eq(String.class), eq(String.class), same(annotations), eq(mediaType))).thenReturn(
                     new MessageBodyWriter<>() {
                         @Override
@@ -206,17 +222,6 @@ public class ResourceServletTest extends ServletTest {
                             writer.flush();
                         }
                     });
-        }
-
-        OutboundResponse build() {
-            OutboundResponse response = mock(OutboundResponse.class);
-            when(response.getStatus()).thenReturn(status.getStatusCode());
-            when(response.getStatusInfo()).thenReturn(status);
-            when(response.getHeaders()).thenReturn(headers);
-            when(response.getGenericEntity()).thenReturn(entity);
-            when(response.getAnnotations()).thenReturn(annotations);
-            when(response.getMediaType()).thenReturn(mediaType);
-            return response;
         }
 
     }
