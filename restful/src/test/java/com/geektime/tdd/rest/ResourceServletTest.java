@@ -107,9 +107,14 @@ public class ResourceServletTest extends ServletTest {
     //TODO: throw WebApplicationException with response,use response
     @Test
     public void should_use_response_from_web_application_exception() throws Exception {
-        response.status(Response.Status.FORBIDDEN).throwFrom(router);
+        response.status(Response.Status.FORBIDDEN)
+                .headers(HttpHeaders.SET_COOKIE, new NewCookie.Builder("SESSION_ID").value("sessionId").build())
+                .entity(new GenericEntity<>("error", String.class), new Annotation[0])
+                .throwFrom(router);
         HttpResponse<String> httpResponse = get("/test");
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
+        assertArrayEquals(new String[]{"SESSION_ID=sessionId"}, httpResponse.headers().allValues(HttpHeaders.SET_COOKIE).toArray(String[]::new));
+        assertEquals("error",httpResponse.body());
     }
 
     //TODO: throw WebApplicationException with response,use ExceptionMapper build response
