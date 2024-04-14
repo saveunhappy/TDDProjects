@@ -16,6 +16,7 @@ import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.net.http.HttpResponse;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -86,7 +87,7 @@ public class ResourceServletTest extends ServletTest {
 
         NewCookie sessionId = new NewCookie.Builder("SESSION_ID").value("session").build();
         NewCookie userId = new NewCookie.Builder("USER_ID").value("user").build();
-        builder.headers("Set-Cookie",sessionId,userId).build(router);
+        builder.headers("Set-Cookie", sessionId, userId).build(router);
         // 这个get就是HttpRequest 发送的，然后得到HttpResponse
         HttpResponse<String> httpResponse = get("/test");
 
@@ -103,10 +104,17 @@ public class ResourceServletTest extends ServletTest {
         assertEquals("entity", httpResponse.body());
     }
 
-    //TODO: 500 if MessageBodyWriter not found
     //TODO: throw WebApplicationException with response,use response
+    @Test
+    public void should_use_response_from_web_application_exception() {
+
+    }
+
     //TODO: throw WebApplicationException with response,use ExceptionMapper build response
     //TODO: throw other exception,use ExceptionMapper build response
+
+    //TODO: 500 if MessageBodyWriter not found
+
     private void response(Response.Status status, MultivaluedMap<String, Object> headers, GenericEntity<Object> entity, Annotation[] annotations, MediaType mediaType) {
         OutboundResponse response = mock(OutboundResponse.class);
         when(response.getStatus()).thenReturn(status.getStatusCode());
@@ -139,14 +147,25 @@ public class ResourceServletTest extends ServletTest {
             this.annotations = annotations;
             return this;
         }
-        void build(ResourceRouter router){
+
+        void build(ResourceRouter router) {
+            build(new Consumer<OutboundResponse>() {
+                @Override
+                public void accept(OutboundResponse response) {
+                    when(router.dispatch(any(), eq(resourceContext))).thenReturn(response);
+                }
+            });
+        }
+
+        void build(Consumer<OutboundResponse> consumer) {
             OutboundResponse response = mock(OutboundResponse.class);
             when(response.getStatus()).thenReturn(status.getStatusCode());
             when(response.getHeaders()).thenReturn(headers);
             when(response.getGenericEntity()).thenReturn(entity);
             when(response.getAnnotations()).thenReturn(annotations);
             when(response.getMediaType()).thenReturn(mediaType);
-            when(router.dispatch(any(), eq(resourceContext))).thenReturn(response);
+            consumer.accept(response);
+//            when(router.dispatch(any(), eq(resourceContext))).thenReturn(response);
 
             when(providers.getMessageBodyWriter(eq(String.class), eq(String.class), same(annotations), eq(mediaType))).thenReturn(
                     new MessageBodyWriter<>() {
@@ -163,6 +182,7 @@ public class ResourceServletTest extends ServletTest {
                         }
                     });
         }
+
     }
 
 }
