@@ -27,6 +27,12 @@ public class ResourceServlet extends HttpServlet {
         //when(response.getStatus()).thenReturn(Response.Status.NOT_MODIFIED.getStatusCode());
         //就是在这里stub了，所以response.getStatus()就会返回Response.Status.NOT_MODIFIED.getStatusCode()，
         //这个时候/test这个接口是在req中能获取，但是，我们没有用到，只是用到了resp,所以，这个测试是可以通过的
+
+        /*
+        *       WebApplicationException exception = new WebApplicationException(response);
+                when(router.dispatch(any(), eq(resourceContext))).thenThrow(exception);
+        *       stub的就是这样的，所以执行到这就会抛出异常
+        * */
         OutboundResponse response = router.dispatch(req, runtime.createResourceContext(req, resp));
         //if (sc <= 0) throw new IllegalArgumentException();
         resp.setStatus(response.getStatus());
