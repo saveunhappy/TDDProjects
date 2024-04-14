@@ -4,6 +4,7 @@ import jakarta.servlet.Servlet;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.*;
+import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.MessageBodyWriter;
 import jakarta.ws.rs.ext.Providers;
 import jakarta.ws.rs.ext.RuntimeDelegate;
@@ -113,14 +114,29 @@ public class ResourceServletTest extends ServletTest {
         HttpResponse<String> httpResponse = get("/test");
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
         assertArrayEquals(new String[]{"SESSION_ID=sessionId"}, httpResponse.headers().allValues(HttpHeaders.SET_COOKIE).toArray(String[]::new));
-        assertEquals("error",httpResponse.body());
+        assertEquals("error", httpResponse.body());
     }
 
     //TODO: throw WebApplicationException with response,use ExceptionMapper build response
+    @Test
+    public void should_build_response_by_exception_mapper_if_null_response_from_web_application_exception() throws Exception {
+        WebApplicationException exception = new WebApplicationException("error", (Response) null);
+        when(router.dispatch(any(), eq(resourceContext))).thenThrow(exception);
+        when(providers.getExceptionMapper(eq(WebApplicationException.class))).thenReturn(new ExceptionMapper<WebApplicationException>() {
+            @Override
+            public Response toResponse(WebApplicationException exception) {
+                //抽取处理就是为了这里，能返回回来
+                return response.build();
+            }
+        });
+        HttpResponse<String> httpResponse = get("/test");
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
+    }
     //TODO: throw other exception,use ExceptionMapper build response
 
     //TODO: 500 if MessageBodyWriter not found
 
+    //TODO entity is null, ignore messageBodyWriter
     class OutboundResponseBuilder {
         Response.Status status = Response.Status.OK;
         MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
@@ -171,13 +187,7 @@ public class ResourceServletTest extends ServletTest {
         }
 
         void build(Consumer<OutboundResponse> consumer) {
-            OutboundResponse response = mock(OutboundResponse.class);
-            when(response.getStatus()).thenReturn(status.getStatusCode());
-            when(response.getStatusInfo()).thenReturn(status);
-            when(response.getHeaders()).thenReturn(headers);
-            when(response.getGenericEntity()).thenReturn(entity);
-            when(response.getAnnotations()).thenReturn(annotations);
-            when(response.getMediaType()).thenReturn(mediaType);
+            OutboundResponse response = build();
             consumer.accept(response);
 //            when(router.dispatch(any(), eq(resourceContext))).thenReturn(response);
 
@@ -195,6 +205,17 @@ public class ResourceServletTest extends ServletTest {
                             writer.flush();
                         }
                     });
+        }
+
+        OutboundResponse build() {
+            OutboundResponse response = mock(OutboundResponse.class);
+            when(response.getStatus()).thenReturn(status.getStatusCode());
+            when(response.getStatusInfo()).thenReturn(status);
+            when(response.getHeaders()).thenReturn(headers);
+            when(response.getGenericEntity()).thenReturn(entity);
+            when(response.getAnnotations()).thenReturn(annotations);
+            when(response.getMediaType()).thenReturn(mediaType);
+            return response;
         }
 
     }
