@@ -106,8 +106,10 @@ public class ResourceServletTest extends ServletTest {
 
     //TODO: throw WebApplicationException with response,use response
     @Test
-    public void should_use_response_from_web_application_exception() {
-
+    public void should_use_response_from_web_application_exception() throws Exception {
+        response.status(Response.Status.FORBIDDEN).throwFrom(router);
+        HttpResponse<String> httpResponse = get("/test");
+        assertEquals(Response.Status.NOT_MODIFIED.getStatusCode(), httpResponse.statusCode());
     }
 
     //TODO: throw WebApplicationException with response,use ExceptionMapper build response
@@ -140,6 +142,13 @@ public class ResourceServletTest extends ServletTest {
 
         void returnFrom(ResourceRouter router) {
             build(response -> when(router.dispatch(any(), eq(resourceContext))).thenReturn(response));
+        }
+
+        void throwFrom(ResourceRouter router) {
+            build(response -> {
+                WebApplicationException exception = new WebApplicationException(response);
+                when(router.dispatch(any(), eq(resourceContext))).thenThrow(exception);
+            });
         }
 
         void build(Consumer<OutboundResponse> consumer) {
