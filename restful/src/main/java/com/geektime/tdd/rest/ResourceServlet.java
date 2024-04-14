@@ -4,6 +4,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.GenericEntity;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
@@ -33,7 +34,13 @@ public class ResourceServlet extends HttpServlet {
                 when(router.dispatch(any(), eq(resourceContext))).thenThrow(exception);
         *       stub的就是这样的，所以执行到这就会抛出异常
         * */
-        OutboundResponse response = router.dispatch(req, runtime.createResourceContext(req, resp));
+        OutboundResponse response;
+        try {
+            response = router.dispatch(req, runtime.createResourceContext(req, resp));
+        } catch (WebApplicationException exception) {
+            //注意，异常的构造器就是接收一个response，而且是在所有stub之后的，所以状态码什么的已经设置过了
+            response = (OutboundResponse) exception.getResponse();
+        }
         //if (sc <= 0) throw new IllegalArgumentException();
         resp.setStatus(response.getStatus());
         MultivaluedMap<String, Object> headers = response.getHeaders();
@@ -42,13 +49,13 @@ public class ResourceServlet extends HttpServlet {
             //这个value就是NewCookie的SESSION_ID和USERID，所以放的时候就是用NewCookie.class
             for (Object value : headers.get(name)) {
                 RuntimeDelegate.HeaderDelegate headerDelegate = RuntimeDelegate.getInstance().createHeaderDelegate(value.getClass());
-                resp.addHeader(name,headerDelegate.toString(value));
+                resp.addHeader(name, headerDelegate.toString(value));
             }
         }
         GenericEntity entity = response.getGenericEntity();
         MessageBodyWriter writer = providers.getMessageBodyWriter(entity.getRawType(), entity.getType(), response.getAnnotations(), response.getMediaType());
-        writer.writeTo(entity.getEntity(),entity.getRawType(),entity.getType(), response.getAnnotations(), response.getMediaType(),
-                response.getHeaders(),resp.getOutputStream());
+        writer.writeTo(entity.getEntity(), entity.getRawType(), entity.getType(), response.getAnnotations(), response.getMediaType(),
+                response.getHeaders(), resp.getOutputStream());
 
 
     }
