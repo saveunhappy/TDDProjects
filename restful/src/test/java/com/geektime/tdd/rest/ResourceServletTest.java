@@ -149,12 +149,7 @@ public class ResourceServletTest extends ServletTest {
         }
 
         void build(ResourceRouter router) {
-            build(new Consumer<OutboundResponse>() {
-                @Override
-                public void accept(OutboundResponse response) {
-                    when(router.dispatch(any(), eq(resourceContext))).thenReturn(response);
-                }
-            });
+            build(response -> when(router.dispatch(any(), eq(resourceContext))).thenReturn(response));
         }
 
         void build(Consumer<OutboundResponse> consumer) {
