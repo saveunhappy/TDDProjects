@@ -8,6 +8,7 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.GenericEntity;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.MessageBodyWriter;
 import jakarta.ws.rs.ext.Providers;
 import jakarta.ws.rs.ext.RuntimeDelegate;
@@ -40,6 +41,9 @@ public class ResourceServlet extends HttpServlet {
         } catch (WebApplicationException exception) {
             //注意，异常的构造器就是接收一个response，而且是在所有stub之后的，所以状态码什么的已经设置过了
             response = (OutboundResponse) exception.getResponse();
+        } catch (Throwable throwable){
+            ExceptionMapper exceptionMapper = providers.getExceptionMapper(throwable.getClass());
+            response = (OutboundResponse) exceptionMapper.toResponse(throwable);
         }
         //if (sc <= 0) throw new IllegalArgumentException();
         resp.setStatus(response.getStatus());
