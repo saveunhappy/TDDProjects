@@ -120,6 +120,31 @@ public class ResourceServletTest extends ServletTest {
     //TODO: throw WebApplicationException with response,use ExceptionMapper build response
     @Test
     public void should_build_response_by_exception_mapper_if_null_response_from_web_application_exception() throws Exception {
+        /**
+         * 1.java.lang.NullPointerException: Cannot invoke "jakarta.ws.rs.core.Response$ResponseBuilder.status(jakarta.ws.rs.core.Response$StatusType)"
+         * because the return value of "jakarta.ws.rs.core.Response$ResponseBuilder.newInstance()" is null，
+         * 这个和他的规范不一致的地方，看那个WebApplicationException的构造器：
+         * response – the response that will be returned to the client,
+         * a value of null will be replaced with an internal server error response (status code 500).
+         * 就是说要让你自己提供一个Response，那想到的就是使用ExceptionMapper去构造一个，但是看构造器，
+         *         if (response == null) {
+         *             this.response = Response.serverError().build();
+         *         } else {
+         *             this.response = response;
+         *         }
+         *        public static ResponseBuilder serverError() {
+         *         return status(Status.INTERNAL_SERVER_ERROR);
+         *     }
+         *
+         *     public static ResponseBuilder status(final StatusType status) {
+         *         return ResponseBuilder.newInstance().status(status);
+         *     }
+         *     protected static ResponseBuilder newInstance() {
+         *       return RuntimeDelegate.getInstance().createResponseBuilder();
+         *     }
+         *     一步一步走到这，发现它自己提供了，那么它就永远不会为空了，那这个就不用我们实现了,所以这个就不用我们管了
+         *
+         * */
         WebApplicationException exception = new WebApplicationException("error", (Response) null);
         when(router.dispatch(any(), eq(resourceContext))).thenThrow(exception);
         when(providers.getExceptionMapper(eq(WebApplicationException.class))).thenReturn(new ExceptionMapper<WebApplicationException>() {
@@ -129,6 +154,7 @@ public class ResourceServletTest extends ServletTest {
                 return response.status(Response.Status.FORBIDDEN).build();
             }
         });
+
         HttpResponse<String> httpResponse = get("/test");
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
     }
