@@ -109,7 +109,7 @@ public class ResourceServletTest extends ServletTest {
     public void should_use_response_from_web_application_exception() throws Exception {
         response.status(Response.Status.FORBIDDEN).throwFrom(router);
         HttpResponse<String> httpResponse = get("/test");
-        assertEquals(Response.Status.NOT_MODIFIED.getStatusCode(), httpResponse.statusCode());
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
     }
 
     //TODO: throw WebApplicationException with response,use ExceptionMapper build response
@@ -146,6 +146,21 @@ public class ResourceServletTest extends ServletTest {
 
         void throwFrom(ResourceRouter router) {
             build(response -> {
+                //WebApplicationException创建对象的时候会调用构造器，构造器中会调用computeExceptionMessage这个方法
+                //这个方法如下：
+                /*
+                 *    private static String computeExceptionMessage(final Response response) {
+                        final Response.StatusType statusInfo;
+                        if (response != null) {
+                         statusInfo = response.getStatusInfo();
+                        } else {
+                         statusInfo = Response.Status.INTERNAL_SERVER_ERROR;
+                    }
+                     return "HTTP " + statusInfo.getStatusCode() + ' ' + statusInfo.getReasonPhrase();
+                    }
+                 *
+                 * */
+                //statusInfo.getStatusCode()是空
                 WebApplicationException exception = new WebApplicationException(response);
                 when(router.dispatch(any(), eq(resourceContext))).thenThrow(exception);
             });
@@ -154,6 +169,7 @@ public class ResourceServletTest extends ServletTest {
         void build(Consumer<OutboundResponse> consumer) {
             OutboundResponse response = mock(OutboundResponse.class);
             when(response.getStatus()).thenReturn(status.getStatusCode());
+            when(response.getStatusInfo()).thenReturn(status);
             when(response.getHeaders()).thenReturn(headers);
             when(response.getGenericEntity()).thenReturn(entity);
             when(response.getAnnotations()).thenReturn(annotations);
