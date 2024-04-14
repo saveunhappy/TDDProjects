@@ -126,7 +126,7 @@ public class ResourceServletTest extends ServletTest {
             @Override
             public Response toResponse(WebApplicationException exception) {
                 //抽取处理就是为了这里，能返回回来
-                return response.build();
+                return response.status(Response.Status.FORBIDDEN).build();
             }
         });
         HttpResponse<String> httpResponse = get("/test");
