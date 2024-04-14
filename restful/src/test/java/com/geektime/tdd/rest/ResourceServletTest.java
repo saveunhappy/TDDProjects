@@ -32,7 +32,7 @@ public class ResourceServletTest extends ServletTest {
     //@Path，@Controller
     private ResourceContext resourceContext;
     private Providers providers;
-    private OutboundResponseBuilder builder;
+    private OutboundResponseBuilder response;
 
     @Override
     protected Servlet getServlet() {
@@ -49,7 +49,7 @@ public class ResourceServletTest extends ServletTest {
 
     @BeforeEach
     public void before() {
-        builder = new OutboundResponseBuilder();
+        response = new OutboundResponseBuilder();
 
         //先是mock掉，其实和创建一个子类没啥区别
         RuntimeDelegate delegate = mock(RuntimeDelegate.class);
@@ -75,7 +75,7 @@ public class ResourceServletTest extends ServletTest {
 
     @Test
     public void should_use_status_from_response() throws Exception {
-        builder.status(Response.Status.NOT_MODIFIED).returnFrom(router);
+        response.status(Response.Status.NOT_MODIFIED).returnFrom(router);
         // 这个get就是HttpRequest 发送的，然后得到HttpResponse
         HttpResponse<String> httpResponse = get("/test");
         assertEquals(Response.Status.NOT_MODIFIED.getStatusCode(), httpResponse.statusCode());
@@ -87,7 +87,7 @@ public class ResourceServletTest extends ServletTest {
 
         NewCookie sessionId = new NewCookie.Builder("SESSION_ID").value("session").build();
         NewCookie userId = new NewCookie.Builder("USER_ID").value("user").build();
-        builder.headers("Set-Cookie", sessionId, userId).returnFrom(router);
+        response.headers("Set-Cookie", sessionId, userId).returnFrom(router);
         // 这个get就是HttpRequest 发送的，然后得到HttpResponse
         HttpResponse<String> httpResponse = get("/test");
 
@@ -99,7 +99,7 @@ public class ResourceServletTest extends ServletTest {
     //TODO: writer body using MessageBodyWriter
     @Test
     public void should_write_entity_to_http_response_using_message_body_writer() throws Exception {
-        builder.entity(new GenericEntity<>("entity", String.class), new Annotation[0]).returnFrom(router);
+        response.entity(new GenericEntity<>("entity", String.class), new Annotation[0]).returnFrom(router);
         HttpResponse<String> httpResponse = get("/test");
         assertEquals("entity", httpResponse.body());
     }
@@ -114,16 +114,6 @@ public class ResourceServletTest extends ServletTest {
     //TODO: throw other exception,use ExceptionMapper build response
 
     //TODO: 500 if MessageBodyWriter not found
-
-    private void response(Response.Status status, MultivaluedMap<String, Object> headers, GenericEntity<Object> entity, Annotation[] annotations, MediaType mediaType) {
-        OutboundResponse response = mock(OutboundResponse.class);
-        when(response.getStatus()).thenReturn(status.getStatusCode());
-        when(response.getHeaders()).thenReturn(headers);
-        when(response.getGenericEntity()).thenReturn(entity);
-        when(response.getAnnotations()).thenReturn(annotations);
-        when(response.getMediaType()).thenReturn(mediaType);
-        when(router.dispatch(any(), eq(resourceContext))).thenReturn(response);
-    }
 
     class OutboundResponseBuilder {
         Response.Status status = Response.Status.OK;
