@@ -104,7 +104,6 @@ public class ResourceServletTest extends ServletTest {
         assertEquals("entity", httpResponse.body());
     }
 
-    //TODO: throw WebApplicationException with response,use response
     @Test
     public void should_use_response_from_web_application_exception() throws Exception {
         response.status(Response.Status.FORBIDDEN)
