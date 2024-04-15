@@ -117,8 +117,6 @@ public class ResourceServletTest extends ServletTest {
         assertEquals("error", httpResponse.body());
     }
 
-    //TODO: throw other exception,use ExceptionMapper build response
-
     @Test
     public void should_build_response_by_exception_mapper_if_null_response_from_web_application_exception() throws Exception {
 
@@ -135,7 +133,6 @@ public class ResourceServletTest extends ServletTest {
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
     }
 
-    //TODO: entity is null, ignore messageBodyWriter
     @Test
     public void should_not_call_message_body_writer_if_entity_is_null() throws Exception {
         response.entity(null, new Annotation[0]).returnFrom(router);
@@ -159,6 +156,24 @@ public class ResourceServletTest extends ServletTest {
             throw new WebApplicationException(response.status(Response.Status.FORBIDDEN).build());
         });
 
+        HttpResponse<String> httpResponse = get("/test");
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
+    }
+
+    @Test
+    public void should_map_exception_thrown_by_exception_mapper() throws Exception {
+
+        when(router.dispatch(any(), eq(resourceContext))).thenThrow(RuntimeException.class);
+        //这不是重复，这个是如果catch的Throwable throwable的实际类型是RuntimeException，那么就抛出
+        //IllegalArgumentException，
+        when(providers.getExceptionMapper(eq(RuntimeException.class))).thenReturn(exception -> {
+            throw new IllegalArgumentException();
+        });
+        //这个是如果如果catch的Throwable throwable的实际类型是IllegalArgumentException,那么设置一下状态码，403
+        //因为IllegalArgumentException和WebApplicationException不是一个，所以是可以的
+        when(providers.getExceptionMapper(eq(IllegalArgumentException.class))).thenReturn(exception ->
+                response.status(Response.Status.FORBIDDEN).build()
+        );
         HttpResponse<String> httpResponse = get("/test");
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
     }
