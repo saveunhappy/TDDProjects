@@ -21,12 +21,13 @@ public class ResourceServlet extends HttpServlet {
 
     public ResourceServlet(Runtime runtime) {
         this.runtime = runtime;
+        this.providers = runtime.getProviders();
+
     }
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         ResourceRouter router = runtime.getResourceRouter();
-        providers = runtime.getProviders();
         //when(response.getStatus()).thenReturn(Response.Status.NOT_MODIFIED.getStatusCode());
         //就是在这里stub了，所以response.getStatus()就会返回Response.Status.NOT_MODIFIED.getStatusCode()，
         //这个时候/test这个接口是在req中能获取，但是，我们没有用到，只是用到了resp,所以，这个测试是可以通过的
