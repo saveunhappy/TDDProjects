@@ -42,8 +42,13 @@ public class ResourceServlet extends HttpServlet {
             //注意，异常的构造器就是接收一个response，而且是在所有stub之后的，所以状态码什么的已经设置过了
             response = (OutboundResponse) exception.getResponse();
         } catch (Throwable throwable) {
-            ExceptionMapper exceptionMapper = providers.getExceptionMapper(throwable.getClass());
-            response = (OutboundResponse) exceptionMapper.toResponse(throwable);
+            try{
+                ExceptionMapper exceptionMapper = providers.getExceptionMapper(throwable.getClass());
+                response = (OutboundResponse) exceptionMapper.toResponse(throwable);
+            }catch (WebApplicationException exception){
+                response = (OutboundResponse) exception.getResponse();
+            }
+
         }
         //if (sc <= 0) throw new IllegalArgumentException();
         resp.setStatus(response.getStatus());
