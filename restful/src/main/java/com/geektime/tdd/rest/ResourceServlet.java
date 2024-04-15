@@ -41,7 +41,7 @@ public class ResourceServlet extends HttpServlet {
         } catch (WebApplicationException exception) {
             //注意，异常的构造器就是接收一个response，而且是在所有stub之后的，所以状态码什么的已经设置过了
             response = (OutboundResponse) exception.getResponse();
-        } catch (Throwable throwable){
+        } catch (Throwable throwable) {
             ExceptionMapper exceptionMapper = providers.getExceptionMapper(throwable.getClass());
             response = (OutboundResponse) exceptionMapper.toResponse(throwable);
         }
@@ -57,10 +57,11 @@ public class ResourceServlet extends HttpServlet {
             }
         }
         GenericEntity entity = response.getGenericEntity();
-        MessageBodyWriter writer = providers.getMessageBodyWriter(entity.getRawType(), entity.getType(), response.getAnnotations(), response.getMediaType());
-        writer.writeTo(entity.getEntity(), entity.getRawType(), entity.getType(), response.getAnnotations(), response.getMediaType(),
-                response.getHeaders(), resp.getOutputStream());
-
+        if (entity != null) {
+            MessageBodyWriter writer = providers.getMessageBodyWriter(entity.getRawType(), entity.getType(), response.getAnnotations(), response.getMediaType());
+            writer.writeTo(entity.getEntity(), entity.getRawType(), entity.getType(), response.getAnnotations(), response.getMediaType(),
+                    response.getHeaders(), resp.getOutputStream());
+        }
 
     }
 }
