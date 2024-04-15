@@ -150,6 +150,18 @@ public class ResourceServletTest extends ServletTest {
     //TODO: 500 if header delegate
     //TODO: 500 if exception mapper
     //TODO: exception mapper
+    @Test
+    public void should_use_response_from_web_application_exception_thrown_by_exception_mapper() throws Exception {
+
+        when(router.dispatch(any(), eq(resourceContext))).thenThrow(RuntimeException.class);
+        when(providers.getExceptionMapper(eq(RuntimeException.class))).thenReturn(exception -> {
+            //抽取处理就是为了这里，能返回回来
+            throw new WebApplicationException(response.status(Response.Status.FORBIDDEN).build());
+        });
+
+        HttpResponse<String> httpResponse = get("/test");
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
+    }
     //TODO: providers gets exception mapper
     //TODO: runtime delegate
     //TODO: header delegate
