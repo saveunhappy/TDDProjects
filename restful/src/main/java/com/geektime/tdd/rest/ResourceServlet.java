@@ -58,7 +58,7 @@ public class ResourceServlet extends HttpServlet {
 
     }
 
-    private static void respond(HttpServletResponse resp, OutboundResponse response) throws IOException {
+    private void respond(HttpServletResponse resp, OutboundResponse response) throws IOException {
         //if (sc <= 0) throw new IllegalArgumentException();
         resp.setStatus(response.getStatus());
         MultivaluedMap<String, Object> headers = response.getHeaders();
