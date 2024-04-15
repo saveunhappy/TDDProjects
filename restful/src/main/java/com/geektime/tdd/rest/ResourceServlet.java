@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.GenericEntity;
 import jakarta.ws.rs.core.MultivaluedMap;
-import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.MessageBodyWriter;
 import jakarta.ws.rs.ext.Providers;
@@ -55,11 +54,11 @@ public class ResourceServlet extends HttpServlet {
             }
 
         }
-        respond(resp, providers, response);
+        respond(resp, response);
 
     }
 
-    private static void respond(HttpServletResponse resp, Providers providers, OutboundResponse response) throws IOException {
+    private static void respond(HttpServletResponse resp, OutboundResponse response) throws IOException {
         //if (sc <= 0) throw new IllegalArgumentException();
         resp.setStatus(response.getStatus());
         MultivaluedMap<String, Object> headers = response.getHeaders();
