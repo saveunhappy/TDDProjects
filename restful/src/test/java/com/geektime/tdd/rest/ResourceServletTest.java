@@ -135,9 +135,26 @@ public class ResourceServletTest extends ServletTest {
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
     }
 
-    //TODO: 500 if MessageBodyWriter not found
+    //TODO: entity is null, ignore messageBodyWriter
+    @Test
+    public void should_not_call_message_body_writer_if_entity_is_null() throws Exception {
+        response.entity(null, new Annotation[0]).returnFrom(router);
 
-    //TODO entity is null, ignore messageBodyWriter
+        HttpResponse<String> httpResponse = get("/test");
+
+        assertEquals(Response.Status.OK.getStatusCode(), httpResponse.statusCode());
+        assertEquals("", httpResponse.body());
+    }
+
+    //TODO: 500 if MessageBodyWriter not found
+    //TODO: 500 if header delegate
+    //TODO: 500 if exception mapper
+    //TODO: exception mapper
+    //TODO: providers gets exception mapper
+    //TODO: runtime delegate
+    //TODO: header delegate
+    //TODO: providers get message body writer
+    //TODO: message body writer
     class OutboundResponseBuilder {
         Response.Status status = Response.Status.OK;
         MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
