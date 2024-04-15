@@ -27,17 +27,13 @@ public class ResourceServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         ResourceRouter router = runtime.getResourceRouter();
-        //when(response.getStatus()).thenReturn(Response.Status.NOT_MODIFIED.getStatusCode());
-        //就是在这里stub了，所以response.getStatus()就会返回Response.Status.NOT_MODIFIED.getStatusCode()，
-        //这个时候/test这个接口是在req中能获取，但是，我们没有用到，只是用到了resp,所以，这个测试是可以通过的
-
-        /*
-        *       WebApplicationException exception = new WebApplicationException(response);
-                when(router.dispatch(any(), eq(resourceContext))).thenThrow(exception);
-        *       stub的就是这样的，所以执行到这就会抛出异常
-        * */
         OutboundResponse response;
         try {
+            //看下这个结构，我们是先声明了一个OutboundResponse，然后不管是正常还是异常，都是返回了一个response，
+            // 然后最后再去调用那个方法，那么其实可以替换成每个都去调用，就不用最后处理了，在重构那本书中这个是个坏味道，
+            // 但是在这里是个好方法，因为我们这里有递归，重构的案例是个普通的方法
+//            respond(resp, response);
+//            respond(resp, router.dispatch(req, runtime.createResourceContext(req, resp)));
             response = router.dispatch(req, runtime.createResourceContext(req, resp));
         } catch (WebApplicationException exception) {
             //注意，异常的构造器就是接收一个response，而且是在所有stub之后的，所以状态码什么的已经设置过了
