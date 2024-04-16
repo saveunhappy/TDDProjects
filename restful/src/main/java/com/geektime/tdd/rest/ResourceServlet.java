@@ -13,6 +13,7 @@ import jakarta.ws.rs.ext.Providers;
 import jakarta.ws.rs.ext.RuntimeDelegate;
 
 import java.io.IOException;
+import java.util.function.Supplier;
 
 public class ResourceServlet extends HttpServlet {
     private Runtime runtime;
@@ -27,28 +28,39 @@ public class ResourceServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         ResourceRouter router = runtime.getResourceRouter();
-        try {
-            //看下这个结构，我们是先声明了一个OutboundResponse，然后不管是正常还是异常，都是返回了一个response，
-            // 然后最后再去调用那个方法，那么其实可以替换成每个都去调用，就不用最后处理了，在重构那本书中这个是个坏味道，
-            // 但是在这里是个好方法，因为我们这里有递归，重构的案例是个普通的方法
-//            respond(resp, response);
-            respond(resp, router.dispatch(req, runtime.createResourceContext(req, resp)));
-//            response = router.dispatch(req, runtime.createResourceContext(req, resp));
-        } catch (WebApplicationException exception) {
-            //注意，异常的构造器就是接收一个response，而且是在所有stub之后的，所以状态码什么的已经设置过了
-            respond(resp, (OutboundResponse) exception.getResponse());
-        } catch (Throwable throwable) {
-            try {
-                ExceptionMapper exceptionMapper = providers.getExceptionMapper(throwable.getClass());
-                respond(resp, (OutboundResponse) exceptionMapper.toResponse(throwable));
-            } catch (WebApplicationException exception) {
-                respond(resp, (OutboundResponse) exception.getResponse());
-            } catch (Throwable throwable1) {
-                ExceptionMapper exceptionMapper = providers.getExceptionMapper(throwable1.getClass());
-                respond(resp, (OutboundResponse) exceptionMapper.toResponse(throwable1));
+        //这个是个lambda，为什么是延迟执行，因为这里并不是立即执行router.dispatch(req, runtime.createResourceContext(req, resp));
+        //这个方法，而是去创建了一个Supplier对象，但是什么时候执行呢?是在respond(resp, supplier.get());这里，这个supplier.get()
+        //就是代表router.dispatch(req, runtime.createResourceContext(req, resp));这个时候才去执行，因为平时你就是
+        //传过去的时候那个时候就已经经过evaluate了，但是这个没有，为什么?还是刚开始说的，传过去的是一个Supplier对象啊，
+        //又不是一个立即执行的方法
+        respond_(resp, new Supplier<OutboundResponse>() {
+            @Override
+            public OutboundResponse get() {
+                return router.dispatch(req, runtime.createResourceContext(req, resp));
             }
-        }
+        });
 
+    }
+
+    private void respond_(HttpServletResponse resp, Supplier<OutboundResponse> supplier) throws IOException {
+        try {
+            respond(resp, supplier.get());
+        } catch (WebApplicationException exception) {
+            respond_(resp, new Supplier<OutboundResponse>() {
+                @Override
+                public OutboundResponse get() {
+                    return (OutboundResponse) exception.getResponse();
+                }
+            });
+        } catch (Throwable throwable) {
+            respond_(resp, new Supplier<OutboundResponse>() {
+                @Override
+                public OutboundResponse get() {
+                    ExceptionMapper exceptionMapper = providers.getExceptionMapper(throwable.getClass());
+                    return (OutboundResponse) exceptionMapper.toResponse(throwable);
+                }
+            });
+        }
     }
 
     private void respond(HttpServletResponse resp, OutboundResponse response) throws IOException {
