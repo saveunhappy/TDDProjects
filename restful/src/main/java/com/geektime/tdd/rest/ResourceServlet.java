@@ -33,12 +33,7 @@ public class ResourceServlet extends HttpServlet {
         //就是代表router.dispatch(req, runtime.createResourceContext(req, resp));这个时候才去执行，因为平时你就是
         //传过去的时候那个时候就已经经过evaluate了，但是这个没有，为什么?还是刚开始说的，传过去的是一个Supplier对象啊，
         //又不是一个立即执行的方法
-        respond_(resp, new Supplier<OutboundResponse>() {
-            @Override
-            public OutboundResponse get() {
-                return router.dispatch(req, runtime.createResourceContext(req, resp));
-            }
-        });
+        respond_(resp, () -> router.dispatch(req, runtime.createResourceContext(req, resp)));
 
     }
 
@@ -46,19 +41,11 @@ public class ResourceServlet extends HttpServlet {
         try {
             respond(resp, supplier.get());
         } catch (WebApplicationException exception) {
-            respond_(resp, new Supplier<OutboundResponse>() {
-                @Override
-                public OutboundResponse get() {
-                    return (OutboundResponse) exception.getResponse();
-                }
-            });
+            respond_(resp, () -> (OutboundResponse) exception.getResponse());
         } catch (Throwable throwable) {
-            respond_(resp, new Supplier<OutboundResponse>() {
-                @Override
-                public OutboundResponse get() {
-                    ExceptionMapper exceptionMapper = providers.getExceptionMapper(throwable.getClass());
-                    return (OutboundResponse) exceptionMapper.toResponse(throwable);
-                }
+            respond_(resp, () -> {
+                ExceptionMapper exceptionMapper = providers.getExceptionMapper(throwable.getClass());
+                return (OutboundResponse) exceptionMapper.toResponse(throwable);
             });
         }
     }
