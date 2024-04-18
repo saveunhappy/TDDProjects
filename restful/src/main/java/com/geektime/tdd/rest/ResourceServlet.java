@@ -26,7 +26,7 @@ public class ResourceServlet extends HttpServlet {
     }
 
     @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         ResourceRouter router = runtime.getResourceRouter();
         //这个是个lambda，为什么是延迟执行，因为这里并不是立即执行router.dispatch(req, runtime.createResourceContext(req, resp));
         //这个方法，而是去创建了一个Supplier对象，但是什么时候执行呢?是在respond(resp, supplier.get());这里，这个supplier.get()

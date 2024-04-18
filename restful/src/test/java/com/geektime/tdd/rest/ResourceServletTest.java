@@ -179,26 +179,14 @@ public class ResourceServletTest extends ServletTest {
     //TODO: runtime delegate
     //TODO: header delegate
     //TODO: providers get message body writer
-    /*
-    * 1.这个样子会造成StackOverFlow,原因在这：
-    * when(providers.getExceptionMapper(eq(IllegalArgumentException.class)))
-    * .thenReturn(exception -> response.status(Response.Status.FORBIDDEN).build());
-    *  是因为response是在before中stub了，有问题吗？问题大了！大在哪？
-    * GenericEntity entity = response.getGenericEntity();这句代码，
-    * 因为MessageBodyWriter writer = providers.getMessageBodyWriter(entity.getRawType(), entity.getType(),
-    *  response.getAnnotations(), response.getMediaType());这句代码entity.getRawType()和entity.getType()
-    * 还是传过来的Double类型的，然后就又回到when(providers.getMessageBodyWriter(eq(Double.class),eq(Double.class)
-    * ,eq(new Annotation[0]),eq(MediaType.TEXT_PLAIN_TYPE)))这里了，就会一直抛出这个异常，无法处理，解决办法：
-    * private OutboundResponseBuilder response() { return new OutboundResponseBuilder();}
-    * 使用response().status(Response.Status.FORBIDDEN).build(),为什么这个可以呢？
-    * 因为这个response是创建一个新的，新的话默认的MessageBodyWriter就不是Double，而是默认的String,所以可以结束递归。
-    *
-    * */
     @Test
-    public void should_map_exception_throw_by_message_body_writer() throws Exception {
-        response.entity(new GenericEntity<>(2.5,Double.class),new Annotation[0]).returnFrom(router);
+    public void should_use_response_from_web_application_exception_thrown_by_message_body_writer() throws Exception {
+        WebApplicationException exception = new WebApplicationException(response()
+                .status(Response.Status.FORBIDDEN).build());
+        response().entity(new GenericEntity<>(2.5,Double.class),new Annotation[0]).returnFrom(router);
+
         when(providers.getMessageBodyWriter(eq(Double.class),eq(Double.class),eq(new Annotation[0]),eq(MediaType.TEXT_PLAIN_TYPE)))
-                .thenReturn(new MessageBodyWriter<Double>() {
+                .thenReturn(new MessageBodyWriter<>() {
                     @Override
                     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
                         return false;
@@ -206,10 +194,36 @@ public class ResourceServletTest extends ServletTest {
 
                     @Override
                     public void writeTo(Double aDouble, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws WebApplicationException {
-                        throw new IllegalArgumentException();
+                        throw exception;
                     }
                 });
-        when(providers.getExceptionMapper(eq(IllegalArgumentException.class))).thenReturn(exception ->
+
+        HttpResponse<String> httpResponse = get("/test");
+        //这个Response.Status.FORBIDDEN.getStatusCode()就是在WebApplicationException的构造器中传入的，然后在那个
+        //递归的地方抛出来的
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
+
+    }
+
+    @Test
+    public void should_map_exception_throw_by_message_body_writer() throws Exception {
+        IllegalArgumentException exception = new IllegalArgumentException();
+
+
+        response().entity(new GenericEntity<>(2.5,Double.class),new Annotation[0]).returnFrom(router);
+        when(providers.getMessageBodyWriter(eq(Double.class),eq(Double.class),eq(new Annotation[0]),eq(MediaType.TEXT_PLAIN_TYPE)))
+                .thenReturn(new MessageBodyWriter<>() {
+                    @Override
+                    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+                        return false;
+                    }
+
+                    @Override
+                    public void writeTo(Double aDouble, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws WebApplicationException {
+                        throw exception;
+                    }
+                });
+        when(providers.getExceptionMapper(eq(IllegalArgumentException.class))).thenReturn(e ->
                 response().status(Response.Status.FORBIDDEN).build()
         );
         HttpResponse<String> httpResponse = get("/test");
