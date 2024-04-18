@@ -180,35 +180,27 @@ public class ResourceServletTest extends ServletTest {
     //TODO: header delegate
     @Test
     public void should_use_response_from_web_application_exception_thrown_by_providers_when_find_message_body_writer() throws Exception {
-        Consumer<RuntimeException> caller = this::messageBodyWriter_writeTo;
+        Consumer<RuntimeException> caller = this::providers_getMessageBodyWriter;
 
-        RuntimeException exception = new WebApplicationException(response().status(Response.Status.FORBIDDEN).build());
-        caller.accept(exception);
-
-        when(providers.getExceptionMapper(eq(IllegalArgumentException.class))).thenReturn(e ->
-                response().status(Response.Status.FORBIDDEN).build()
-        );
-
-        HttpResponse<String> httpResponse = get("/test");
-        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
+        webApplicationExceptionThrownFrom(caller);
 
     }
 
+    private void webApplicationExceptionThrownFrom(Consumer<RuntimeException> caller) throws Exception {
+        RuntimeException exception = new WebApplicationException(response()
+                .status(Response.Status.FORBIDDEN).build());
+        caller.accept(exception);
 
+        HttpResponse<String> httpResponse = get("/test");
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
+    }
 
 
     @Test
     public void should_use_response_from_web_application_exception_thrown_by_message_body_writer() throws Exception {
         Consumer<RuntimeException> caller = this::messageBodyWriter_writeTo;
-        RuntimeException exception = new WebApplicationException(response()
-                .status(Response.Status.FORBIDDEN).build());
-        caller.accept(exception);
-        messageBodyWriter_writeTo(exception);
 
-        HttpResponse<String> httpResponse = get("/test");
-        //这个Response.Status.FORBIDDEN.getStatusCode()就是在WebApplicationException的构造器中传入的，然后在那个
-        //递归的地方抛出来的
-        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
+        webApplicationExceptionThrownFrom(caller);
 
     }
 
