@@ -210,13 +210,15 @@ public class ResourceServletTest extends ServletTest {
                     }
                 });
         when(providers.getExceptionMapper(eq(IllegalArgumentException.class))).thenReturn(exception ->
-                response.status(Response.Status.FORBIDDEN).build()
+                response().status(Response.Status.FORBIDDEN).build()
         );
         HttpResponse<String> httpResponse = get("/test");
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
-
     }
 
+    private OutboundResponseBuilder response() {
+        return new OutboundResponseBuilder();
+    }
     class OutboundResponseBuilder {
         Response.Status status = Response.Status.OK;
         MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
