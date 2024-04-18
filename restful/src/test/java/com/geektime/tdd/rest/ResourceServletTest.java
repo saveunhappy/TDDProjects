@@ -214,16 +214,14 @@ public class ResourceServletTest extends ServletTest {
 
     @Test
     public void should_map_exception_thrown_by_providers_when_find_message_body_writer() throws Exception {
-        Consumer<RuntimeException> caller = this::providersGetMessageBodyWriterThrows;
 
-        otherException(caller);
+        otherException(this::providersGetMessageBodyWriterThrows);
 
     }
     @Test
     public void should_map_exception_throw_by_message_body_writer() throws Exception {
-        Consumer<RuntimeException> caller = this::messageBodyWriterWriteToThrows;
 
-        otherException(caller);
+        otherException(this::messageBodyWriterWriteToThrows);
     }
 
     private void otherException(Consumer<RuntimeException> caller) throws Exception {
