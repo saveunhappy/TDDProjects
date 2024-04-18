@@ -233,7 +233,11 @@ public class ResourceServletTest extends ServletTest {
         HttpResponse<String> httpResponse = get("/test");
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
     }
-
+    private void providers_getMessageBodyWriter(RuntimeException exception) {
+        response.entity(new GenericEntity<>(2.5,Double.class),new Annotation[0]).returnFrom(router);
+        when(providers.getMessageBodyWriter(eq(Double.class),eq(Double.class),
+                eq(new Annotation[0]),eq(MediaType.TEXT_PLAIN_TYPE))).thenThrow(exception);
+    }
     private void messageBodyWriter_writeTo(RuntimeException exception) {
         response().entity(new GenericEntity<>(2.5,Double.class),new Annotation[0]).returnFrom(router);
         when(providers.getMessageBodyWriter(eq(Double.class),eq(Double.class),eq(new Annotation[0]),eq(MediaType.TEXT_PLAIN_TYPE)))
