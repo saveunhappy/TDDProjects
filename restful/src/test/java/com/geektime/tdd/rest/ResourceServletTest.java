@@ -180,9 +180,8 @@ public class ResourceServletTest extends ServletTest {
     //TODO: header delegate
     @Test
     public void should_use_response_from_web_application_exception_thrown_by_providers_when_find_message_body_writer() throws Exception {
-        Consumer<RuntimeException> caller = this::providers_getMessageBodyWriter;
 
-        webApplicationExceptionThrownFrom(caller);
+        webApplicationExceptionThrownFrom(this::providers_getMessageBodyWriter);
 
     }
 
@@ -198,9 +197,8 @@ public class ResourceServletTest extends ServletTest {
 
     @Test
     public void should_use_response_from_web_application_exception_thrown_by_message_body_writer() throws Exception {
-        Consumer<RuntimeException> caller = this::messageBodyWriter_writeTo;
 
-        webApplicationExceptionThrownFrom(caller);
+        webApplicationExceptionThrownFrom(this::messageBodyWriter_writeTo);
 
     }
 
