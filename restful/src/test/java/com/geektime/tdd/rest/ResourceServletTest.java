@@ -196,7 +196,7 @@ public class ResourceServletTest extends ServletTest {
 
     @Test
     public void should_map_exception_thrown_by_providers_when_find_message_body_writer() throws Exception {
-        otherExceptionThrownFrom(this::providers_getMessageBodyWriter);
+        otherExceptionThrownFrom(ResourceServletTest.this::providers_getMessageBodyWriter);
     }
 
     @Test
@@ -211,7 +211,12 @@ public class ResourceServletTest extends ServletTest {
         List<Consumer<Consumer<RuntimeException>>> exceptions = List.of(this::otherExceptionThrownFrom, this::webApplicationExceptionThrownFrom);
 
         //这个原来就是void的，包装成Consumer
-        List<Consumer<RuntimeException>> callers = List.of(this::providers_getMessageBodyWriter, this::messageBodyWriter_writeTo);
+        List<Consumer<RuntimeException>> callers = List.of(new Consumer<RuntimeException>() {
+            @Override
+            public void accept(RuntimeException exception) {
+                ResourceServletTest.this.providers_getMessageBodyWriter(exception);
+            }
+        }, this::messageBodyWriter_writeTo);
         //callers就是要stub的messageBodyWriter返回的异常，这个是otherExceptionThrownFrom中的一部分， 所以是作为
         //Consumer传过去，就是不同的异常
         for (Consumer<RuntimeException> caller : callers) {
@@ -221,6 +226,10 @@ public class ResourceServletTest extends ServletTest {
                 tests.add(DynamicTest.dynamicTest(new Date().toString(), new Executable() {
                     @Override
                     public void execute() throws Throwable {
+                        //这个exceptionThrownFrom就是接受Consumer接口，但是没有调用caller.accept(exception)啊
+                        //其实是传过去之后，这个caller在exceptionThrownFrom这个内部自己调用了，所以这里不用调用
+                        //然后这个caller执行的就是把exception给stub一下，那么这个exception是从哪传入的？其实是在
+                        //exceptionThrownFrom这个内部自己创建的，传给了caller，然后caller自己调用了accept
                         exceptionThrownFrom.accept(caller);
                     }
                 }));
