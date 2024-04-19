@@ -9,12 +9,16 @@ import jakarta.ws.rs.ext.MessageBodyWriter;
 import jakarta.ws.rs.ext.Providers;
 import jakarta.ws.rs.ext.RuntimeDelegate;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -179,28 +183,43 @@ public class ResourceServletTest extends ServletTest {
     //TODO: runtime delegate
     //TODO: header delegate
     @Test
-    public void should_use_response_from_web_application_exception_thrown_by_providers_when_find_message_body_writer() throws Exception {
+    public void web_application_exception_thrown_from_providers_getMessageBodyWriter() throws Exception {
         webApplicationExceptionThrownFrom(this::providers_getMessageBodyWriter);
     }
-
     @Test
     public void should_use_response_from_web_application_exception_thrown_by_message_body_writer() throws Exception {
-        webApplicationExceptionThrownFrom(this::messageBodyWriter_writeTo);
+        webApplicationExceptionThrownFrom(ResourceServletTest.this::messageBodyWriter_writeTo);
     }
-
     @Test
     public void should_map_exception_thrown_by_providers_when_find_message_body_writer() throws Exception {
-
         otherExceptionThrownFrom(this::providers_getMessageBodyWriter);
-
     }
     @Test
-    public void should_map_exception_throw_by_message_body_writer() throws Exception {
-
+    public void should_map_exception_throw_by_message_body_writer() {
         otherExceptionThrownFrom(this::messageBodyWriter_writeTo);
     }
 
-    private void webApplicationExceptionThrownFrom(Consumer<RuntimeException> caller) throws Exception {
+    @TestFactory
+    public List<DynamicTest> should_respond_based_on_exception_thrown(){
+        List<DynamicTest> tests = new ArrayList<>();
+        //这个本身就是Consumer的，所以又包装了一层Consumer
+        List<Consumer<Consumer<RuntimeException>>> exceptions = List.of(new Consumer<Consumer<RuntimeException>>() {
+            @Override
+            public void accept(Consumer<RuntimeException> caller) {
+                ResourceServletTest.this.otherExceptionThrownFrom(caller);
+            }
+        },this::webApplicationExceptionThrownFrom);
+        //这个原来就是void的，包装成Consumer
+        List<Consumer<RuntimeException>> callers = List.of(new Consumer<RuntimeException>() {
+            @Override
+            public void accept(RuntimeException exception) {
+                ResourceServletTest.this.providers_getMessageBodyWriter(exception);
+            }
+        },this::messageBodyWriter_writeTo);
+        return tests;
+    }
+
+    private void webApplicationExceptionThrownFrom(Consumer<RuntimeException> caller) {
         RuntimeException exception = new WebApplicationException(response()
                 .status(Response.Status.FORBIDDEN).build());
         caller.accept(exception);
@@ -208,7 +227,7 @@ public class ResourceServletTest extends ServletTest {
         HttpResponse<String> httpResponse = get("/test");
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
     }
-    private void otherExceptionThrownFrom(Consumer<RuntimeException> caller) throws Exception {
+    private void otherExceptionThrownFrom(Consumer<RuntimeException> caller) {
         RuntimeException exception = new IllegalArgumentException();
         caller.accept(exception);
         when(providers.getExceptionMapper(eq(IllegalArgumentException.class))).thenReturn(e ->

@@ -9,6 +9,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.http.HttpClient;
@@ -47,10 +48,14 @@ public abstract class ServletTest {
         return new URL(new URL("http://localhost:8080/"), path).toURI();
     }
 
-    protected HttpResponse<String> get(String path) throws Exception {
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder(path(path)).GET().build();
-        return client.send(request, HttpResponse.BodyHandlers.ofString());
+    protected HttpResponse<String> get(String path) {
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder(path(path)).GET().build();
+            return client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
