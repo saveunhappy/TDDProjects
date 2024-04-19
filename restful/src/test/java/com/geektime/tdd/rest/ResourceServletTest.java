@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.function.Executable;
 
 import java.io.*;
 import java.lang.annotation.Annotation;
@@ -217,7 +218,12 @@ public class ResourceServletTest extends ServletTest {
             //那这里就是去执行不同的异常了，这个Consumer<Consumer<RuntimeException>>中的泛型就是Consumer<RuntimeException>
             //也就是stub的那两个MessageBodyWriter
             for (Consumer<Consumer<RuntimeException>> exceptionThrownFrom : exceptions) {
-                tests.add(DynamicTest.dynamicTest(new Date().toString(), () -> exceptionThrownFrom.accept(caller)));
+                tests.add(DynamicTest.dynamicTest(new Date().toString(), new Executable() {
+                    @Override
+                    public void execute() throws Throwable {
+                        exceptionThrownFrom.accept(caller);
+                    }
+                }));
             }
         }
         return tests;
