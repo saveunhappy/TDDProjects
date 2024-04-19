@@ -18,6 +18,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -186,36 +187,39 @@ public class ResourceServletTest extends ServletTest {
     public void web_application_exception_thrown_from_providers_getMessageBodyWriter() throws Exception {
         webApplicationExceptionThrownFrom(this::providers_getMessageBodyWriter);
     }
+
     @Test
     public void should_use_response_from_web_application_exception_thrown_by_message_body_writer() throws Exception {
-        webApplicationExceptionThrownFrom(ResourceServletTest.this::messageBodyWriter_writeTo);
+        webApplicationExceptionThrownFrom(this::messageBodyWriter_writeTo);
     }
+
     @Test
     public void should_map_exception_thrown_by_providers_when_find_message_body_writer() throws Exception {
         otherExceptionThrownFrom(this::providers_getMessageBodyWriter);
     }
+
     @Test
     public void should_map_exception_throw_by_message_body_writer() {
         otherExceptionThrownFrom(this::messageBodyWriter_writeTo);
     }
 
     @TestFactory
-    public List<DynamicTest> should_respond_based_on_exception_thrown(){
+    public List<DynamicTest> should_respond_based_on_exception_thrown() {
         List<DynamicTest> tests = new ArrayList<>();
         //这个本身就是Consumer的，所以又包装了一层Consumer
-        List<Consumer<Consumer<RuntimeException>>> exceptions = List.of(new Consumer<Consumer<RuntimeException>>() {
-            @Override
-            public void accept(Consumer<RuntimeException> caller) {
-                ResourceServletTest.this.otherExceptionThrownFrom(caller);
-            }
-        },this::webApplicationExceptionThrownFrom);
+        List<Consumer<Consumer<RuntimeException>>> exceptions = List.of(this::otherExceptionThrownFrom, this::webApplicationExceptionThrownFrom);
+
         //这个原来就是void的，包装成Consumer
-        List<Consumer<RuntimeException>> callers = List.of(new Consumer<RuntimeException>() {
-            @Override
-            public void accept(RuntimeException exception) {
-                ResourceServletTest.this.providers_getMessageBodyWriter(exception);
+        List<Consumer<RuntimeException>> callers = List.of(this::providers_getMessageBodyWriter, this::messageBodyWriter_writeTo);
+        //callers就是要stub的messageBodyWriter返回的异常，这个是otherExceptionThrownFrom中的一部分， 所以是作为
+        //Consumer传过去，就是不同的异常
+        for (Consumer<RuntimeException> caller : callers) {
+            //那这里就是去执行不同的异常了，这个Consumer<Consumer<RuntimeException>>中的泛型就是Consumer<RuntimeException>
+            //也就是stub的那两个MessageBodyWriter
+            for (Consumer<Consumer<RuntimeException>> exceptionThrownFrom : exceptions) {
+                tests.add(DynamicTest.dynamicTest(new Date().toString(), () -> exceptionThrownFrom.accept(caller)));
             }
-        },this::messageBodyWriter_writeTo);
+        }
         return tests;
     }
 
@@ -227,6 +231,7 @@ public class ResourceServletTest extends ServletTest {
         HttpResponse<String> httpResponse = get("/test");
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
     }
+
     private void otherExceptionThrownFrom(Consumer<RuntimeException> caller) {
         RuntimeException exception = new IllegalArgumentException();
         caller.accept(exception);
@@ -236,14 +241,16 @@ public class ResourceServletTest extends ServletTest {
         HttpResponse<String> httpResponse = get("/test");
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
     }
+
     private void providers_getMessageBodyWriter(RuntimeException exception) {
-        response.entity(new GenericEntity<>(2.5,Double.class),new Annotation[0]).returnFrom(router);
-        when(providers.getMessageBodyWriter(eq(Double.class),eq(Double.class),
-                eq(new Annotation[0]),eq(MediaType.TEXT_PLAIN_TYPE))).thenThrow(exception);
+        response.entity(new GenericEntity<>(2.5, Double.class), new Annotation[0]).returnFrom(router);
+        when(providers.getMessageBodyWriter(eq(Double.class), eq(Double.class),
+                eq(new Annotation[0]), eq(MediaType.TEXT_PLAIN_TYPE))).thenThrow(exception);
     }
+
     private void messageBodyWriter_writeTo(RuntimeException exception) {
-        response().entity(new GenericEntity<>(2.5,Double.class),new Annotation[0]).returnFrom(router);
-        when(providers.getMessageBodyWriter(eq(Double.class),eq(Double.class),eq(new Annotation[0]),eq(MediaType.TEXT_PLAIN_TYPE)))
+        response().entity(new GenericEntity<>(2.5, Double.class), new Annotation[0]).returnFrom(router);
+        when(providers.getMessageBodyWriter(eq(Double.class), eq(Double.class), eq(new Annotation[0]), eq(MediaType.TEXT_PLAIN_TYPE)))
                 .thenReturn(new MessageBodyWriter<>() {
                     @Override
                     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
@@ -260,6 +267,7 @@ public class ResourceServletTest extends ServletTest {
     private OutboundResponseBuilder response() {
         return new OutboundResponseBuilder();
     }
+
     class OutboundResponseBuilder {
         Response.Status status = Response.Status.OK;
         MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
