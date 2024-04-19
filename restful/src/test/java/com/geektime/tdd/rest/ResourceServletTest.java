@@ -213,11 +213,10 @@ public class ResourceServletTest extends ServletTest {
         List<Consumer<RuntimeException>> callers = List.of(this::providers_getMessageBodyWriter, this::messageBodyWriter_writeTo);
         //callers就是要stub的messageBodyWriter返回的异常，这个是otherExceptionThrownFrom中的一部分， 所以是作为
         //Consumer传过去，就是不同的异常
-        for (Consumer<Consumer<RuntimeException>> exceptionThrownFrom : exceptions) {
-
         for (Consumer<RuntimeException> caller : callers) {
             //那这里就是去执行不同的异常了，这个Consumer<Consumer<RuntimeException>>中的泛型就是Consumer<RuntimeException>
             //也就是stub的那两个MessageBodyWriter
+            for (Consumer<Consumer<RuntimeException>> exceptionThrownFrom : exceptions) {
                 tests.add(DynamicTest.dynamicTest(new Date().toString(), () -> exceptionThrownFrom.accept(caller)));
             }
         }
