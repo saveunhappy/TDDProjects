@@ -182,28 +182,6 @@ public class ResourceServletTest extends ServletTest {
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
     }
 
-    //TODO: providers gets exception mapper
-    //TODO: runtime delegate
-    //TODO: header delegate
-    @Test
-    public void web_application_exception_thrown_from_providers_getMessageBodyWriter() throws Exception {
-        webApplicationExceptionThrownFrom(this::providers_getMessageBodyWriter);
-    }
-
-    @Test
-    public void should_use_response_from_web_application_exception_thrown_by_message_body_writer() throws Exception {
-        webApplicationExceptionThrownFrom(this::messageBodyWriter_writeTo);
-    }
-
-    @Test
-    public void should_map_exception_thrown_by_providers_when_find_message_body_writer() throws Exception {
-        otherExceptionThrownFrom(ResourceServletTest.this::providers_getMessageBodyWriter);
-    }
-
-    @Test
-    public void should_map_exception_throw_by_message_body_writer() {
-        otherExceptionThrownFrom(this::messageBodyWriter_writeTo);
-    }
 
     @TestFactory
     public List<DynamicTest> should_respond_based_on_exception_thrown() {
@@ -212,16 +190,11 @@ public class ResourceServletTest extends ServletTest {
         Map<String,Consumer<Consumer<RuntimeException>>> exceptions = Map.of("Other Exception",
                 this::otherExceptionThrownFrom,"WebApplication ExceptionThrown",
                 this::webApplicationExceptionThrownFrom);
-        for (Map.Entry<String, Consumer<Consumer<RuntimeException>>> stringConsumerEntry : exceptions.entrySet()) {
-
-        }
-//        List<Consumer<Consumer<RuntimeException>>> exceptions = List.of(this::otherExceptionThrownFrom, this::webApplicationExceptionThrownFrom);
 
         Map<String,Consumer<RuntimeException>> callers = Map.of("providers.getMessageBodyWriter",
                 this::providers_getMessageBodyWriter,"messageBodyWriter.WriteTo",
                 this::messageBodyWriter_writeTo);
 
-//        List<Consumer<RuntimeException>> callers = List.of(this::providers_getMessageBodyWriter, this::messageBodyWriter_writeTo);
         //callers就是要stub的messageBodyWriter返回的异常，这个是otherExceptionThrownFrom中的一部分， 所以是作为
         //Consumer传过去，就是不同的异常
         for (Map.Entry<String, Consumer<RuntimeException>> caller : callers.entrySet()) {
