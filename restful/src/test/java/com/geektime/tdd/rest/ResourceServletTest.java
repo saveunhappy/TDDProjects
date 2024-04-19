@@ -21,6 +21,7 @@ import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -208,30 +209,31 @@ public class ResourceServletTest extends ServletTest {
     public List<DynamicTest> should_respond_based_on_exception_thrown() {
         List<DynamicTest> tests = new ArrayList<>();
         //这个本身就是Consumer的，所以又包装了一层Consumer
-        List<Consumer<Consumer<RuntimeException>>> exceptions = List.of(this::otherExceptionThrownFrom, this::webApplicationExceptionThrownFrom);
+        Map<String,Consumer<Consumer<RuntimeException>>> exceptions = Map.of("Other Exception",
+                this::otherExceptionThrownFrom,"WebApplication ExceptionThrown",
+                this::webApplicationExceptionThrownFrom);
+        for (Map.Entry<String, Consumer<Consumer<RuntimeException>>> stringConsumerEntry : exceptions.entrySet()) {
 
-        //这个原来就是void的，包装成Consumer
-        List<Consumer<RuntimeException>> callers = List.of(new Consumer<RuntimeException>() {
-            @Override
-            public void accept(RuntimeException exception) {
-                ResourceServletTest.this.providers_getMessageBodyWriter(exception);
-            }
-        }, this::messageBodyWriter_writeTo);
+        }
+//        List<Consumer<Consumer<RuntimeException>>> exceptions = List.of(this::otherExceptionThrownFrom, this::webApplicationExceptionThrownFrom);
+
+        Map<String,Consumer<RuntimeException>> callers = Map.of("providers.getMessageBodyWriter",
+                this::providers_getMessageBodyWriter,"messageBodyWriter.WriteTo",
+                this::messageBodyWriter_writeTo);
+
+//        List<Consumer<RuntimeException>> callers = List.of(this::providers_getMessageBodyWriter, this::messageBodyWriter_writeTo);
         //callers就是要stub的messageBodyWriter返回的异常，这个是otherExceptionThrownFrom中的一部分， 所以是作为
         //Consumer传过去，就是不同的异常
-        for (Consumer<RuntimeException> caller : callers) {
+        for (Map.Entry<String, Consumer<RuntimeException>> caller : callers.entrySet()) {
             //那这里就是去执行不同的异常了，这个Consumer<Consumer<RuntimeException>>中的泛型就是Consumer<RuntimeException>
             //也就是stub的那两个MessageBodyWriter
-            for (Consumer<Consumer<RuntimeException>> exceptionThrownFrom : exceptions) {
-                tests.add(DynamicTest.dynamicTest(new Date().toString(), new Executable() {
-                    @Override
-                    public void execute() throws Throwable {
-                        //这个exceptionThrownFrom就是接受Consumer接口，但是没有调用caller.accept(exception)啊
-                        //其实是传过去之后，这个caller在exceptionThrownFrom这个内部自己调用了，所以这里不用调用
-                        //然后这个caller执行的就是把exception给stub一下，那么这个exception是从哪传入的？其实是在
-                        //exceptionThrownFrom这个内部自己创建的，传给了caller，然后caller自己调用了accept
-                        exceptionThrownFrom.accept(caller);
-                    }
+            for (Map.Entry<String, Consumer<Consumer<RuntimeException>>> exceptionThrownFrom : exceptions.entrySet()) {
+                tests.add(DynamicTest.dynamicTest(caller.getKey() + "throws" + exceptionThrownFrom.getKey(), () -> {
+                    //这个exceptionThrownFrom就是接受Consumer接口，但是没有调用caller.accept(exception)啊
+                    //其实是传过去之后，这个caller在exceptionThrownFrom这个内部自己调用了，所以这里不用调用
+                    //然后这个caller执行的就是把exception给stub一下，那么这个exception是从哪传入的？其实是在
+                    //exceptionThrownFrom这个内部自己创建的，传给了caller，然后caller自己调用了accept
+                    exceptionThrownFrom.getValue().accept(caller.getValue());
                 }));
             }
         }
