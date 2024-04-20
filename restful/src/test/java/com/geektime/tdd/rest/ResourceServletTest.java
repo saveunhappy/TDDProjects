@@ -183,6 +183,28 @@ public class ResourceServletTest extends ServletTest {
     }
 
     @Test
+    public void should_use_response_from_web_application_exception_thrown_by_header_delegate_when_create_header_delegate(){
+        WebApplicationException exception = new WebApplicationException(response()
+                .status(Response.Status.FORBIDDEN).build());
+        response().headers(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_TYPE).returnFrom(router);
+        when(delegate.createHeaderDelegate(eq(MediaType.class))).thenReturn(new RuntimeDelegate.HeaderDelegate<MediaType>() {
+            @Override
+            public MediaType fromString(String value) {
+                return null;
+            }
+
+            @Override
+            public String toString(MediaType value) {
+                throw exception;
+            }
+        });
+
+        HttpResponse<String> httpResponse = get("/test");
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
+
+    }
+
+    @Test
     public void should_map_exception_thrown_by_header_delegate_when_create_header_delegate() {
         RuntimeException exception = new IllegalArgumentException();
 
