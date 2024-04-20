@@ -16,12 +16,13 @@ import org.junit.jupiter.api.function.Executable;
 
 import java.io.*;
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -187,13 +188,11 @@ public class ResourceServletTest extends ServletTest {
     public List<DynamicTest> should_respond_based_on_exception_thrown() {
         List<DynamicTest> tests = new ArrayList<>();
         //这个本身就是Consumer的，所以又包装了一层Consumer
-        Map<String,Consumer<Consumer<RuntimeException>>> exceptions = Map.of("Other Exception",
-                this::otherExceptionThrownFrom,"WebApplication ExceptionThrown",
+        Map<String, Consumer<Consumer<RuntimeException>>> exceptions = Map.of("Other Exception",
+                this::otherExceptionThrownFrom, "WebApplication ExceptionThrown",
                 this::webApplicationExceptionThrownFrom);
 
-        Map<String,Consumer<RuntimeException>> callers = Map.of("providers.getMessageBodyWriter",
-                this::providers_getMessageBodyWriter,"messageBodyWriter.WriteTo",
-                this::messageBodyWriter_writeTo);
+        Map<String, Consumer<RuntimeException>> callers = getCallers();
 
         //callers就是要stub的messageBodyWriter返回的异常，这个是otherExceptionThrownFrom中的一部分， 所以是作为
         //Consumer传过去，就是不同的异常
@@ -211,6 +210,12 @@ public class ResourceServletTest extends ServletTest {
             }
         }
         return tests;
+    }
+
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface ExceptionThrownFrom {
+
     }
 
     private void webApplicationExceptionThrownFrom(Consumer<RuntimeException> caller) {
@@ -232,12 +237,39 @@ public class ResourceServletTest extends ServletTest {
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
     }
 
+    private Map<String, Consumer<RuntimeException>> getCallers() {
+        Map<String, Consumer<RuntimeException>> callers = new HashMap<>();
+        for (Method method : Arrays.stream(this.getClass().getDeclaredMethods()).
+                filter(m -> m.isAnnotationPresent(ExceptionThrownFrom.class)).toList()) {
+            String name = method.getName();
+            String callerName = name.substring(0, 1).toUpperCase() + name.substring(1).replace('_', '.');
+            callers.put(callerName, e -> {
+                try {
+                    /*
+                    *     private void otherExceptionThrownFrom(Consumer<RuntimeException> caller) {
+                                RuntimeException exception = new IllegalArgumentException();
+                                caller.accept(exception);
+                          这个exception是哪来的呢？不用管，你这个就是定义了方法，我接受一个RuntimeException，
+                          你调用这个方法的时候，你把Exception传过来就能执行，所以，这个就是函数式结构
+                    * */
+                    method.invoke(ResourceServletTest.this, e);
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            });
+        }
+
+        return callers;
+    }
+
+    @ExceptionThrownFrom
     private void providers_getMessageBodyWriter(RuntimeException exception) {
         response.entity(new GenericEntity<>(2.5, Double.class), new Annotation[0]).returnFrom(router);
         when(providers.getMessageBodyWriter(eq(Double.class), eq(Double.class),
                 eq(new Annotation[0]), eq(MediaType.TEXT_PLAIN_TYPE))).thenThrow(exception);
     }
 
+    @ExceptionThrownFrom
     private void messageBodyWriter_writeTo(RuntimeException exception) {
         response().entity(new GenericEntity<>(2.5, Double.class), new Annotation[0]).returnFrom(router);
         when(providers.getMessageBodyWriter(eq(Double.class), eq(Double.class), eq(new Annotation[0]), eq(MediaType.TEXT_PLAIN_TYPE)))

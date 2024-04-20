@@ -34,7 +34,6 @@ public class ResourceServlet extends HttpServlet {
         //传过去的时候那个时候就已经经过evaluate了，但是这个没有，为什么?还是刚开始说的，传过去的是一个Supplier对象啊，
         //又不是一个立即执行的方法
         respond(resp, () -> router.dispatch(req, runtime.createResourceContext(req, resp)));
-
     }
 
     private void respond(HttpServletResponse resp, Supplier<OutboundResponse> supplier) throws IOException {
