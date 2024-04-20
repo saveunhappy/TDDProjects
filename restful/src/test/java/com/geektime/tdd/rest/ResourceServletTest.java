@@ -41,6 +41,8 @@ public class ResourceServletTest extends ServletTest {
     private Providers providers;
     private OutboundResponseBuilder response;
 
+    private RuntimeDelegate delegate;
+
     @Override
     protected Servlet getServlet() {
         runtime = mock(Runtime.class);
@@ -59,7 +61,7 @@ public class ResourceServletTest extends ServletTest {
         response = new OutboundResponseBuilder();
 
         //先是mock掉，其实和创建一个子类没啥区别
-        RuntimeDelegate delegate = mock(RuntimeDelegate.class);
+        delegate = mock(RuntimeDelegate.class);
         //然后设置全局的
         RuntimeDelegate.setInstance(delegate);
         //这个时候就是使用mock的对象，设置他对应的行为。
@@ -126,12 +128,9 @@ public class ResourceServletTest extends ServletTest {
     public void should_build_response_by_exception_mapper_if_null_response_from_web_application_exception() throws Exception {
 
         when(router.dispatch(any(), eq(resourceContext))).thenThrow(RuntimeException.class);
-        when(providers.getExceptionMapper(eq(RuntimeException.class))).thenReturn(new ExceptionMapper<RuntimeException>() {
-            @Override
-            public Response toResponse(RuntimeException exception) {
-                //抽取处理就是为了这里，能返回回来
-                return response.status(Response.Status.FORBIDDEN).build();
-            }
+        when(providers.getExceptionMapper(eq(RuntimeException.class))).thenReturn(exception -> {
+            //抽取处理就是为了这里，能返回回来
+            return response.status(Response.Status.FORBIDDEN).build();
         });
 
         HttpResponse<String> httpResponse = get("/test");
@@ -183,6 +182,27 @@ public class ResourceServletTest extends ServletTest {
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
     }
 
+    @Test
+    public void should_map_exception_thrown_by_header_delegate_when_create_header_delegate() {
+        response().headers(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_TYPE).returnFrom(router);
+        when(delegate.createHeaderDelegate(eq(MediaType.class))).thenReturn(new RuntimeDelegate.HeaderDelegate<MediaType>() {
+            @Override
+            public MediaType fromString(String value) {
+                return null;
+            }
+
+            @Override
+            public String toString(MediaType value) {
+                throw new IllegalArgumentException();
+            }
+        });
+        when(providers.getExceptionMapper(eq(IllegalArgumentException.class))).thenReturn(e ->
+                response().status(Response.Status.FORBIDDEN).build()
+        );
+        HttpResponse<String> httpResponse = get("/test");
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
+
+    }
 
     @TestFactory
     public List<DynamicTest> should_respond_based_on_exception_thrown() {
