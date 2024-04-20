@@ -59,20 +59,26 @@ public class ResourceServlet extends HttpServlet {
     private void respond(HttpServletResponse resp, OutboundResponse response) throws IOException {
         //if (sc <= 0) throw new IllegalArgumentException();
         resp.setStatus(response.getStatus());
-        MultivaluedMap<String, Object> headers = response.getHeaders();
         //这个name就是Set-Cookie,目前测试数据是只有这个一个
+        headers(resp, response.getHeaders());
+        body(resp, response, response.getGenericEntity());
+    }
+
+    private void body(HttpServletResponse resp, OutboundResponse response, GenericEntity entity) throws IOException {
+        if (entity != null) {
+            MessageBodyWriter writer = providers.getMessageBodyWriter(entity.getRawType(), entity.getType(), response.getAnnotations(), response.getMediaType());
+            writer.writeTo(entity.getEntity(), entity.getRawType(), entity.getType(), response.getAnnotations(), response.getMediaType(),
+                    response.getHeaders(), resp.getOutputStream());
+        }
+    }
+
+    private static void headers(HttpServletResponse resp, MultivaluedMap<String, Object> headers) {
         for (String name : headers.keySet()) {
             //这个value就是NewCookie的SESSION_ID和USERID，所以放的时候就是用NewCookie.class
             for (Object value : headers.get(name)) {
                 RuntimeDelegate.HeaderDelegate headerDelegate = RuntimeDelegate.getInstance().createHeaderDelegate(value.getClass());
                 resp.addHeader(name, headerDelegate.toString(value));
             }
-        }
-        GenericEntity entity = response.getGenericEntity();
-        if (entity != null) {
-            MessageBodyWriter writer = providers.getMessageBodyWriter(entity.getRawType(), entity.getType(), response.getAnnotations(), response.getMediaType());
-            writer.writeTo(entity.getEntity(), entity.getRawType(), entity.getType(), response.getAnnotations(), response.getMediaType(),
-                    response.getHeaders(), resp.getOutputStream());
         }
     }
 }
