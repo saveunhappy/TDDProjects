@@ -7,10 +7,7 @@ import jakarta.ws.rs.core.*;
 import jakarta.ws.rs.ext.MessageBodyWriter;
 import jakarta.ws.rs.ext.Providers;
 import jakarta.ws.rs.ext.RuntimeDelegate;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.*;
 
 import java.io.*;
 import java.lang.annotation.Annotation;
@@ -36,8 +33,6 @@ public class ResourceServletTest extends ServletTest {
     //@Path，@Controller
     private ResourceContext resourceContext;
     private Providers providers;
-    private OutboundResponseBuilder response;
-
     private RuntimeDelegate delegate;
 
     @Override
@@ -55,8 +50,6 @@ public class ResourceServletTest extends ServletTest {
 
     @BeforeEach
     public void before() {
-        response = new OutboundResponseBuilder();
-
         //先是mock掉，其实和创建一个子类没啥区别
         delegate = mock(RuntimeDelegate.class);
         //然后设置全局的
@@ -76,159 +69,67 @@ public class ResourceServletTest extends ServletTest {
             }
         });
 
-
     }
 
-    @Test
-    public void should_use_status_from_response() throws Exception {
-        response.status(Response.Status.NOT_MODIFIED).returnFrom(router);
-        // 这个get就是HttpRequest 发送的，然后得到HttpResponse
-        HttpResponse<String> httpResponse = get("/test");
-        assertEquals(Response.Status.NOT_MODIFIED.getStatusCode(), httpResponse.statusCode());
-
-    }
-
-    @Test
-    public void should_use_http_headers_from_response() throws Exception {
-
-        NewCookie sessionId = new NewCookie.Builder("SESSION_ID").value("session").build();
-        NewCookie userId = new NewCookie.Builder("USER_ID").value("user").build();
-        response.headers("Set-Cookie", sessionId, userId).returnFrom(router);
-        // 这个get就是HttpRequest 发送的，然后得到HttpResponse
-        HttpResponse<String> httpResponse = get("/test");
-
-        assertArrayEquals(new String[]{"SESSION_ID=session", "USER_ID=user"},
-                httpResponse.headers().allValues("Set-Cookie").toArray(String[]::new));
-    }
-
-
-    @Test
-    public void should_write_entity_to_http_response_using_message_body_writer() throws Exception {
-        response.entity(new GenericEntity<>("entity", String.class), new Annotation[0]).returnFrom(router);
-        HttpResponse<String> httpResponse = get("/test");
-        assertEquals("entity", httpResponse.body());
-    }
-
-    @Test
-    public void should_use_response_from_web_application_exception() throws Exception {
-        response.status(Response.Status.FORBIDDEN)
-                .headers(HttpHeaders.SET_COOKIE, new NewCookie.Builder("SESSION_ID").value("sessionId").build())
-                .entity(new GenericEntity<>("error", String.class), new Annotation[0])
-                .throwFrom(router);
-        HttpResponse<String> httpResponse = get("/test");
-        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
-        assertArrayEquals(new String[]{"SESSION_ID=sessionId"}, httpResponse.headers().allValues(HttpHeaders.SET_COOKIE).toArray(String[]::new));
-        assertEquals("error", httpResponse.body());
-    }
-
-    @Test
-    public void should_build_response_by_exception_mapper_if_null_response_from_web_application_exception() throws Exception {
-
-        when(router.dispatch(any(), eq(resourceContext))).thenThrow(RuntimeException.class);
-        when(providers.getExceptionMapper(eq(RuntimeException.class))).thenReturn(exception -> {
-            //抽取处理就是为了这里，能返回回来
-            return response.status(Response.Status.FORBIDDEN).build();
-        });
-
-        HttpResponse<String> httpResponse = get("/test");
-        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
-    }
-
-    @Test
-    public void should_not_call_message_body_writer_if_entity_is_null() throws Exception {
-        response.entity(null, new Annotation[0]).returnFrom(router);
-
-        HttpResponse<String> httpResponse = get("/test");
-
-        assertEquals(Response.Status.OK.getStatusCode(), httpResponse.statusCode());
-        assertEquals("", httpResponse.body());
-    }
-
-    //TODO: 500 if MessageBodyWriter not found
-    //TODO: 500 if header delegate
-    //TODO: 500 if exception mapper
-    //TODO: exception mapper
-    @Test
-    public void should_use_response_from_web_application_exception_thrown_by_exception_mapper() throws Exception {
-
-        when(router.dispatch(any(), eq(resourceContext))).thenThrow(RuntimeException.class);
-        when(providers.getExceptionMapper(eq(RuntimeException.class))).thenReturn(exception -> {
-            //抽取处理就是为了这里，能返回回来
-            throw new WebApplicationException(response.status(Response.Status.FORBIDDEN).build());
-        });
-
-        HttpResponse<String> httpResponse = get("/test");
-        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
-    }
-
-    @Test
-    public void should_map_exception_thrown_by_exception_mapper() throws Exception {
-
-        when(router.dispatch(any(), eq(resourceContext))).thenThrow(RuntimeException.class);
-        //这不是重复，这个是如果catch的Throwable throwable的实际类型是RuntimeException，那么就抛出
-        //IllegalArgumentException，
-        when(providers.getExceptionMapper(eq(RuntimeException.class))).thenReturn(exception -> {
-            throw new IllegalArgumentException();
-        });
-        //这个是如果如果catch的Throwable throwable的实际类型是IllegalArgumentException,那么设置一下状态码，403
-        //因为IllegalArgumentException和WebApplicationException不是一个，所以是可以的
-        when(providers.getExceptionMapper(eq(IllegalArgumentException.class))).thenReturn(exception ->
-                response.status(Response.Status.FORBIDDEN).build()
-        );
-        HttpResponse<String> httpResponse = get("/test");
-        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
-    }
-
-    @ExceptionThrownFrom
-    private void headerDelegate_toString(RuntimeException exception) {
-        response().headers(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_TYPE).returnFrom(router);
-        when(delegate.createHeaderDelegate(eq(MediaType.class))).thenReturn(new RuntimeDelegate.HeaderDelegate<MediaType>() {
-            @Override
-            public MediaType fromString(String value) {
-                return null;
-            }
-
-            @Override
-            public String toString(MediaType value) {
-                throw exception;
-            }
-        });
-    }
-
-    @TestFactory
-    public List<DynamicTest> should_respond_based_on_exception_thrown() {
-        List<DynamicTest> tests = new ArrayList<>();
-        //这个本身就是Consumer的，所以又包装了一层Consumer
-        Map<String, Consumer<Consumer<RuntimeException>>> exceptions = Map.of("Other Exception",
-                this::otherExceptionThrownFrom, "WebApplication ExceptionThrown",
-                this::webApplicationExceptionThrownFrom);
-
-        Map<String, Consumer<RuntimeException>> callers = getCallers();
-
-        //callers就是要stub的messageBodyWriter返回的异常，这个是otherExceptionThrownFrom中的一部分， 所以是作为
-        //Consumer传过去，就是不同的异常
-        for (Map.Entry<String, Consumer<RuntimeException>> caller : callers.entrySet()) {
-            //那这里就是去执行不同的异常了，这个Consumer<Consumer<RuntimeException>>中的泛型就是Consumer<RuntimeException>
-            //也就是stub的那两个MessageBodyWriter
-            for (Map.Entry<String, Consumer<Consumer<RuntimeException>>> exceptionThrownFrom : exceptions.entrySet()) {
-                tests.add(DynamicTest.dynamicTest(caller.getKey() + "throws" + exceptionThrownFrom.getKey(), () -> {
-                    //这个exceptionThrownFrom就是接受Consumer接口，但是没有调用caller.accept(exception)啊
-                    //其实是传过去之后，这个caller在exceptionThrownFrom这个内部自己调用了，所以这里不用调用
-                    //然后这个caller执行的就是把exception给stub一下，那么这个exception是从哪传入的？其实是在
-                    //exceptionThrownFrom这个内部自己创建的，传给了caller，然后caller自己调用了accept
-                    exceptionThrownFrom.getValue().accept(caller.getValue());
-                }));
-            }
+    @Nested
+    class RespondForOutboundResponse {
+        @Test
+        public void should_use_http_headers_from_response() throws Exception {
+            response().headers("Set-Cookie", new NewCookie.Builder("SESSION_ID").value("session").build(), new NewCookie.Builder("USER_ID").value("user").build()).returnFrom(router);
+            HttpResponse<String> httpResponse = get("/test");
+            assertArrayEquals(new String[]{"SESSION_ID=session", "USER_ID=user"}, httpResponse.headers().allValues("Set-Cookie").toArray(String[]::new));
         }
+
+        @Test
+        public void should_write_entity_to_http_response_using_message_body_writer() throws Exception {
+            response().entity(new GenericEntity<>("entity", String.class), new Annotation[0]).returnFrom(router);
+            HttpResponse<String> httpResponse = get("/test");
+            assertEquals("entity", httpResponse.body());
+        }
+
+        @Test
+        public void should_not_call_message_body_writer_if_entity_is_null() throws Exception {
+            response().entity(null, new Annotation[0]).returnFrom(router);
+            HttpResponse<String> httpResponse = get("/test");
+            assertEquals(Response.Status.OK.getStatusCode(), httpResponse.statusCode());
+            assertEquals("", httpResponse.body());
+        }
+
+        @Test
+        public void should_use_status_from_response() throws Exception {
+            response().status(Response.Status.NOT_MODIFIED).returnFrom(router);
+            HttpResponse<String> httpResponse = get("/test");
+            assertEquals(Response.Status.NOT_MODIFIED.getStatusCode(), httpResponse.statusCode());
+        }
+    }
+    @TestFactory
+    public List<DynamicTest> RespondWhenExtensionMissing() {
+        List<DynamicTest> tests = new ArrayList<>();
+        Map<String, org.junit.jupiter.api.function.Executable> extensions =
+                Map.of("MessageBodyWriter", () -> response().entity(new GenericEntity<>(1, Integer.class), new Annotation[0]).returnFrom(router),
+                        "HeaderDelegate", () -> response().headers(HttpHeaders.DATE, new Date()).returnFrom(router),
+                        "ExceptionMapper", () -> when(router.dispatch(any(), eq(resourceContext))).thenThrow(IllegalStateException.class));
+        for (String name : extensions.keySet())
+            tests.add(DynamicTest.dynamicTest(name + " not found", () -> {
+                extensions.get(name).execute();
+                when(providers.getExceptionMapper(eq(NullPointerException.class))).thenReturn(e -> response().status(Response.Status.INTERNAL_SERVER_ERROR).build());
+                HttpResponse<String> httpResponse = get("/test");
+                assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), httpResponse.statusCode());
+            }));
         return tests;
     }
 
-
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface ExceptionThrownFrom {
-
+    @TestFactory
+    public List<DynamicTest> RespondForException() {
+        List<DynamicTest> tests = new ArrayList<>();
+        Map<String, Consumer<Consumer<RuntimeException>>> exceptions = Map.of("Other Exception", this::otherExceptionThrownFrom,
+                "WebApplicationException", this::webApplicationExceptionThrownFrom);
+        for (Map.Entry<String, Consumer<RuntimeException>> caller : getCallers().entrySet())
+            for (Map.Entry<String, Consumer<Consumer<RuntimeException>>> exceptionThrownFrom : exceptions.entrySet())
+                tests.add(DynamicTest.dynamicTest(caller.getKey() + " throws " + exceptionThrownFrom.getKey(),
+                        () -> exceptionThrownFrom.getValue().accept(caller.getValue())));
+        return tests;
     }
-
     private void webApplicationExceptionThrownFrom(Consumer<RuntimeException> caller) {
         RuntimeException exception = new WebApplicationException(response()
                 .status(Response.Status.FORBIDDEN).build());
@@ -251,6 +152,64 @@ public class ResourceServletTest extends ServletTest {
         );
         HttpResponse<String> httpResponse = get("/test");
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface ExceptionThrownFrom {
+    }
+    @ExceptionThrownFrom
+    private void providers_getExceptionMapper(RuntimeException exception) {
+        when(router.dispatch(any(), eq(resourceContext))).thenThrow(RuntimeException.class);
+        when(providers.getExceptionMapper(eq(RuntimeException.class))).thenThrow(exception);
+    }
+    @ExceptionThrownFrom
+    private void runtimeDelegate_createHeaderDelegate(RuntimeException exception) {
+        response().headers(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_TYPE).returnFrom(router);
+        when(delegate.createHeaderDelegate(eq(MediaType.class))).thenThrow(exception);
+    }
+    @ExceptionThrownFrom
+    private void exceptionMapper_toResponse(RuntimeException exception) {
+        when(router.dispatch(any(), eq(resourceContext))).thenThrow(RuntimeException.class);
+        when(providers.getExceptionMapper(eq(RuntimeException.class))).thenThrow(exception);
+    }
+    @ExceptionThrownFrom
+    private void headerDelegate_toString(RuntimeException exception) {
+        response().headers(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_TYPE).returnFrom(router);
+        when(delegate.createHeaderDelegate(eq(MediaType.class))).thenReturn(new RuntimeDelegate.HeaderDelegate<MediaType>() {
+            @Override
+            public MediaType fromString(String value) {
+                return null;
+            }
+            @Override
+            public String toString(MediaType value) {
+                throw exception;
+            }
+        });
+    }
+    @ExceptionThrownFrom
+    private void providers_getMessageBodyWriter(RuntimeException exception) {
+        response().entity(new GenericEntity<>(2.5, Double.class), new Annotation[0]).returnFrom(router);
+        when(providers.getMessageBodyWriter(eq(Double.class), eq(Double.class), eq(new Annotation[0]), eq(MediaType.TEXT_PLAIN_TYPE)))
+                .thenThrow(exception);
+    }
+    @ExceptionThrownFrom
+    private void messageBodyWriter_writeTo(RuntimeException exception) {
+        response().entity(new GenericEntity<>(2.5, Double.class), new Annotation[0]).returnFrom(router);
+        when(providers.getMessageBodyWriter(eq(Double.class), eq(Double.class), eq(new Annotation[0]), eq(MediaType.TEXT_PLAIN_TYPE)))
+                .thenReturn(new MessageBodyWriter<Double>() {
+                    @Override
+                    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+                        return false;
+                    }
+                    @Override
+                    public void writeTo(Double aDouble, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
+                        throw exception;
+                    }
+                });
+    }
+    @ExceptionThrownFrom
+    public void resourceRouter_dispatch(RuntimeException exception) {
+        when(router.dispatch(any(), eq(resourceContext))).thenThrow(exception);
     }
 
     private Map<String, Consumer<RuntimeException>> getCallers() {
@@ -283,33 +242,40 @@ public class ResourceServletTest extends ServletTest {
         return callers;
     }
 
-    @ExceptionThrownFrom
-    private void providers_getMessageBodyWriter(RuntimeException exception) {
-        response.entity(new GenericEntity<>(2.5, Double.class), new Annotation[0]).returnFrom(router);
-        when(providers.getMessageBodyWriter(eq(Double.class), eq(Double.class),
-                eq(new Annotation[0]), eq(MediaType.TEXT_PLAIN_TYPE))).thenThrow(exception);
-    }
-
-    @ExceptionThrownFrom
-    private void messageBodyWriter_writeTo(RuntimeException exception) {
-        response().entity(new GenericEntity<>(2.5, Double.class), new Annotation[0]).returnFrom(router);
-        when(providers.getMessageBodyWriter(eq(Double.class), eq(Double.class), eq(new Annotation[0]), eq(MediaType.TEXT_PLAIN_TYPE)))
-                .thenReturn(new MessageBodyWriter<>() {
-                    @Override
-                    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-                        return false;
-                    }
-
-                    @Override
-                    public void writeTo(Double aDouble, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws WebApplicationException {
-                        throw exception;
-                    }
-                });
-    }
 
     private OutboundResponseBuilder response() {
         return new OutboundResponseBuilder();
     }
+
+
+//
+//    @TestFactory
+//    public List<DynamicTest> should_respond_based_on_exception_thrown() {
+//        List<DynamicTest> tests = new ArrayList<>();
+//        //这个本身就是Consumer的，所以又包装了一层Consumer
+//        Map<String, Consumer<Consumer<RuntimeException>>> exceptions = Map.of("Other Exception",
+//                this::otherExceptionThrownFrom, "WebApplication ExceptionThrown",
+//                this::webApplicationExceptionThrownFrom);
+//
+//        Map<String, Consumer<RuntimeException>> callers = getCallers();
+//
+//        //callers就是要stub的messageBodyWriter返回的异常，这个是otherExceptionThrownFrom中的一部分， 所以是作为
+//        //Consumer传过去，就是不同的异常
+//        for (Map.Entry<String, Consumer<RuntimeException>> caller : callers.entrySet()) {
+//            //那这里就是去执行不同的异常了，这个Consumer<Consumer<RuntimeException>>中的泛型就是Consumer<RuntimeException>
+//            //也就是stub的那两个MessageBodyWriter
+//            for (Map.Entry<String, Consumer<Consumer<RuntimeException>>> exceptionThrownFrom : exceptions.entrySet()) {
+//                tests.add(DynamicTest.dynamicTest(caller.getKey() + "throws" + exceptionThrownFrom.getKey(), () -> {
+//                    //这个exceptionThrownFrom就是接受Consumer接口，但是没有调用caller.accept(exception)啊
+//                    //其实是传过去之后，这个caller在exceptionThrownFrom这个内部自己调用了，所以这里不用调用
+//                    //然后这个caller执行的就是把exception给stub一下，那么这个exception是从哪传入的？其实是在
+//                    //exceptionThrownFrom这个内部自己创建的，传给了caller，然后caller自己调用了accept
+//                    exceptionThrownFrom.getValue().accept(caller.getValue());
+//                }));
+//            }
+//        }
+//        return tests;
+//    }
 
     class OutboundResponseBuilder {
         Response.Status status = Response.Status.OK;
