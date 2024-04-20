@@ -75,14 +75,19 @@ public class ResourceServletTest extends ServletTest {
     class RespondForOutboundResponse {
         @Test
         public void should_use_http_headers_from_response() throws Exception {
-            response().headers("Set-Cookie", new NewCookie.Builder("SESSION_ID").value("session").build(), new NewCookie.Builder("USER_ID").value("user").build()).returnFrom(router);
+            response().headers("Set-Cookie", new NewCookie.Builder("SESSION_ID")
+                    .value("session").build(),
+                    new NewCookie.Builder("USER_ID").value("user").build())
+                    .returnFrom(router);
             HttpResponse<String> httpResponse = get("/test");
-            assertArrayEquals(new String[]{"SESSION_ID=session", "USER_ID=user"}, httpResponse.headers().allValues("Set-Cookie").toArray(String[]::new));
+            assertArrayEquals(new String[]{"SESSION_ID=session", "USER_ID=user"},
+                    httpResponse.headers().allValues("Set-Cookie").toArray(String[]::new));
         }
 
         @Test
         public void should_write_entity_to_http_response_using_message_body_writer() throws Exception {
-            response().entity(new GenericEntity<>("entity", String.class), new Annotation[0]).returnFrom(router);
+            response().entity(new GenericEntity<>("entity", String.class),
+                    new Annotation[0]).returnFrom(router);
             HttpResponse<String> httpResponse = get("/test");
             assertEquals("entity", httpResponse.body());
         }
