@@ -181,7 +181,8 @@ public class ResourceServletTest extends ServletTest {
 
     @Test
     public void should_use_response_from_web_application_exception_thrown_by_header_delegate_when_create_header_delegate(){
-        WebApplicationException exception = new WebApplicationException(response().status(Response.Status.FORBIDDEN).build());
+        WebApplicationException exception = new WebApplicationException(response().
+                status(Response.Status.FORBIDDEN).build());
         response().headers(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_TYPE).returnFrom(router);
         when(delegate.createHeaderDelegate(eq(MediaType.class))).thenReturn(new RuntimeDelegate.HeaderDelegate<MediaType>() {
             @Override
@@ -216,6 +217,11 @@ public class ResourceServletTest extends ServletTest {
                 throw exception;
             }
         });
+        //因为这个IllegalArgumentsException不能被WebApplicationException捕获，
+        // 只能被Throwable捕获，这个其实是相当于你自定义的了，
+        // 那你自定义的就得你自己创建处理的方式，就是你自己注册到ExceptionMapper了，
+        // 当key是IllegalArgumentException的时候，就设置response的状态或者啥的，你自定义的。
+        // 而WebApplicationException是系统处理的
         when(providers.getExceptionMapper(eq(IllegalArgumentException.class))).thenReturn(e ->
                 response().status(Response.Status.FORBIDDEN).build()
         );
