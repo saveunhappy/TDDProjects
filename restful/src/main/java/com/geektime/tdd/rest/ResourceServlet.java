@@ -40,6 +40,11 @@ public class ResourceServlet extends HttpServlet {
         try {
             respond(resp, supplier.get());
         } catch (WebApplicationException exception) {
+            //这个exception.getResponse是在哪stub的呢？
+            // 是在你WebApplicationException exception = new WebApplicationException(response()
+            // .status(Response.Status.FORBIDDEN).build());
+            // 这个构造器是把你stub的这个response通过构造器传进去了，
+            // 然后getResponse的时候就是返回你传进去的stub的这个东西
             respond(resp, () -> (OutboundResponse) exception.getResponse());
         } catch (Throwable throwable) {
             respond(resp, () -> from(throwable));

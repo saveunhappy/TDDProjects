@@ -4,7 +4,6 @@ import jakarta.servlet.Servlet;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.*;
-import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.MessageBodyWriter;
 import jakarta.ws.rs.ext.Providers;
 import jakarta.ws.rs.ext.RuntimeDelegate;
@@ -12,13 +11,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
-import org.junit.jupiter.api.function.Executable;
 
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.net.http.HttpResponse;
@@ -184,8 +181,7 @@ public class ResourceServletTest extends ServletTest {
 
     @Test
     public void should_use_response_from_web_application_exception_thrown_by_header_delegate_when_create_header_delegate(){
-        WebApplicationException exception = new WebApplicationException(response()
-                .status(Response.Status.FORBIDDEN).build());
+        WebApplicationException exception = new WebApplicationException(response().status(Response.Status.FORBIDDEN).build());
         response().headers(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_TYPE).returnFrom(router);
         when(delegate.createHeaderDelegate(eq(MediaType.class))).thenReturn(new RuntimeDelegate.HeaderDelegate<MediaType>() {
             @Override
