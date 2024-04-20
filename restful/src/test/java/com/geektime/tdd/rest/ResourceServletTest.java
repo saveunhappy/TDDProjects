@@ -179,31 +179,7 @@ public class ResourceServletTest extends ServletTest {
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
     }
 
-    @Test
-    public void should_use_response_from_web_application_exception_thrown_by_header_delegate_when_create_header_delegate(){
-        WebApplicationException exception = new WebApplicationException(response().
-                status(Response.Status.FORBIDDEN).build());
-        headerDelegate_toString(exception);
-
-        HttpResponse<String> httpResponse = get("/test");
-        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
-
-    }
-
-    @Test
-    public void should_map_exception_thrown_by_header_delegate_when_create_header_delegate() {
-        RuntimeException exception = new IllegalArgumentException();
-
-        headerDelegate_toString(exception);
-
-        when(providers.getExceptionMapper(eq(IllegalArgumentException.class))).thenReturn(e ->
-                response().status(Response.Status.FORBIDDEN).build()
-        );
-        HttpResponse<String> httpResponse = get("/test");
-        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
-
-    }
-
+    @ExceptionThrownFrom
     private void headerDelegate_toString(RuntimeException exception) {
         response().headers(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_TYPE).returnFrom(router);
         when(delegate.createHeaderDelegate(eq(MediaType.class))).thenReturn(new RuntimeDelegate.HeaderDelegate<MediaType>() {
