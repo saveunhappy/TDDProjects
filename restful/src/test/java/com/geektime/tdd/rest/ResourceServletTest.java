@@ -195,11 +195,7 @@ public class ResourceServletTest extends ServletTest {
         RuntimeException exception = new IllegalArgumentException();
 
         headerDelegate_toString(exception);
-        //因为这个IllegalArgumentsException不能被WebApplicationException捕获，
-        // 只能被Throwable捕获，这个其实是相当于你自定义的了，
-        // 那你自定义的就得你自己创建处理的方式，就是你自己注册到ExceptionMapper了，
-        // 当key是IllegalArgumentException的时候，就设置response的状态或者啥的，你自定义的。
-        // 而WebApplicationException是系统处理的
+
         when(providers.getExceptionMapper(eq(IllegalArgumentException.class))).thenReturn(e ->
                 response().status(Response.Status.FORBIDDEN).build()
         );
@@ -269,6 +265,11 @@ public class ResourceServletTest extends ServletTest {
     private void otherExceptionThrownFrom(Consumer<RuntimeException> caller) {
         RuntimeException exception = new IllegalArgumentException();
         caller.accept(exception);
+        //因为这个IllegalArgumentsException不能被WebApplicationException捕获，
+        // 只能被Throwable捕获，这个其实是相当于你自定义的了，
+        // 那你自定义的就得你自己创建处理的方式，就是你自己注册到ExceptionMapper了，
+        // 当key是IllegalArgumentException的时候，就设置response的状态或者啥的，你自定义的。
+        // 而WebApplicationException是系统处理的
         when(providers.getExceptionMapper(eq(IllegalArgumentException.class))).thenReturn(e ->
                 response().status(Response.Status.FORBIDDEN).build()
         );
@@ -289,7 +290,12 @@ public class ResourceServletTest extends ServletTest {
                                 RuntimeException exception = new IllegalArgumentException();
                                 caller.accept(exception);
                           这个exception是哪来的呢？不用管，你这个就是定义了方法，我接受一个RuntimeException，
-                          你调用这个方法的时候，你把Exception传过来就能执行，所以，这个就是函数式结构
+                          你调用这个方法的时候，你把Exception传过来就能执行，所以，这个就是函数式接口
+                          然后继续说，那两个循环，外层是什么？外层是exceptionThrownFrom,所以
+                          RuntimeException exception = new IllegalArgumentException();
+                                caller.accept(exception);
+                          这两句代码是先执行，method.invoke(ResourceServletTest.this, e);就理解为
+                          嵌入到exceptionThrownFrom代码中去。
                     * */
                     method.invoke(ResourceServletTest.this, e);
                 } catch (Exception ex) {
