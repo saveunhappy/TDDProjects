@@ -184,6 +184,8 @@ public class ResourceServletTest extends ServletTest {
 
     @Test
     public void should_map_exception_thrown_by_header_delegate_when_create_header_delegate() {
+        RuntimeException exception = new IllegalArgumentException();
+
         response().headers(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_TYPE).returnFrom(router);
         when(delegate.createHeaderDelegate(eq(MediaType.class))).thenReturn(new RuntimeDelegate.HeaderDelegate<MediaType>() {
             @Override
@@ -193,7 +195,7 @@ public class ResourceServletTest extends ServletTest {
 
             @Override
             public String toString(MediaType value) {
-                throw new IllegalArgumentException();
+                throw exception;
             }
         });
         when(providers.getExceptionMapper(eq(IllegalArgumentException.class))).thenReturn(e ->
