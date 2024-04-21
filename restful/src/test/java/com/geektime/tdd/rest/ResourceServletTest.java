@@ -116,8 +116,16 @@ public class ResourceServletTest extends ServletTest {
                         "ExceptionMapper", () -> when(router.dispatch(any(), eq(resourceContext))).thenThrow(IllegalStateException.class));
         for (String name : extensions.keySet())
             tests.add(DynamicTest.dynamicTest(name + " not found", () -> {
+                //这里是立马执行，但是注意，执行的其实是stub，并不是去发送请求，请求是在下面的get方法中弄的
                 extensions.get(name).execute();
-                when(providers.getExceptionMapper(eq(NullPointerException.class))).thenReturn(e -> response().status(Response.Status.INTERNAL_SERVER_ERROR).build());
+                //这个首先看第一个MessageBodyWriter因为是Integer类型的，所以在response()的时候就是String了，
+                // 那么getExceptionMapper的时候就是null，然后就会返回这个Response对象
+
+                //第二个，因为我们只mock了NewCookie的，但是没有Mock现在的这个DATE，所以就会空指针，然后变成500
+                //第三个，抛出IllegalStateException，这个处理不了，所以最终还是NullPointException，最终
+                //这三个都是500
+                when(providers.getExceptionMapper(eq(NullPointerException.class)))
+                        .thenReturn(e -> response().status(Response.Status.INTERNAL_SERVER_ERROR).build());
                 HttpResponse<String> httpResponse = get("/test");
                 assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), httpResponse.statusCode());
             }));
