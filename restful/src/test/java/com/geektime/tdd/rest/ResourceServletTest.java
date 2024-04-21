@@ -147,7 +147,10 @@ public class ResourceServletTest extends ServletTest {
         RuntimeException exception = new WebApplicationException(response()
                 .status(Response.Status.FORBIDDEN).build());
         caller.accept(exception);
-
+        //为什么这里不需要对providers.getExceptionMapper进行stu呢？因为这个就不会走到getExceptionMapper
+        //这个是WebApplicationException，构造器中传入了response,发生异常之后就是
+        //respond(resp, () -> (OutboundResponse) exception.getResponse());这个response就是上面的
+        //response().status(Response.Status.FORBIDDEN).build()，所以就是Response.Status.FORBIDDEN
         HttpResponse<String> httpResponse = get("/test");
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), httpResponse.statusCode());
     }
