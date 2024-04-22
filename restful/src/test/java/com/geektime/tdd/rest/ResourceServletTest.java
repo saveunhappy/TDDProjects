@@ -186,7 +186,10 @@ public class ResourceServletTest extends ServletTest {
     @ExceptionThrownFrom
     private void exceptionMapper_toResponse(RuntimeException exception) {
         when(router.dispatch(any(), eq(resourceContext))).thenThrow(RuntimeException.class);
-        when(providers.getExceptionMapper(eq(RuntimeException.class))).thenThrow(exception);
+        when(providers.getExceptionMapper(eq(RuntimeException.class))).thenReturn(ex -> {
+            throw exception;
+        });
+//        when(providers.getExceptionMapper(eq(RuntimeException.class))).thenThrow(exception);
     }
     @ExceptionThrownFrom
     private void headerDelegate_toString(RuntimeException exception) {
