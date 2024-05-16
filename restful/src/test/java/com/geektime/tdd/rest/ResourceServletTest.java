@@ -122,7 +122,10 @@ public class ResourceServletTest extends ServletTest {
                 // 那么getExceptionMapper的时候就是null，然后就会返回这个Response对象
 
                 //第二个，因为我们只mock了NewCookie的，但是没有Mock现在的这个DATE，所以就会空指针，然后变成500
-                //第三个，抛出IllegalStateException，这个处理不了，所以最终还是NullPointException，最终
+                //第三个，抛出IllegalStateException，这个处理不了，因为没有stu一个
+                // providers.getExceptionMapper(eq(抛出IllegalStateException.class))所以最终providers.getExceptionMapper
+                // 还是返回的NullPointException，最终又被providers.getExceptionMapper(eq(NullPointerException.class))
+                // 给catch住了，然后返回500
                 //这三个都是500
                 when(providers.getExceptionMapper(eq(NullPointerException.class)))
                         .thenReturn(e -> response().status(Response.Status.INTERNAL_SERVER_ERROR).build());
